@@ -3,32 +3,13 @@ title: "V4 Overview"
 description: "The shortest practical overview of Agon Protocol V4."
 ---
 
-Agon Protocol V4 has four core building blocks:
+Agon Protocol V4 has a simple external model.
 
-## 1. Permanent Participants
+Each wallet registers once as a permanent participant and receives a stable `participant_id` for the lifetime of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create a permanent directed lane keyed by `payer_id`, `payee_id`, and `token_id`. The payer can lock funds to collateralize that lane, and the parties exchange signed V4 messages offchain as obligations change.
 
-Each wallet can register once and receives a stable `participant_id` for the lifetime of the deployment.
+V4 uses two message formats. `agon-cmt-v4` authorizes a cumulative amount for one lane. `agon-round-v4` lets a group of participants sign one shared clearing round that advances many lane targets at once.
 
-## 2. Permanent Directed Lanes
-
-Each directed relationship is keyed by:
-
-- `payer_id`
-- `payee_id`
-- `token_id`
-
-The lane does not close and reopen. Its cumulative settled amount only moves forward.
-
-## 3. Two Signed Message Types
-
-- `agon-cmt-v4`: unilateral cumulative commitment for one lane
-- `agon-round-v4`: cooperative clearing round for many lanes in one shared message
-
-## 4. Three Settlement Modes
-
-- direct latest-commitment settlement
-- payee-side commitment bundle settlement
-- cooperative clearing rounds
+Those messages feed three settlement paths. The simplest path settles the latest commitment for one lane. Bundle settlement advances many lanes for one payee in one transaction. Cooperative clearing rounds advance many lanes together and apply only the residual balance changes that remain after netting.
 
 ## Current Devnet Deployment
 

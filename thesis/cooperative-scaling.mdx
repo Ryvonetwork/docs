@@ -1,27 +1,14 @@
 ---
 title: "Cooperative Scaling"
-description: "Why Agon frames agentic payments as a cooperation problem instead of a routing-fee problem."
+description: "Why Agon frames repeated machine payments as a clearing problem."
 ---
 
-Agon starts from one observation: **machine payments are usually repeated relationships**, not isolated one-off transfers.
+Agon treats repeated machine payments as a clearing problem.
 
-An agent calling the same RPC provider, inference API, data feed, or marketplace endpoint thousands of times does not need every interaction to carry full settlement overhead. What it needs is:
+When the same counterparties interact many times, exact settlement on every interaction forces each request to carry the same signature, liveness, and fee overhead. In practice, many of those relationships can tolerate deferred settlement as long as obligations are explicit, balances remain non-custodial, and the latest agreed state can be enforced onchain.
 
-- a durable relationship
-- a way to meter obligations offchain
-- a way to settle the latest agreed state later
+Cooperation in Agon has concrete meaning. Participants keep stable identities. Lanes accumulate obligations instead of resetting on every request. Counterparties can decide how much collateral a relationship needs, how frequently it should settle, and how much trust or reputation they are willing to rely on between settlements.
 
-That is why Agon emphasizes:
+This is why the protocol scales in stages. A single latest commitment already collapses many offchain updates into one settlement. Bundle settlement lets one payee settle many lanes together. Cooperative clearing rounds go further by advancing many lane targets in one shared signed message and applying only residual balance changes.
 
-- **trust**: not all payment relationships need full trust minimization on every call
-- **reputation**: long-lived participants can build history instead of constantly restarting from zero
-- **collateral**: some relationships will lock funds, some will not, and some will mix both
-- **cooperation**: counterparties can compress many obligations into a smaller number of onchain state transitions
-
-Multilateral clearing is the strongest expression of that idea, but it is not the whole idea. Even the unilateral path already proves the thesis:
-
-- many offchain payments collapse into one latest commitment
-- many latest commitments collapse into a payee-side bundle
-- cooperative rounds collapse many bilateral obligations into residual net flows
-
-Agon is therefore best understood as **a cooperative clearing layer for machine commerce**, not just a faster way to sign API payments.
+Multilateral clearing is the densest settlement mode, but it is not the entire thesis. The broader claim is that repeated machine-payment relationships do not need to be modeled as isolated one-off transfers. They can be modeled as long-lived clearing relationships.

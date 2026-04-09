@@ -5,17 +5,6 @@ description: "The scaling levers Agon treats as first-class."
 
 Agon does not assume every machine-payment relationship looks the same.
 
-Some counterparties will:
+Some counterparties will want fully collateralized lanes. Others will rely more heavily on trust and reputation between settlements. Many relationships will sit somewhere in the middle. Agon treats that as a protocol-level design reality rather than something to hide behind one default path.
 
-- lock collateral
-- rely on trust and reputation
-- use a mix of collateral plus deferred settlement
-
-That is why the protocol is best framed as a **cooperative clearing layer**. It gives repeated relationships the tools to choose how much they want to pay in:
-
-- immediacy
-- trust minimization
-- capital lockup
-- settlement frequency
-
-The goal is not to eliminate trust. The goal is to make it an explicit scaling lever.
+This is why the protocol is best understood as a cooperative clearing layer. It gives repeated relationships room to choose how much they want to pay in capital lockup, settlement frequency, and trust minimization. The goal is not to eliminate trust in every case. The goal is to make those tradeoffs explicit and enforceable.

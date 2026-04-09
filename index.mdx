@@ -3,31 +3,17 @@ title: "Agon Protocol"
 description: "A permissionless cooperative clearing protocol for agentic payments on Solana."
 ---
 
-Agon Protocol is a **permissionless cooperative clearing protocol** for machine payments on Solana.
+Agon Protocol is a **permissionless cooperative clearing protocol** for agentic payments on Solana.
 
-The thesis is simple: agentic payments do not scale if every interaction has to pay a high constant settlement cost. Agon replaces that fee-per-payment model with **cooperation, deferred settlement, and cumulative commitments**.
+It is built for repeated relationships: agents paying APIs, inference endpoints, data feeds, marketplaces, and other agents. In those settings, the expensive part is often not expressing intent to pay. The expensive part is settling every small interaction as if it were a standalone transfer.
 
-Instead of forcing every API call or agent action to settle exactly onchain, Agon lets participants:
+Agon moves that cost off the hot path. Participants exchange cumulative offchain commitments, keep balances in protocol state, and settle only the latest state that matters. In V4, each wallet has one permanent participant identity and each `payer_id + payee_id + token_id` relationship has one permanent directed lane. That keeps replay boundaries simple and gives offchain systems stable identities to build around.
 
-- register once as permanent participants
-- open permanent directed lanes
-- advance cumulative offchain obligations
-- settle the latest state directly, in bundles, or cooperatively in clearing rounds
+The protocol supports three settlement modes. A latest commitment settles one lane. Bundle settlement advances many lanes for one payee in one transaction. Cooperative clearing rounds advance many lanes together and apply only the residual balance changes that remain after obligations are netted. The result is not "free payments." It is fewer onchain state transitions for the same economic activity.
 
-<Tip>
-Agon's main claim is not just “multilateral clearing.” The core claim is that **trust, reputation, collateral, and cooperation** can scale machine payments more effectively than exact per-payment fee models.
-</Tip>
+## Start Here
 
-## What V4 Changed
-
-- Permanent participants: one wallet maps to one participant identity for the lifetime of the deployment.
-- Permanent lanes: one directed lane exists per `payer_id + payee_id + token_id`.
-- V4 messages: `agon-cmt-v4` and `agon-round-v4` remove close/reopen complexity and keep the signed format compact.
-- In-program `message_domain`: replay separation is derived inside the protocol instead of trusted to bootstrap tooling.
-
-## Read This Next
-
-- [Why cooperative scaling is the thesis](/thesis/cooperative-scaling)
-- [Why exact fee-per-payment models hit a floor](/thesis/why-not-fee-per-payment)
-- [How the V4 protocol works](/getting-started/v4-overview)
-- [Generated live devnet benchmarks](/benchmarks/generated-live-devnet)
+- [V4 overview](/getting-started/v4-overview)
+- [Why cooperative scaling matters](/thesis/cooperative-scaling)
+- [Run the devnet demo](/getting-started/devnet-demo)
+- [See live benchmark artifacts](/benchmarks/generated-live-devnet)

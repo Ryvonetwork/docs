@@ -5,10 +5,6 @@ description: "Permanent participant identities in Agon V4."
 
 Participants are permanent protocol identities.
 
-Each participant account binds one wallet to one stable `participant_id`. That means:
+Each participant account binds one wallet to one stable `participant_id`. That mapping does not recycle through close and reopen flows, which means offchain systems can treat `wallet -> participant_id` as stable for the lifetime of the deployment. If an operator wants a new identity, it uses a new wallet rather than trying to recycle protocol state.
 
-- the ID does not recycle through close/reopen flows
-- offchain systems can treat `wallet -> participant_id` as stable
-- identity reset requires a new wallet, not a protocol-level account recycle
-
-This simplifies both replay protection and long-lived reputation.
+This makes replay protection simpler and gives long-lived integrations a stable identifier to build around.

@@ -5,3 +5,16 @@
 # Draft content
 drafts/
 *.draft.mdx
+
+# Legacy platform-era docs not part of the live V4 protocol site
+api-reference/
+architecture/
+guides/
+quickstarts/
+recipes/
+getting-started/core-concepts.mdx
+getting-started/how-it-works.mdx
+getting-started/welcome.mdx
+reference/beta-access.mdx
+reference/changelog.mdx
+reference/sdks.mdx

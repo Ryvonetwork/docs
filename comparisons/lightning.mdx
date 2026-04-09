@@ -1,21 +1,10 @@
 ---
-title: "Against Lightning"
+title: "Lightning"
 description: "How Agon's cooperative-clearing model differs from Lightning's routing model."
 ---
 
 Lightning and Agon both move authorization offchain, but they scale in different ways.
 
-Lightning scales through:
+Lightning scales through routing, channel liquidity, and path-dependent forwarding fees. Agon scales through cumulative obligations, payee-side bundling, and cooperative clearing.
 
-- routing
-- channel liquidity
-- path-dependent forwarding fees
-
-Agon scales through:
-
-- cumulative obligations
-- payee-side bundling
-- cooperative clearing
-
-Lightning is stronger when the goal is open, trust-minimized internet money.  
-Agon is stronger when the goal is repeated machine-payment relationships that want to compress settlement rather than price every hop.
+Lightning is a strong fit when the goal is open, trust-minimized internet money across an arbitrary network. Agon is a stronger fit when the goal is repeated machine-payment relationships that want to compress settlement rather than price every hop in a routing graph.

@@ -5,10 +5,6 @@ description: "One lane, one latest cumulative state, one settlement transaction.
 
 The direct path is the simplest Agon primitive.
 
-The payer signs `agon-cmt-v4`, which says:
+The payer signs `agon-cmt-v4` to authorize a lane up to a cumulative amount. The payee only needs the latest signed state. Intermediate states are useful for metering and local accounting, but they do not all need to be settled.
 
-> this lane is now authorized up to cumulative amount X
-
-The payee only needs the **latest** signed cumulative state. Intermediate states are useful for metering, but they do not all need to be settled.
-
-This already compresses many offchain payments into one onchain action.
+This means many offchain payments on the same lane can collapse into one onchain action. The protocol only cares about forward movement from the current settled cumulative amount to a newer cumulative amount.

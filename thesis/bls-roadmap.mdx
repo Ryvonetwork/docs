@@ -1,34 +1,12 @@
 ---
 title: "BLS Roadmap"
-description: "Why BLS matters for Agon later, but is not the current thesis."
+description: "How aggregate signatures would expand cooperative-clearing capacity."
 ---
 
-BLS is a future scaling unlock, not the foundation of the thesis.
+BLS is a roadmap item for the cooperative-clearing path. V4 does not depend on it.
 
-Today, Agon already demonstrates:
+Today the protocol already gets meaningful compression from latest-commitment settlement, payee-side bundle settlement, and cooperative rounds signed with Ed25519. Those flows are live, measurable, and sufficient to demonstrate the core model.
 
-- latest-commitment compression
-- bundle settlement compression
-- cooperative clearing rounds
+Where BLS matters is round density. In the current design, participant signatures and signer metadata consume a large share of the transaction budget for multilateral rounds. Aggregate signatures would reduce that overhead, which would allow more participants and more lane updates to fit before transaction bytes become the main constraint.
 
-Those wins do **not** require BLS.
-
-What BLS changes later is the density of cooperative rounds:
-
-- fewer signature bytes
-- more participants per round
-- more channels per round before transaction bytes become the bottleneck
-
-That matters because multilateral clearing eventually wants to compress larger graphs, not just small ones. But the present protocol story should stay grounded:
-
-1. cooperation beats exact per-payment settlement on the hot path
-2. cumulative commitments and bundle settlement already prove that
-3. BLS is the next multiplier for the multilateral frontier
-
-So when Agon talks about BLS, it should be framed as:
-
-- future signature abstraction
-- higher round density
-- better multilateral headroom
-
-not as a prerequisite for the protocol to make sense.
+That makes BLS valuable because multilateral clearing becomes more compelling as the signed graph gets larger. It does not change the basic protocol model. It increases the capacity of the densest settlement mode. The generated synthetic benchmarks in this site show both the current Ed25519 limits and the projected headroom under aggregate signatures.

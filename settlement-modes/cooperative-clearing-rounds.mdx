@@ -5,16 +5,6 @@ description: "How Agon compresses many bilateral obligations into one shared sig
 
 Cooperative clearing rounds use `agon-round-v4`.
 
-Every participant in the round signs the **same** shared message. The round:
+Every participant in the round signs the same shared message. That message names the participant roster, identifies the token, and lists lane targets by participant block and payee reference.
 
-- names the participant roster
-- identifies the token
-- lists lane targets by participant block and payee reference
-
-The protocol then:
-
-- advances every included lane
-- computes net participant balance changes
-- applies only the residual participant balance adjustments
-
-This is the strongest current expression of Agon's thesis: **cooperation compresses settlement**.
+When the round settles, the protocol advances every included lane, computes the net balance effect across the roster, and applies only the residual participant balance changes that remain after obligations offset each other. This is the densest settlement path in V4 because it combines lane advancement and netting in a single cooperative step.

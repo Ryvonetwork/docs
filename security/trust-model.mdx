@@ -3,17 +3,8 @@ title: "Trust Model"
 description: "What Agon assumes and what it does not."
 ---
 
-Agon is permissionless and non-custodial, but it is not pretending that all payment relationships are identical.
+Agon is permissionless and non-custodial, but it does not assume that every payment relationship should be modeled with the same level of trust minimization.
 
-The trust model is:
+The protocol rules are public and enforceable onchain. Balances live in protocol state rather than in an operator database. At the same time, counterparties can still choose how much a relationship relies on collateral, reputation, or periodic settlement between onchain checkpoints.
 
-- protocol rules are public and enforceable onchain
-- balances are self-custodied in protocol state, not in an operator database
-- counterparties can still choose how much to rely on trust, reputation, or collateral
-
-That makes Agon different from:
-
-- managed micropayment products that still depend on one operator to settle you
-- routing networks where every payment pays path-dependent liquidity fees
-
-Agon's claim is that **cooperative deferred settlement** is the right primitive for repeated machine-commerce relationships.
+That makes Agon different from managed micropayment products that still depend on one operator to settle users, and from routing networks where each payment pays path-dependent liquidity costs. Agon is designed for repeated machine-commerce relationships that want non-custodial settlement without forcing every interaction through the full cost of exact final settlement.

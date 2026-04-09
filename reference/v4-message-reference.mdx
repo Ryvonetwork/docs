@@ -3,42 +3,38 @@ title: "V4 Message Reference"
 description: "The two signed message formats used by Agon Protocol V4."
 ---
 
+Agon V4 uses two signed message types: one for unilateral lane updates and one for cooperative clearing rounds.
+
 ## `agon-cmt-v4`
 
-Fields:
+This message authorizes one unilateral lane up to a cumulative amount.
 
-- `kind = 0x01`
-- `version = 0x04`
-- `message_domain`
-- `flags`
-- `payer_id`
-- `payee_id`
-- `token_id`
-- `committed_amount`
-- optional `authorized_settler`
-- optional `fee_amount`
-- optional `fee_recipient_id`
-
-Meaning:
-
-> this unilateral lane is authorized up to cumulative amount X
+| Field | Meaning |
+| --- | --- |
+| `kind = 0x01` | Unilateral commitment message |
+| `version = 0x04` | V4 wire format |
+| `message_domain` | Deployment-scoped replay boundary |
+| `flags` | Optional field presence bits |
+| `payer_id` | Lane payer participant id |
+| `payee_id` | Lane payee participant id |
+| `token_id` | Allowlisted settlement token |
+| `committed_amount` | New cumulative target for the lane |
+| `authorized_settler` | Optional submitter override |
+| `fee_amount` | Optional settlement fee |
+| `fee_recipient_id` | Optional fee recipient participant id |
 
 ## `agon-round-v4`
 
-Fields:
+This message lets a signed participant roster advance many lane targets together.
 
-- `kind = 0x02`
-- `version = 0x04`
-- `message_domain`
-- `token_id`
-- `participant_count`
-- repeated participant blocks:
-  - `participant_id`
-  - `entry_count`
-  - repeated entries:
-    - `payee_ref`
-    - `target_cumulative`
-
-Meaning:
-
-> this signed participant roster cooperatively advances these lane targets together
+| Field | Meaning |
+| --- | --- |
+| `kind = 0x02` | Cooperative clearing-round message |
+| `version = 0x04` | V4 wire format |
+| `message_domain` | Deployment-scoped replay boundary |
+| `token_id` | Token shared by the entire round |
+| `participant_count` | Number of signed participants in the roster |
+| `participant_id` | Participant block owner |
+| `entry_count` | Number of outgoing lane targets in that block |
+| `payee_ref` | Index of the payee inside the signed roster |
+| `target_cumulative` | New cumulative target for that lane |
