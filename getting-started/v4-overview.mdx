@@ -1,0 +1,48 @@
+---
+title: "V4 Overview"
+description: "The shortest practical overview of Agon Protocol V4."
+---
+
+Agon Protocol V4 has four core building blocks:
+
+## 1. Permanent Participants
+
+Each wallet can register once and receives a stable `participant_id` for the lifetime of the deployment.
+
+## 2. Permanent Directed Lanes
+
+Each directed relationship is keyed by:
+
+- `payer_id`
+- `payee_id`
+- `token_id`
+
+The lane does not close and reopen. Its cumulative settled amount only moves forward.
+
+## 3. Two Signed Message Types
+
+- `agon-cmt-v4`: unilateral cumulative commitment for one lane
+- `agon-round-v4`: cooperative clearing round for many lanes in one shared message
+
+## 4. Three Settlement Modes
+
+- direct latest-commitment settlement
+- payee-side commitment bundle settlement
+- cooperative clearing rounds
+
+## Current Devnet Deployment
+
+- Program ID: `DE4vmRRDu1EBj98pD9AuZmdTPFAyDChMmRoPRscze5g`
+- Message domain: `627fe4b1dcf950c738e409da3ea6d24e`
+- Cluster: `devnet`
+
+## Repository Commands
+
+```bash
+cd /home/heis/agon/agon-protocol
+cargo fmt --check
+cargo clippy --lib --features no-entrypoint -- -D warnings
+anchor build
+node ./node_modules/typescript/bin/tsc --noEmit
+powershell -ExecutionPolicy Bypass -File scripts/test-local.ps1
+```

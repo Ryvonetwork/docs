@@ -1,0 +1,30 @@
+---
+title: "Why Not Fee Per Payment"
+description: "Why exact payment on every interaction hits a constant-cost floor."
+---
+
+Exact per-payment settlement is clean, but it creates a hard floor under very small payments.
+
+If every request requires a separate settlement transaction, the cost model inherits:
+
+- one signature path per payment
+- one transaction path per payment
+- one liveness bottleneck per payment
+- one fee floor per payment
+
+That is manageable for consumer transfers. It is much less attractive for:
+
+- sub-cent API calls
+- agent-to-agent tool usage
+- high-frequency machine commerce
+
+Agon's answer is **not** “make every payment route slightly cheaper.”  
+Agon's answer is: **move the expensive operation off the hot path**.
+
+In V4:
+
+- the hot path is a signed cumulative update
+- the settlement path is later
+- the protocol settles only the newest state that matters
+
+This is why Agon compares itself against an exact-payment x402-style baseline. The point is not that x402 is wrong. The point is that **exact settlement per interaction is the wrong primitive for high-frequency machine commerce**.

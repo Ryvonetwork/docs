@@ -1,0 +1,14 @@
+---
+title: "Participants"
+description: "Permanent participant identities in Agon V4."
+---
+
+Participants are permanent protocol identities.
+
+Each participant account binds one wallet to one stable `participant_id`. That means:
+
+- the ID does not recycle through close/reopen flows
+- offchain systems can treat `wallet -> participant_id` as stable
+- identity reset requires a new wallet, not a protocol-level account recycle
+
+This simplifies both replay protection and long-lived reputation.

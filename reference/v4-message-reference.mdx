@@ -1,0 +1,44 @@
+---
+title: "V4 Message Reference"
+description: "The two signed message formats used by Agon Protocol V4."
+---
+
+## `agon-cmt-v4`
+
+Fields:
+
+- `kind = 0x01`
+- `version = 0x04`
+- `message_domain`
+- `flags`
+- `payer_id`
+- `payee_id`
+- `token_id`
+- `committed_amount`
+- optional `authorized_settler`
+- optional `fee_amount`
+- optional `fee_recipient_id`
+
+Meaning:
+
+> this unilateral lane is authorized up to cumulative amount X
+
+## `agon-round-v4`
+
+Fields:
+
+- `kind = 0x02`
+- `version = 0x04`
+- `message_domain`
+- `token_id`
+- `participant_count`
+- repeated participant blocks:
+  - `participant_id`
+  - `entry_count`
+  - repeated entries:
+    - `payee_ref`
+    - `target_cumulative`
+
+Meaning:
+
+> this signed participant roster cooperatively advances these lane targets together

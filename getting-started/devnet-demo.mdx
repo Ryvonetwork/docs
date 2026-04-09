@@ -1,0 +1,28 @@
+---
+title: "Devnet Demo"
+description: "How to run the protocol-only Agon devnet demo."
+---
+
+The Colosseum demo is protocol-only and devnet-native. It does not require the OWS gateway path.
+
+## Run
+
+```bash
+cd /home/heis/agon/agon-protocol
+npm run demo:agon-protocol
+```
+
+## What It Shows
+
+1. latest-commitment settlement
+2. bundle settlement
+3. single-payer cooperative clearing
+4. bilateral cooperative clearing
+5. the largest executable multilateral round found on the current devnet deployment
+6. capacity summary and artifact output
+
+The demo writes a last-run manifest to:
+
+`config/agon-protocol-demo-last-run.json`
+
+That manifest is then consumed by the benchmark export pipeline.

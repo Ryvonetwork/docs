@@ -1,0 +1,20 @@
+---
+title: "Against Exact-Payment x402"
+description: "Why Agon compares itself against exact per-payment settlement."
+---
+
+Agon does not reject x402. It rejects **exact settlement on every interaction** as the dominant primitive for machine commerce.
+
+If every API call settles exactly:
+
+- every call inherits transaction overhead
+- every call inherits fee floor
+- every call inherits liveness bottlenecks
+
+Agon instead treats exact per-payment x402 as the baseline to beat.
+
+The benchmark question is:
+
+> how many exact-payment transactions would this scenario require if every call had to settle individually?
+
+That is the baseline shown in Agon's benchmark artifacts.

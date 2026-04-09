@@ -1,72 +1,33 @@
 ---
-title: "Welcome to Agon"
-description: "The payment infrastructure that makes x402 scale."
+title: "Agon Protocol"
+description: "A permissionless cooperative clearing protocol for agentic payments on Solana."
 ---
 
-Agon is the **payment infrastructure that makes x402 scale**. The HTTP 402 "Payment Required" protocol is a powerful primitive for monetizing APIs — but it has a fundamental problem: every API call requires an on-chain transaction. At scale, that means millions of blockchain fees and seconds of RPC latency on every request.
+Agon Protocol is a **permissionless cooperative clearing protocol** for machine payments on Solana.
 
-Agon solves this by **decoupling authorization from settlement**. Consumers deposit USDC once. API calls are authorized instantly off-chain via the Agon ledger. Agon settles all on-chain work in a single, efficient transaction per merchant.
+The thesis is simple: agentic payments do not scale if every interaction has to pay a high constant settlement cost. Agon replaces that fee-per-payment model with **cooperation, deferred settlement, and cumulative commitments**.
+
+Instead of forcing every API call or agent action to settle exactly onchain, Agon lets participants:
+
+- register once as permanent participants
+- open permanent directed lanes
+- advance cumulative offchain obligations
+- settle the latest state directly, in bundles, or cooperatively in clearing rounds
 
 <Tip>
-  **Zero on-chain transactions on the hot path.** Every API call is authorized via an off-chain ledger lookup. Solana is only touched at deposit, withdrawal, and settlement time.
+Agon's main claim is not just “multilateral clearing.” The core claim is that **trust, reputation, collateral, and cooperation** can scale machine payments more effectively than exact per-payment fee models.
 </Tip>
 
-<Warning>
-  **Agon is currently in open beta on devnet.** Sign up at [agonx402.com](https://agonx402.com) to get started.
-</Warning>
+## What V4 Changed
 
-## Who is Agon for?
+- Permanent participants: one wallet maps to one participant identity for the lifetime of the deployment.
+- Permanent lanes: one directed lane exists per `payer_id + payee_id + token_id`.
+- V4 messages: `agon-cmt-v4` and `agon-round-v4` remove close/reopen complexity and keep the signed format compact.
+- In-program `message_domain`: replay separation is derived inside the protocol instead of trusted to bootstrap tooling.
 
-**🧑‍💻 Developers & Apps**
+## Read This Next
 
-You want to pay for AI services, data APIs, or compute resources programmatically. Deposit USDC once and your app automatically pays for every call — no wallets, no gas, no RPC latency.
-
-**🤖 AI Agents**
-
-You're building an autonomous agent that needs to purchase API access at runtime. Agon supports native Ed25519 wallet authentication — no browser, no OAuth, no human in the loop. Works with agentic wallets like Coinbase CDP so your agent never needs to manage raw keypairs.
-
-**🏗️ API Merchants**
-
-You want to monetize your API with USDC. Embed the Platform SDK in one middleware and start earning. Agon handles authorization, fraud prevention, and settlement — triggered by you when you're ready to settle.
-
-## x402 at Scale: The Numbers
-
-| Volume | Direct x402 Cost | Agon Cost |
-|---|---|---|
-| 100 calls → 1 merchant | 100 transactions | 1 settlement tx |
-| 1M calls → 50 merchants | 1,000,000 transactions | 3 transactions |
-| 1B calls → 50 merchants | 1,000,000,000 transactions | **still 3 transactions** |
-
-## Quickstarts
-
-<CardGroup cols={2}>
-  <Card title="Register as a Developer" icon="user" href="/quickstarts/register-developer">
-    Create your account and start paying for APIs in under 5 minutes.
-  </Card>
-  <Card title="Register as an Agent" icon="robot" href="/quickstarts/register-agent">
-    Native Ed25519 wallet registration for AI agents and headless services.
-  </Card>
-  <Card title="Accept Payments" icon="credit-card" href="/quickstarts/accept-payments">
-    Monetize any endpoint with USDC in under 10 minutes.
-  </Card>
-  <Card title="Generate Payment Tokens" icon="key" href="/quickstarts/generate-tokens">
-    Create secure, single-use or multi-use authorization tokens for your users.
-  </Card>
-</CardGroup>
-
-## Explore the Docs
-
-<CardGroup cols={2}>
-  <Card title="Core Concepts" icon="book" href="/getting-started/core-concepts">
-    Understand the authorization/settlement model and how balances work.
-  </Card>
-  <Card title="How It Works" icon="diagram-project" href="/getting-started/how-it-works">
-    Trace a payment from deposit to settlement, step by step.
-  </Card>
-  <Card title="API Reference" icon="terminal" href="/api-reference/introduction">
-    Full REST API documentation with request/response shapes.
-  </Card>
-  <Card title="Recipes & Cookbooks" icon="book-open" href="/recipes/metered-api">
-    Copy-paste patterns for common integration scenarios.
-  </Card>
-</CardGroup>
+- [Why cooperative scaling is the thesis](/thesis/cooperative-scaling)
+- [Why exact fee-per-payment models hit a floor](/thesis/why-not-fee-per-payment)
+- [How the V4 protocol works](/getting-started/v4-overview)
+- [Generated live devnet benchmarks](/benchmarks/generated-live-devnet)

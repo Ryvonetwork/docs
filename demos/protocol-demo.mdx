@@ -1,0 +1,21 @@
+---
+title: "Protocol Demo"
+description: "The protocol-only Agon devnet demo used for Colosseum."
+---
+
+The main Colosseum demo is the protocol-only devnet demo in the protocol repo.
+
+## Run
+
+```bash
+cd /home/heis/agon/agon-protocol
+npm run demo:agon-protocol
+npm run benchmarks:generate
+```
+
+The first command runs the live settlement scenarios. The second turns the last-run manifest plus the synthetic sizing scripts into:
+
+- committed JSON snapshots under `benchmarks/`
+- generated Mintlify benchmark pages
+
+This keeps the docs tied to the live protocol evidence.

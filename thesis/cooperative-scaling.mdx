@@ -1,0 +1,27 @@
+---
+title: "Cooperative Scaling"
+description: "Why Agon frames agentic payments as a cooperation problem instead of a routing-fee problem."
+---
+
+Agon starts from one observation: **machine payments are usually repeated relationships**, not isolated one-off transfers.
+
+An agent calling the same RPC provider, inference API, data feed, or marketplace endpoint thousands of times does not need every interaction to carry full settlement overhead. What it needs is:
+
+- a durable relationship
+- a way to meter obligations offchain
+- a way to settle the latest agreed state later
+
+That is why Agon emphasizes:
+
+- **trust**: not all payment relationships need full trust minimization on every call
+- **reputation**: long-lived participants can build history instead of constantly restarting from zero
+- **collateral**: some relationships will lock funds, some will not, and some will mix both
+- **cooperation**: counterparties can compress many obligations into a smaller number of onchain state transitions
+
+Multilateral clearing is the strongest expression of that idea, but it is not the whole idea. Even the unilateral path already proves the thesis:
+
+- many offchain payments collapse into one latest commitment
+- many latest commitments collapse into a payee-side bundle
+- cooperative rounds collapse many bilateral obligations into residual net flows
+
+Agon is therefore best understood as **a cooperative clearing layer for machine commerce**, not just a faster way to sign API payments.

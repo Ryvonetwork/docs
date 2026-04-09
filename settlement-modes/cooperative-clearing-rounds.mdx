@@ -1,0 +1,20 @@
+---
+title: "Cooperative Clearing Rounds"
+description: "How Agon compresses many bilateral obligations into one shared signed round."
+---
+
+Cooperative clearing rounds use `agon-round-v4`.
+
+Every participant in the round signs the **same** shared message. The round:
+
+- names the participant roster
+- identifies the token
+- lists lane targets by participant block and payee reference
+
+The protocol then:
+
+- advances every included lane
+- computes net participant balance changes
+- applies only the residual participant balance adjustments
+
+This is the strongest current expression of Agon's thesis: **cooperation compresses settlement**.

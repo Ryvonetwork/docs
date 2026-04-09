@@ -117,8 +117,8 @@ const res = await agon.fetch("https://any-x402-merchant.com/api/data");
 
 ```bash
 # Terminal 1: Merchant accepting both buyer types
-cd packages/demo && npm run platform-standardx
+cd agon-demo && npm run seller
 
 # Terminal 2: StandardX buyer (holds own on-chain USDC)
-BUYER_SECRET_KEY=<base58-keypair> npm run standardx-buyer
+BUYER_SECRET_KEY=<base58-keypair> npm run 06-buyer
 ```

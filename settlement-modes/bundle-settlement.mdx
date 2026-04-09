@@ -1,0 +1,14 @@
+---
+title: "Bundle Settlement"
+description: "Many unilateral commitments for one payee can settle in bundles."
+---
+
+Bundle settlement keeps the signed primitive simple.
+
+Agon does **not** invent a separate bundle message type. Instead, one transaction verifies many independent `agon-cmt-v4` messages for one payee and advances many lanes together.
+
+That means:
+
+- buyers keep signing the same unilateral commitment format
+- the payee gets transaction compression
+- the protocol keeps the message surface compact

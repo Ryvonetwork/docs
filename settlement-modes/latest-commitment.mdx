@@ -1,0 +1,14 @@
+---
+title: "Latest Commitment Settlement"
+description: "One lane, one latest cumulative state, one settlement transaction."
+---
+
+The direct path is the simplest Agon primitive.
+
+The payer signs `agon-cmt-v4`, which says:
+
+> this lane is now authorized up to cumulative amount X
+
+The payee only needs the **latest** signed cumulative state. Intermediate states are useful for metering, but they do not all need to be settled.
+
+This already compresses many offchain payments into one onchain action.

@@ -1,0 +1,34 @@
+---
+title: "BLS Roadmap"
+description: "Why BLS matters for Agon later, but is not the current thesis."
+---
+
+BLS is a future scaling unlock, not the foundation of the thesis.
+
+Today, Agon already demonstrates:
+
+- latest-commitment compression
+- bundle settlement compression
+- cooperative clearing rounds
+
+Those wins do **not** require BLS.
+
+What BLS changes later is the density of cooperative rounds:
+
+- fewer signature bytes
+- more participants per round
+- more channels per round before transaction bytes become the bottleneck
+
+That matters because multilateral clearing eventually wants to compress larger graphs, not just small ones. But the present protocol story should stay grounded:
+
+1. cooperation beats exact per-payment settlement on the hot path
+2. cumulative commitments and bundle settlement already prove that
+3. BLS is the next multiplier for the multilateral frontier
+
+So when Agon talks about BLS, it should be framed as:
+
+- future signature abstraction
+- higher round density
+- better multilateral headroom
+
+not as a prerequisite for the protocol to make sense.

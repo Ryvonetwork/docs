@@ -1,0 +1,32 @@
+---
+title: "Security Properties"
+description: "The security properties of Agon V4 that matter most."
+---
+
+Agon V4 tightened several important replay and account-binding edges.
+
+## Signed Domain Separation
+
+`message_domain` is derived inside the program from:
+
+- a fixed Agon tag
+- `program_id`
+- `chain_id`
+
+That means the deployment-scoped signing domain is no longer a bootstrap-time trust assumption.
+
+## Distinct Chain IDs
+
+Mainnet, devnet, testnet, and localnet all use distinct chain IDs, so the derived message domain changes across environments.
+
+## Permanent Lanes
+
+By removing close/reopen lane cycles, V4 removes a whole class of replay complexity. Old commitments cannot be replayed into a reopened lane instance because the reopened instance no longer exists as a concept.
+
+## Canonical PDA Checks
+
+Settlement paths validate canonical participant and `channel-v2` PDAs, not just arbitrary deserializable program-owned accounts.
+
+## Monotonic Cumulative Settlement
+
+Every unilateral and cooperative target must advance cumulative state monotonically. Stale replay attempts fail because the protocol only accepts forward movement.

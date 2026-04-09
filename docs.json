@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "agonx402",
+  "name": "Agon Protocol",
   "colors": {
     "primary": "#0056FF",
     "light": "#3378FF",
@@ -11,85 +11,75 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Docs",
+        "tab": "Protocol Docs",
         "groups": [
+          {
+            "group": "Thesis",
+            "pages": [
+              "index",
+              "thesis/cooperative-scaling",
+              "thesis/why-not-fee-per-payment",
+              "thesis/bls-roadmap"
+            ]
+          },
           {
             "group": "Getting Started",
             "pages": [
-              "index",
-              "getting-started/welcome",
-              "getting-started/core-concepts",
-              "getting-started/how-it-works"
+              "getting-started/v4-overview",
+              "getting-started/devnet-demo"
             ]
           },
           {
-            "group": "Quickstarts",
+            "group": "Core Concepts",
             "pages": [
-              "quickstarts/register-developer",
-              "quickstarts/register-agent",
-              "quickstarts/accept-payments",
-              "quickstarts/generate-tokens"
+              "core-concepts/participants",
+              "core-concepts/permanent-lanes",
+              "core-concepts/cooperation-trust-collateral"
             ]
           },
           {
-            "group": "Guides",
+            "group": "Settlement Modes",
             "pages": [
-              "guides/deposits-balances",
-              "guides/authentication",
-              "guides/payment-cycle",
-              "guides/spending-controls",
-              "guides/auto-refill",
-              "guides/x402-proxy-mode",
-              "guides/standardx",
-              "guides/trust-model-security"
+              "settlement-modes/latest-commitment",
+              "settlement-modes/bundle-settlement",
+              "settlement-modes/cooperative-clearing-rounds"
             ]
           },
           {
-            "group": "Recipes & Cookbooks",
+            "group": "Security And Trust Model",
             "pages": [
-              "recipes/testing-devnet",
-              "recipes/metered-api",
-              "recipes/ai-agent-pays",
-              "recipes/dynamic-pricing",
-              "recipes/token-strategies"
+              "security/security-properties",
+              "security/trust-model"
             ]
           },
           {
-            "group": "Architecture",
+            "group": "Benchmarks",
             "pages": [
-              "architecture/system-overview",
-              "architecture/settlement-engine",
-              "architecture/settlement-economics",
-              "architecture/reservation-lifecycle"
+              "benchmarks/overview",
+              "benchmarks/generated-live-devnet",
+              "benchmarks/generated-synthetic-capacity"
+            ]
+          },
+          {
+            "group": "Comparisons",
+            "pages": [
+              "comparisons/exact-payment-x402",
+              "comparisons/lightning",
+              "comparisons/circle-nanopayments"
+            ]
+          },
+          {
+            "group": "Demos / Devnet",
+            "pages": [
+              "demos/protocol-demo",
+              "demos/ows-gateway-example"
             ]
           },
           {
             "group": "Reference",
             "pages": [
-              "reference/sdks",
-              "reference/glossary",
-              "reference/changelog",
-              "reference/beta-access"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoints",
-            "pages": [
-              "api-reference/accounts",
-              "api-reference/authorization",
-              "api-reference/platforms",
-              "api-reference/error-codes"
+              "reference/v4-message-reference",
+              "reference/glossary"
             ]
           }
         ]
@@ -99,13 +89,13 @@
       "anchors": [
         {
           "anchor": "GitHub",
-          "href": "https://github.com/agonx402",
+          "href": "https://github.com/Agonx402/agon-protocol",
           "icon": "github"
         },
         {
-          "anchor": "Discord",
-          "href": "https://discord.gg/fsQJsF5JAb",
-          "icon": "discord"
+          "anchor": "X",
+          "href": "https://x.com/agonx402",
+          "icon": "x-twitter"
         }
       ]
     }
@@ -117,14 +107,14 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:support@agonx402.com"
+        "label": "Protocol Repo",
+        "href": "https://github.com/Agonx402/agon-protocol"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://agonx402.com/dashboard"
+      "label": "View Devnet Demo",
+      "href": "/demos/protocol-demo"
     }
   },
   "contextual": {
@@ -138,7 +128,7 @@
   "footer": {
     "socials": {
       "x": "https://x.com/agonx402",
-      "github": "https://github.com/agonx402"
+      "github": "https://github.com/Agonx402"
     }
   }
 }

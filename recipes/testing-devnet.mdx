@@ -39,29 +39,29 @@ AGON_BASE_URL=https://api-devnet.agonx402.com
 
 ```bash
 # Terminal 1 — merchant platform
-cd agon-demo && npm run platform
+cd agon-demo && npm run seller
 
 # Terminal 2 — register agent and claim devnet USDC
-cd agon-demo && npm run agent   # registers + prints credentials
-cd agon-demo && npm run faucet  # claims 100 devnet USDC (once/week)
+cd agon-demo && npm run 05-agent   # registers + prints credentials
+cd agon-demo && npm run faucet     # claims 100 devnet USDC (once/week)
 
 # Terminal 3 — consumer or agent demo
-cd agon-demo && npm run consumer
-cd agon-demo && npm run agent
+cd agon-demo && npm run 01-buyer
+cd agon-demo && npm run 05-agent
 ```
 
 <Tabs>
   <Tab title="faucet">
     Claims 100 devnet USDC directly into your Agon balance. Requires `AGON_API_KEY` or `AGENT_SECRET_KEY` in `.env`. Claimable once per week per account. If already claimed this week, shows the next available date.
   </Tab>
-  <Tab title="platform">
+  <Tab title="seller">
     Starts a local paid API on port `3001`. Registers a platform with Agon and begins accepting consumer tokens.
   </Tab>
-  <Tab title="consumer">
-    Registers a consumer account, makes paid API calls using `agon.fetch()`, and prints balance before/after.
+  <Tab title="01-buyer">
+    Registers a consumer account, makes paid API calls using a generated token, and prints balance before/after.
   </Tab>
-  <Tab title="agent">
-    First run: generates a fresh Ed25519 keypair, registers as an agent, prints `AGENT_SECRET_KEY` and deposit address. Subsequent runs: reuses saved credentials and runs 5 token strategy scenarios.
+  <Tab title="05-agent">
+    First run: generates a fresh Ed25519 keypair, registers as an agent, prints `AGENT_SECRET_KEY` and deposit address. Subsequent runs: reuses saved credentials and runs token strategy scenarios.
   </Tab>
 </Tabs>
 

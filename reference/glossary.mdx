@@ -1,24 +1,12 @@
 ---
 title: "Glossary"
-description: "Definitions for all key terms used throughout the Agon documentation."
+description: "Key terms used throughout the Agon Protocol docs."
 ---
 
-| Term | Definition |
-|---|---|
-| **Consumer** | A developer, app, or AI agent that deposits USDC and pays for APIs through Agon |
-| **Platform** | An API merchant that accepts USDC payments via the Agon Platform SDK |
-| **Reservation** | An off-chain hold on consumer funds for an in-progress API call (5 min TTL) |
-| **Settlement** | A real on-chain USDC transfer from Agon's operational wallet to a merchant's wallet |
-| **Netting** | Aggregating all consumer payments to the same merchant into one total per cycle |
-| **Consolidation** | Batching multiple merchant payouts into a single Solana transaction |
-| **Consumer Token** | Short-lived JWT sent to merchants. Without `budget`: single-use. With `budget`: multi-use until ceiling is hit. |
-| **Token Budget** | Optional aggregate spend ceiling in a multi-use token — enforced atomically to prevent overspend under concurrent load. |
-| **Beta Token** | Legacy invite system — not required during open beta on devnet. |
-| **Spending Controls** | Configurable per-request, daily, and domain-based limits on account spending |
-| **Override** | Wallet signature that bypasses a spending control for one specific transaction |
-| **Sweep** | Background job that moves USDC from customer deposit addresses to Agon's operational wallet |
-| **x402** | HTTP 402 Payment Required — the open protocol for paid APIs that Agon builds on |
-| **HD Wallet** | Hierarchical Deterministic wallet deriving unique deposit addresses from one master seed |
-| **Auto-Refill** | Automatic USDC top-up via on-chain SPL token delegation when balance drops below threshold |
-| **Deposit ATA** | The USDC Associated Token Account for a deposit address — what Helius monitors for incoming transfers |
-| **Zombie Settlement** | A settlement stuck in `processing` for > 15 minutes — recovered by the background janitor |
+- **Participant**: a permanent wallet-bound protocol identity with a stable `participant_id`
+- **Lane**: a permanent directed payment relationship keyed by `payer_id + payee_id + token_id`
+- **Latest commitment**: the newest unilateral cumulative state for one lane
+- **Bundle settlement**: many unilateral latest commitments for one payee settled in fewer transactions
+- **Clearing round**: one shared signed message that advances many lanes together
+- **Gross routed value**: total value represented by all advanced unilateral obligations before netting
+- **Residual net flow**: the final participant balance change that remains after cooperative offsetting
