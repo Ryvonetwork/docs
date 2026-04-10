@@ -1,0 +1,59 @@
+---
+title: "Authorized Settler"
+description: "Why `authorized_settler` exists and what delegated settlement enables in Agon V4."
+---
+
+`authorized_settler` exists so a lane can delegate **settlement submission** without changing who signed the payment obligation.
+
+In Agon V4, the economic commitment still comes from the lane's `authorized_signer`. That signer authorizes a unilateral cumulative amount in `agon-cmt-v4`. The optional `authorized_settler` field does something narrower: it names an additional key that may submit that signed commitment onchain.
+
+This is important because many teams do not want to run all settlement operations themselves. They may want an external service to handle invoicing, submission timing, compliance checks, batching, retries, or other payment operations. `authorized_settler` gives them a native way to delegate that operational work while keeping balances in protocol state and keeping the payment itself signed by the lane's authorized signer.
+
+## What It Means Today
+
+`authorized_settler` is **additive**, not exclusive.
+
+If a commitment includes `authorized_settler`, then either of these may submit it:
+
+- the payee owner
+- the delegated settler named in the signed message
+
+This means the payee keeps a direct redemption path even when using an operator. The delegated settler can help with automation and operations, but it does not replace the payee's ability to settle valid state.
+
+## What It Enables
+
+The main use case is an operator layer on top of Agon.
+
+Examples include:
+
+- invoicing and payment-operations SaaS
+- compliance or policy-gated submission services
+- relayers that submit commitments on behalf of sellers
+- automated settlement services that bundle many commitments together
+
+This is especially useful for merchants, APIs, and agent platforms that want Agon's non-custodial settlement model without running settlement infrastructure themselves.
+
+## What It Does Not Mean
+
+`authorized_settler` is not an escrow primitive in the current protocol.
+
+It does not:
+
+- give the delegated settler control over the payment amount
+- make the delegated settler the only party allowed to settle
+- add dispute-resolution logic
+- apply to cooperative clearing rounds
+
+The current feature is best understood as **delegated settlement submission for unilateral commitments**. It is available on the direct and bundle settlement paths because both use `agon-cmt-v4`.
+
+## Fees And Operators
+
+`authorized_settler` does not automatically receive a fee.
+
+If an operator should be paid for submitting or managing settlement, the commitment must also include a `fee_amount` and a `fee_recipient_id`. Those fee fields are independent from `authorized_settler`. A delegated settler can submit a commitment with no fee, and a payee can submit a commitment that still pays the operator if the operator was named as the fee recipient in the signed message.
+
+## Design Rationale
+
+Agon keeps this feature intentionally simple.
+
+The protocol supports delegated operations without making settlement dependent on one controller. That preserves a non-custodial fallback for the payee while still allowing external operator services to exist on top of the protocol.

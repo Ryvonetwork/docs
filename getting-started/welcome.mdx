@@ -1,57 +1,29 @@
 ---
 title: "Welcome"
-description: "The Agon solution — decoupling authorization from settlement to make x402 scale."
+description: "A non-custodial clearing protocol for machine payments on Solana."
 ---
 
-Agon is the **payment infrastructure that makes x402 scale**. The HTTP 402 "Payment Required" protocol is a powerful primitive for monetizing APIs — but it has a fundamental problem: every API call requires an on-chain transaction. At scale, that means millions of blockchain fees and seconds of RPC latency on every request.
+Agon Protocol is a **non-custodial clearing protocol for machine payments** on Solana.
 
-Agon solves this by **decoupling authorization from settlement**. Consumers deposit USDC once. API calls are authorized instantly off-chain via the Agon ledger. Agon settles all on-chain work in a single, efficient transaction per merchant.
+It is built for repeated relationships: agents paying APIs, inference endpoints, data feeds, marketplaces, and other agents. Instead of settling every small interaction as a standalone transfer, Agon lets participants exchange cumulative offchain commitments and settle only the latest state that matters.
 
 <Note>
-  Agon's on-chain transaction count is bounded by the **number of merchants**, not the number of API calls. The efficiency advantage compounds as your volume grows.
+  This page is kept only for compatibility with older links. For the current protocol docs, start with the V4 overview and the core concepts pages.
 </Note>
 
-## The Agon Solution
+## Start With V4
 
-Agon is a **custodial payment aggregator** that operates between consumers and merchants:
+- [V4 overview](/getting-started/v4-overview)
+- [Why cooperative scaling matters](/thesis/cooperative-scaling)
+- [Run the devnet demo](/getting-started/devnet-demo)
+- [See live benchmark artifacts](/benchmarks/generated-live-devnet)
 
-1. **Consumers deposit USDC** into their Agon account once.
-2. **Every API call is authorized off-chain** — an instant off-chain ledger reservation against the consumer's balance.
-3. **Merchants accept or deny** the reservation in milliseconds, then serve the response.
-4. **Merchants trigger settlement** — all consumed charges are aggregated into a single USDC transfer per cycle.
+## What Agon Does
 
-## Two Integration Modes
+Agon keeps balances in protocol state, uses permanent participant identities and permanent directed lanes, and supports three settlement modes:
 
-<Columns>
-  <Column>
-    **Mode A — Agon-Native**
+1. latest commitment settlement for one lane
+2. bundle settlement for many lanes to one payee
+3. cooperative clearing rounds that advance many lanes together and apply only the residual balance changes that remain after obligations are netted
 
-    Embed the `@agonx402/platform` SDK on your API server. Payments are authorized entirely off-chain with full spending controls, budgets, and instant authorization.
-
-    **Best for:** High-volume APIs, micropayment-heavy workloads, custom pricing logic.
-  </Column>
-  <Column>
-    **Mode B — x402 Proxy**
-
-    Keep your standard x402 server integration untouched. The Agon consumer SDK transparently proxies payments through Agon on the client side.
-
-    **Best for:** Existing x402 merchants. *Note: The merchant must explicitly configure Agon's URL as their payment facilitator.*
-  </Column>
-</Columns>
-
-## Next Steps
-
-<CardGroup cols={2}>
-  <Card title="Core Concepts" icon="book" href="/getting-started/core-concepts">
-    Understand the key primitives — accounts, balances, authorizations, and settlements.
-  </Card>
-  <Card title="How It Works" icon="diagram-project" href="/getting-started/how-it-works">
-    Trace a payment from deposit to settlement, step by step.
-  </Card>
-  <Card title="Quickstart — Developer" icon="user" href="/quickstarts/register-developer">
-    Create your account and make your first paid API call in under 5 minutes.
-  </Card>
-  <Card title="Quickstart — Merchant" icon="store" href="/quickstarts/accept-payments">
-    Monetize any endpoint with USDC in under 10 minutes.
-  </Card>
-</CardGroup>
+That makes Agon a better fit for machine payments than exact per-payment settlement when the same parties interact repeatedly.

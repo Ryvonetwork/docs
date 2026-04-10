@@ -34,7 +34,8 @@
             "pages": [
               "core-concepts/participants",
               "core-concepts/permanent-lanes",
-              "core-concepts/cooperation-trust-collateral"
+              "core-concepts/cooperation-trust-collateral",
+              "core-concepts/authorized-settler"
             ]
           },
           {
