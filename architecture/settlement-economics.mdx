@@ -1,47 +1,13 @@
 ---
 title: "Settlement Economics"
-description: "The economic case for Agon — transaction cost, latency floor, and micro-transaction threshold explained."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-The economic viability of x402 relies on driving down the marginal cost of authorization and settlement. Agon achieves this by aggregating all payments to each merchant off-chain and settling in a single on-chain transfer per cycle.
+This page belongs to an older docs set and is no longer maintained.
 
-## Cost Comparison
+Use the current V4 docs instead:
 
-| Volume Scenario | Direct x402 Transactions | Agon Transactions |
-|---|---|---|
-| **100 calls** to 1 merchant | 100 tx | 1 settlement tx |
-| **10,000 calls** to 5 merchants | 10,000 tx | 1 to 5 tx |
-| **1M calls** to 50 merchants | 1,000,000 tx | 3 settlement tx |
-| **1B calls** to 50 merchants | 1,000,000,000 tx | **still 3 settlement tx** |
-
-*Agon consolidates up to 20 merchants per Solana transaction.*
-
-## The Latency Floor
-
-Cost is not the only metric — an on-chain transaction introduces **latency**.
-
-<Columns>
-  <Column>
-    **Vanilla x402 Latency**
-
-    Every API call requires a Solana transaction. The consumer must wait 400ms – 2,000ms for block confirmation before the merchant will serve the response.
-
-    This introduces a hard physical latency floor on every request.
-  </Column>
-  <Column>
-    **Agon Latency**
-
-    API calls are authorized via an off-chain ledger lookup against the `available_balance`. This takes **< 10ms**.
-
-    The merchant receives an instant approval and serves the response immediately.
-  </Column>
-</Columns>
-
-## The Micro-Transaction Threshold
-
-On Solana, a typical transaction costs ~$0.0002.
-
-- If you charge **$1.00** per API call, a $0.0002 fee is negligible (0.02%).
-- If you charge **$0.002** per API call (e.g., streaming LLM tokens), the $0.0002 fee consumes **10%** of your revenue.
-
-By aggregating 10,000 micropayments into a single settlement transfer, Agon amortizes that single $0.0002 fee across all 10,000 calls, driving the effective on-chain fee per request to near zero.
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

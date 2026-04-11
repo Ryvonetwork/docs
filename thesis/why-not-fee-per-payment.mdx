@@ -9,26 +9,13 @@ The problem is that every request inherits the same fixed settlement cost, even 
 
 ## Where The Cost Comes From
 
-Per-payment settlement usually means that each interaction needs:
-
-1. a signed payment object
-2. one settlement transaction
-3. one transaction fee
-4. one successful chain write before the flow is final
-
-That is fine when payments are large or infrequent. It becomes inefficient when an agent is making many very small requests to the same provider.
+Per-payment settlement usually means that each interaction needs its own settlement transaction and its own fee. That is fine when payments are large or infrequent. It becomes inefficient when an agent is making many very small requests to the same provider.
 
 ## How Agon Changes The Cost Model
 
-Agon moves settlement off the hot path.
+Agon uses deferred settlement. Payment execution happens first through signed cumulative updates, and settlement happens later onchain.
 
-The hot path becomes:
-
-1. offchain cumulative updates
-2. delayed settlement
-3. one onchain write only when the latest state needs to be enforced
-
-This does not eliminate cost. It changes where the cost appears. Instead of paying the full settlement cost every time, the relationship pays for settlement checkpoints.
+This does not eliminate cost. It changes where the cost appears. Instead of paying the full settlement cost every time, the relationship pays for occasional settlement.
 
 ## Why The Comparison To x402 Still Matters
 

@@ -1,37 +1,13 @@
 ---
 title: "Reservation Lifecycle"
-description: "Every reservation moves through reserved → consumed/released/expired → settled. Full state machine with balance effects."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-```mermaid
-stateDiagram-v2
-    [*] --> reserved : POST /authorize (approved)
-    reserved --> consumed : POST /consume
-    reserved --> released : POST /release
-    reserved --> expired : auto (5 min TTL)
-    consumed --> settled : Settlement engine cycle
+This page belongs to an older docs set and is no longer maintained.
 
-    note right of reserved
-        reserved_balance += amount
-    end note
-    note right of released
-        reserved_balance -= amount
-        available_balance += amount
-    end note
-    note right of expired
-        Same as released
-    end note
-    note right of settled
-        Funds leave Agon → merchant wallet
-    end note
-```
+Use the current V4 docs instead:
 
-## State Summary
-
-| State | `available_balance` | `reserved_balance` | Notes |
-|---|---|---|---|
-| `reserved` | -amount | +amount | Funds held, API call in-flight |
-| `consumed` | unchanged | unchanged | Awaiting settlement cycle |
-| `released` | +amount | -amount | Call failed — funds returned |
-| `expired` | +amount | -amount | Auto-release after 5 min |
-| `settled` | unchanged | -amount | Funds transferred to merchant on-chain |
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

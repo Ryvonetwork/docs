@@ -3,16 +3,16 @@ title: "V4 Overview"
 description: "A builder-first overview of how Agon Protocol V4 works."
 ---
 
-Agon Protocol V4 is easiest to understand as **shared protocol balances plus signed offchain updates**.
+Agon Protocol V4 uses deferred settlement. Participants can make many payments first and settle later, instead of treating every interaction as a separate transfer.
 
-Each wallet registers once as a permanent participant and receives a stable `participant_id` for the lifetime of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create a permanent directed lane keyed by `payer_id`, `payee_id`, and `token_id`. The payer can lock funds to that lane if the relationship needs stronger guarantees. From there, the parties exchange signed V4 messages offchain as the amount due changes.
+Each wallet registers once as a permanent participant and receives a stable `participant_id` for the lifetime of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer can lock funds to that channel if the relationship needs stronger guarantees. This keeps the protocol simple and gives builders stable identities and payment lanes to build on top of.
 
 V4 uses two signed message formats:
 
 - `agon-cmt-v4` for one directed lane
 - `agon-round-v4` for one shared cooperative clearing round
 
-Those messages feed three settlement paths. The simplest path settles the latest commitment for one lane. Bundle settlement advances many lanes for one payee in one transaction. Cooperative clearing rounds advance many lanes together and apply only the residual balance changes that remain after the included payments cancel each other out.
+Those messages feed three settlement paths. The simplest settles one channel. Bundle settlement lets one payee settle many channels together. Cooperative clearing lets several participants agree on a shared state update and clear many channels at once.
 
 ## The Four Main Onchain Objects
 
@@ -25,7 +25,7 @@ Those messages feed three settlement paths. The simplest path settles the latest
 
 ## What Stays Offchain
 
-The hot path is offchain. Builders usually keep these things in their own service or client:
+Agon keeps signed payment updates offchain until settlement. Builders usually keep these things in their own service or client:
 
 1. the latest signed `agon-cmt-v4` per lane
 2. the local meter for how much a user has consumed
@@ -66,9 +66,8 @@ V4 intentionally chose stable identities and permanent lanes. That means more lo
 1. participant ids do not recycle
 2. offchain services can index users without worrying about identity reuse
 3. lanes do not close and reopen
-4. signed messages no longer need `lane_generation`
-5. replay protection is simpler
-6. lane keys stay stable for offchain systems
+4. replay protection is simpler
+5. payment channels stay stable for offchain systems
 
 ## Build From The Real Flow
 

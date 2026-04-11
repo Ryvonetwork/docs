@@ -1,67 +1,13 @@
 ---
 title: "Token Strategies"
-description: "Choose the right consumer token type for your use case — per-request, reusable session, or sub-agent delegation."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Choose the right token type for your use case.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-## Quick Reference
-
-| Scenario | Strategy | Config |
-|---|---|---|
-| Single known-cost call | Strict Single-Use | `{ ttl: 60, max_amount: N }` |
-| Agent loop, same API | Time + Budget | `{ ttl: 300, budget: 50_000 }` |
-| LLM call, variable cost | Budget-Constrained | `{ ttl: 300, budget: 10_000 }` |
-| Delegate to sub-agent | Budget-Constrained | tight budget, longer ttl |
-
-## Per-Request Token (Maximum Security)
-
-```typescript
-async function callWithFreshToken(url: string, maxCost: number) {
-  const { token } = await fetch('https://api-devnet.agonx402.com/account/create-token', {
-    method: 'POST',
-    headers: { 'X-AGON-KEY': process.env.AGON_API_KEY!, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ttl: 30, max_amount: maxCost }),
-  }).then(r => r.json())
-  return fetch(url, { headers: { 'X-AGON-TOKEN': token } })
-}
-```
-
-## Reusable Session Token (Efficiency)
-
-```typescript
-class TokenSession {
-  private token = ''
-  private expiry = 0
-
-  async get() {
-    if (Date.now() > this.expiry - 5000) {
-      const res = await fetch('https://api-devnet.agonx402.com/account/create-token', {
-        method: 'POST',
-        headers: { 'X-AGON-KEY': process.env.AGON_API_KEY!, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ttl: 120, budget: 100_000 }),
-      }).then(r => r.json())
-      this.token = res.token
-      this.expiry = Date.now() + res.expires_in * 1000
-    }
-    return this.token
-  }
-}
-```
-
-## Token Delegation to Sub-Agent
-
-```typescript
-// Parent mints a capped token; sub-agent gets spend authority without API key access
-const { token } = await fetch('https://api-devnet.agonx402.com/account/create-token', {
-  method: 'POST',
-  headers: { 'X-AGON-KEY': process.env.AGON_API_KEY!, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ ttl: 600, budget: 25_000 }), // sub-agent cannot spend more than $0.025
-}).then(r => r.json())
-
-await runSubAgent(token)
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

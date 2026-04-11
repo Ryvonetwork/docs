@@ -1,93 +1,13 @@
 ---
 title: "Spending Controls"
-description: "Programmatic guardrails for your Agon account — per-request caps, daily limits, and multi-use payment tokens."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Spending controls put programmatic guardrails on your account. Essential for AI agents operating autonomously.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-## Available Controls
-
-### Per-Request Maximum
-
-Cap the maximum amount any single API call can reserve from your account:
-
-```typescript
-await agon.setSpendingControls({ maxPerRequest: 1_000_000 }) // $1.00 max per call
-```
-
-Default: unlimited. Set to `0` to re-enable unlimited.
-
-### Daily Spending Limit
-
-Cap total spend across all API calls in a rolling 24-hour period:
-
-```typescript
-await agon.setSpendingControls({ dailySpendingLimit: 10_000_000 }) // $10.00/day cap
-```
-
-The daily counter resets 24 hours after the first charge of each day.
-
-### Multi-Use Payment Tokens
-
-Instead of a static spending limit, you can issue payment tokens with a hard aggregate spend ceiling. Once the cumulative total of all charges against that token reaches the `budget`, further calls are denied:
-
-```typescript
-const { token } = await agon.createToken({
-  ttl: 300,       // 5-minute window
-  budget: 50_000, // $0.05 aggregate cap across all calls
-})
-```
-
-See [Generate Payment Tokens](/quickstarts/generate-tokens) for all token strategies.
-
-### Proxy Mode Controls
-
-```typescript
-await agon.setSpendingControls({
-  proxyEnabled: true,
-  proxyAllowedDomains: ['api.openai.com', 'api.anthropic.com'],
-})
-// Set to null to allow all domains when proxy is enabled
-```
-
-<Note>
-  `proxyAllowedDomains` applies to Mode B (x402 proxy) payments only. Domain checks in non-proxy flows are not yet enforced.
-</Note>
-
-## Partial Updates
-
-The controls endpoint only updates the fields you provide — others remain unchanged:
-
-```bash
-curl -X POST https://api-devnet.agonx402.com/account/spending-controls \
-  -H "X-AGON-KEY: ag_xxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"max_per_request": 500000}'
-# Only max_per_request is changed; daily limit and domain list are untouched
-```
-
-## Cryptographic Overrides
-
-When a request would exceed a spending control, the consumer can sign a one-time override:
-
-```typescript
-const agon = new AgonClient({
-  baseUrl: 'https://api-devnet.agonx402.com',
-  apiKey: process.env.AGON_API_KEY!,
-  signer: async (msg) => myWallet.sign(msg),
-  onLimitExceeded: async (details) => {
-    // Called when any spending control would block the request
-    // Return 'approve' to auto-sign the override, 'reject' to block
-    if (details.requested < 5_000_000) return 'approve' // Auto-approve under $5
-    return 'reject' // Block larger amounts
-  },
-})
-```
-
-<Warning>
-  Override signatures are cryptographically bound to the exact amount, merchant, and timestamp — they cannot be replayed or reused for a different transaction.
-</Warning>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

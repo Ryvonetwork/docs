@@ -5,14 +5,6 @@ description: "A non-custodial clearing protocol for machine payments on Solana."
 
 Agon Protocol is a **non-custodial clearing protocol for machine payments** on Solana.
 
-It is built for repeated relationships: agents paying APIs, inference endpoints, data feeds, marketplaces, and other agents. In those settings, the expensive part is often not expressing intent to pay. The expensive part is settling every small interaction as if it were a standalone transfer.
-
-Agon moves that cost off the hot path. Participants exchange cumulative offchain commitments, keep balances in protocol state, and settle only the latest state that matters. In V4, each wallet has one permanent participant identity and each `payer_id + payee_id + token_id` relationship has one permanent directed lane. That keeps replay boundaries simple and gives offchain systems stable identities to build around.
-
-The protocol supports three settlement modes. A latest commitment settles one lane. Bundle settlement advances many lanes for one payee in one transaction. Cooperative clearing rounds advance many lanes together and apply only the residual balance changes that remain after the included payments cancel each other out. The result is not "free payments." It is fewer onchain state transitions for the same economic activity.
-
-This documentation is written for builders. It explains the protocol model, the message formats, the instruction surface, and the exact user flows you need to integrate Agon without guessing at hidden behavior.
-
 ## If You Are New Here
 
 Start with the short overview if you want the mental model. Then read the first payment flow if you want to build immediately. After that, use the state, settlement, and message-reference pages as the detailed reference.

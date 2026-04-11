@@ -74,6 +74,7 @@
           {
             "group": "Examples",
             "pages": [
+              "demos/operator-hub-model",
               "demos/protocol-demo",
               "demos/ows-gateway-example"
             ]

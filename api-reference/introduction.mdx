@@ -1,44 +1,13 @@
 ---
 title: "API Reference"
-description: "Full REST API reference for the Agon payment aggregator — base URL, authentication, and all endpoints."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-## Environments
+This page belongs to an older docs set and is no longer maintained.
 
-| Environment | Base URL | Network | Use for |
-|---|---|---|---|
-| **Devnet** | `https://api-devnet.agonx402.com` | Solana Devnet | Development & testing |
-| **Mainnet** | `https://api-mainnet.agonx402.com` | Solana Mainnet | Production |
+Use the current V4 docs instead:
 
-<Note>
-  Devnet uses test USDC — transactions are real API calls but no real money moves. Use the
-  built-in [faucet](/recipes/testing-devnet) to get test USDC. Switch to the mainnet URL when
-  you're ready to go live.
-</Note>
-
-
-
-## Authentication
-
-| Header | Used by | Purpose |
-|---|---|---|
-| `X-AGON-KEY: ag_xxx` | Consumer | Account management, token creation |
-| `X-AGON-TOKEN: eyJ...` | Consumer | Short-lived payment JWT sent to merchants |
-| `Authorization: Bearer pk_xxx` | Merchant | Authorization endpoints |
-
-## Endpoints
-
-<CardGroup cols={2}>
-  <Card title="Accounts" icon="user" href="/api-reference/accounts">
-    Registration, balances, deposits, withdrawals, spending controls, auto-refill.
-  </Card>
-  <Card title="Authorization" icon="lock" href="/api-reference/authorization">
-    /authorize, /consume, /release — the merchant payment cycle.
-  </Card>
-  <Card title="Platforms" icon="server" href="/api-reference/platforms">
-    Platform registration, settlement triggers, and settlement history.
-  </Card>
-  <Card title="Error Codes" icon="triangle-exclamation" href="/api-reference/error-codes">
-    All error codes, HTTP statuses, and their meanings.
-  </Card>
-</CardGroup>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

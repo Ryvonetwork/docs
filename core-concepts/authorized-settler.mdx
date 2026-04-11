@@ -3,11 +3,11 @@ title: "Authorized Settler"
 description: "Why `authorized_settler` exists and what delegated settlement enables in Agon V4."
 ---
 
-`authorized_settler` exists so a lane can delegate **settlement submission** without changing who signed the payment update.
+`authorized_settler` exists so a channel can delegate **settlement submission** without changing who signed the payment update.
 
 That distinction is important.
 
-The lane's `authorized_signer` still signs the economic state. `authorized_settler` only adds another key that is allowed to submit that signed state onchain.
+The channel's `authorized_signer` still signs the economic state. `authorized_settler` only adds another key that is allowed to submit that signed state onchain.
 
 ## Why This Feature Exists
 
@@ -57,7 +57,7 @@ const message = createCommitmentMessage({
 });
 ```
 
-After that message is signed by the lane's `authorized_signer`, either the payee or `operator.publicKey` may submit it.
+After that message is signed by the channel's `authorized_signer`, either the payee or `operator.publicKey` may submit it.
 
 ## Fees Are Separate
 

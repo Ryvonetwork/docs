@@ -1,39 +1,13 @@
 ---
 title: "Auto-Refill"
-description: "Keep your Agon account topped up automatically using on-chain SPL delegation — no manual top-ups needed."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Auto-refill keeps your Agon account funded without manual top-ups. When your balance drops below a threshold, Agon automatically pulls USDC from your on-chain wallet using a prior SPL token delegation.
+This page belongs to an older docs set and is no longer maintained.
 
-## Setup
+Use the current V4 docs instead:
 
-```typescript
-await agon.setAutoRefill({
-  threshold: 5_000_000,        // Trigger when available < $5.00 USDC
-  replenishAmount: 10_000_000, // Pull $10.00 USDC per refill
-  monthlyLimit: 100_000_000,   // Hard cap: max $100.00/month in refills
-  approveAmount: 100_000_000,  // On-chain SPL delegation amount: $100.00
-})
-```
-
-This generates a single on-chain SPL `approve` transaction from your wallet, delegating up to `approveAmount` to Agon's operational wallet.
-
-## How Refills Trigger
-
-Agon evaluates enrolled accounts approximately every **60 seconds**. When `available_balance < threshold`:
-
-1. Executes an SPL `transferChecked` using the active delegation
-2. USDC moves from your wallet → Agon's operational wallet
-3. Your Agon balance is credited atomically upon on-chain confirmation
-4. Monthly usage tracker is incremented — refills stop when `monthlyLimit` is reached
-
-<Note>
-  Auto-refill requires your on-chain wallet to hold sufficient USDC and for the SPL delegation to remain active. Revoking the delegation on-chain stops refills regardless of the API setting. The evaluation interval may vary slightly under load.
-</Note>
-
-## Revoke
-
-```typescript
-await agon.revokeAutoRefill()
-// Disables monitoring and revokes the on-chain SPL delegation
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

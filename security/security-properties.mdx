@@ -32,8 +32,7 @@ V4 removed participant recycling and lane close-and-reopen flows.
 That matters because it removes a whole class of replay complexity:
 
 - participant ids do not get reused
-- lanes do not need `lane_generation`
-- there is no reopened lane instance for an old signed message to target
+- there is no reopened payment channel for an old signed message to target
 
 The tradeoff is more long-lived state. The benefit is simpler and safer semantics.
 
@@ -56,7 +55,7 @@ This is the core stale-replay defense inside one permanent lane.
 V4 also puts time in front of the actions that would otherwise surprise the other side of the relationship:
 
 1. unlocking lane-specific locked funds
-2. rotating the lane's `authorized_signer`
+2. rotating the channel signing key
 
 Those actions require a request step and an execution step separated by the configured timelock. This gives the payee time to settle recent commitments before locked funds disappear or a signing key changes.
 

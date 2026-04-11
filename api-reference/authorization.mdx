@@ -1,92 +1,13 @@
 ---
 title: "Authorization"
-description: "Merchant-side authorization endpoints — authorize, consume, and release consumer payment reservations."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-**Auth for all endpoints:** `Authorization: Bearer pk_xxx`
+This page belongs to an older docs set and is no longer maintained.
 
----
+Use the current V4 docs instead:
 
-## POST /authorize
-
-Reserve consumer funds before serving an API response. **Called by the merchant, never by the consumer directly.**
-
-**Request:**
-```json
-{
-  "consumer_token": "eyJ...",
-  "request_id": "req_abc123",
-  "amount": 1000
-}
-```
-
-<Note>
-  `request_id` is an idempotency key. The same ID submitted twice (e.g., on retry) returns the original reservation without double-charging.
-
-  **Format:** 1–255 characters. Allowed characters: alphanumeric, hyphens (`-`), underscores (`_`), and dots (`.`). Requests with invalid format are rejected with `400 validation_error`.
-</Note>
-
-<Warning>
-  **Rate limit:** 200 calls per 60 seconds per *(platform key, consumer account)* pair. If exceeded, returns `429 rate_limited`. This is independent of the global per-key rate limit.
-</Warning>
-
-**Response `200` — approved:**
-```json
-{
-  "reservation_id": "uuid",
-  "status": "approved",
-  "amount": 1000,
-  "expires_at": "2026-02-28T00:05:00Z"
-}
-```
-
-**Response `200` — denied:**
-```json
-{
-  "reservation_id": null,
-  "status": "denied",
-  "reason": "insufficient_balance"
-}
-```
-
-**Denial reasons:**
-
-| Reason | HTTP | Cause |
-|---|---|---|
-| `insufficient_balance` | 400 | Consumer `available_balance` is too low |
-| `invalid_consumer_token` | 401 | Token references an unknown or deleted account |
-| `consumer_key_revoked` | 401 | Consumer's API key has been revoked |
-| `spending_limit_exceeded` | 402 | Amount exceeds per-request or daily limit |
-| `duplicate_request` | 409 | `request_id` already processed (idempotent) |
-| `token_already_used` | 409 | Single-use token was already spent |
-| `token_budget_exceeded` | 402 | Multi-use token's cumulative spend exceeds budget |
-| `amount_exceeds_token_cap` | 403 | Amount exceeds token's `max_amount` |
-| `rate_limited` | 429 | >200 authorizations/min from this platform for this consumer |
-
----
-
-## POST /consume
-
-Finalize a reservation after successful request delivery. Funds are queued for next settlement.
-
-**Idempotent** — calling `/consume` on an already-consumed reservation returns `consumed`.
-
-```json
-{ "reservation_id": "uuid" }
-```
-
-<Warning>
-  If the reservation's TTL has elapsed — even if its database status hasn't been updated yet by the background expiry job — `/consume` will return `409 reservation_expired` and proactively mark the reservation as expired. Funds are returned to the consumer's `available_balance`. **Always call `/consume` before the reservation's `expires_at` timestamp.**
-</Warning>
-
----
-
-## POST /release
-
-Cancel a reservation and immediately return funds to `available_balance`. Call this on any error or timeout.
-
-**Idempotent**
-
-```json
-{ "reservation_id": "uuid" }
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

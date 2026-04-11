@@ -1,71 +1,13 @@
 ---
 title: "Settlement Engine"
-description: "How Agon's settlement engine aggregates payments and settles to merchant wallets on-chain."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-The settlement engine is why Agon's on-chain footprint stays constant as volume grows.
+This page belongs to an older docs set and is no longer maintained.
 
-## How Netting Works
+Use the current V4 docs instead:
 
-All consumed payments to a merchant are aggregated into one number per settlement:
-
-```sql
-SELECT platform_id, SUM(amount) AS total_owed
-FROM reservations
-WHERE status = 'consumed'
-  AND settlement_id IS NULL
-GROUP BY platform_id
-ORDER BY total_owed DESC;
-```
-
-## Consolidation
-
-All merchant payouts for a given settlement are packed into a single Solana transaction:
-
-| Transaction Type | Merchants Per Tx |
-|---|---|
-| Legacy transaction | Up to 20 |
-| Versioned + Address Lookup Tables | Up to ~55 |
-
-## Settlement Economics
-
-| Scenario | Direct x402 | Agon |
-|---|---|---|
-| 100 calls → 1 merchant | 100 transactions | 1 settlement tx |
-| 1M calls → 50 merchants | 1,000,000 transactions | 3 transactions |
-| 1B calls → 50 merchants | 1,000,000,000 transactions | **still 3 transactions** |
-
-<Tip>
-  Transaction count is **O(merchants)**, not **O(calls)**. The efficiency advantage scales directly with usage volume.
-</Tip>
-
-## Triggering Settlement
-
-Merchants trigger settlement manually via `POST /platform/settle` or the Agon dashboard. Automatic scheduled settlement is not yet implemented.
-
-## Resilience
-
-```mermaid
-sequenceDiagram
-    participant SE as Settlement Engine
-    participant DB as Off-chain Ledger
-    participant S as Solana
-
-    SE->>DB: Lock reservations (status=consumed, settlement_id=null)
-    SE->>DB: Create settlement record (status=processing, sig=pending)
-    SE->>S: Build + sign transaction
-    SE->>DB: Store tx_signature (BEFORE broadcast)
-    SE->>S: Broadcast transaction
-    alt Transaction confirmed
-        SE->>DB: Update settlement status=completed
-        SE->>DB: Update reservations status=settled
-    else Process crash / timeout
-        Note over SE,DB: Zombie recovery janitor runs
-        SE->>S: Check if tx_signature confirmed on-chain
-        alt Confirmed
-            SE->>DB: Mark completed
-        else Not confirmed
-            SE->>DB: Reset to pending for retry
-        end
-    end
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

@@ -1,80 +1,13 @@
 ---
 title: "AI Agent that Pays for APIs"
-description: "Build an autonomous agent that registers once, funds itself, and pays for API calls indefinitely."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Build an autonomous agent that registers once, funds itself, and pays for API calls indefinitely.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  This example uses `https://api-devnet.agonx402.com` (devnet). For production, set `AGON_URL=https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-```typescript
-import { Keypair } from '@solana/web3.js'
-import bs58 from 'bs58'
-import nacl from 'tweetnacl'
-import * as fs from 'fs'
-
-const AGON_URL = 'https://api-devnet.agonx402.com'
-const CREDS_FILE = './agent-creds.json'
-
-// Load saved keypair or generate a new one
-function getKeypair(): Keypair {
-  const envKey = process.env.AGENT_SECRET_KEY
-  if (envKey) return Keypair.fromSecretKey(bs58.decode(envKey))
-  const kp = Keypair.generate()
-  console.log('NEW KEYPAIR — save this:', bs58.encode(kp.secretKey))
-  return kp
-}
-
-// Register once, persist credentials
-async function getOrRegister(keypair: Keypair) {
-  if (fs.existsSync(CREDS_FILE)) return JSON.parse(fs.readFileSync(CREDS_FILE, 'utf8'))
-
-  const timestamp = Date.now()
-  const msg = `agon:register:${timestamp}`
-  const sig = bs58.encode(nacl.sign.detached(new TextEncoder().encode(msg), keypair.secretKey))
-
-  const res = await fetch(`${AGON_URL}/account/register/agent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ wallet_address: keypair.publicKey.toBase58(), signature: sig, timestamp }),
-  }).then(r => r.json())
-
-  fs.writeFileSync(CREDS_FILE, JSON.stringify(res))
-  console.log('Deposit USDC to:', res.deposit_address)
-  return res
-}
-
-// Mint a token and call a paid API
-async function callAPI(apiKey: string, url: string) {
-  const { token } = await fetch(`${AGON_URL}/account/create-token`, {
-    method: 'POST',
-    headers: { 'X-AGON-KEY': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ttl: 60, budget: 50_000 }), // 60s, $0.05 cap
-  }).then(r => r.json())
-
-  return fetch(url, { headers: { 'X-AGON-TOKEN': token } }).then(r => r.json())
-}
-
-async function main() {
-  const keypair = getKeypair()
-  const { api_key } = await getOrRegister(keypair)
-
-  while (true) {
-    const result = await callAPI(api_key, 'https://merchant-api.com/v1/generate')
-    console.log(result)
-    await new Promise(r => setTimeout(r, 5000))
-  }
-}
-
-main()
-```
-
-```bash
-# Run (first time: generates keypair, registers, prints deposit address)
-npx ts-node agent.ts
-
-# Fund the printed deposit address, then run again
-AGENT_SECRET_KEY=<saved_key> npx ts-node agent.ts
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

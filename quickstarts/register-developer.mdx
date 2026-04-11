@@ -1,78 +1,13 @@
 ---
 title: "Register as a Developer"
-description: "Get your developer account and make your first paid API call in under 5 minutes."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-<Note>
-  **Prerequisites:** Node.js 18+, a Solana wallet, and USDC (devnet or mainnet).
-</Note>
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-<Steps>
-  <Step title="Install the SDK">
-    ```bash
-    npm install @agonx402/client @agonx402/types
-    ```
-  </Step>
-
-  <Step title="Register Your Account">
-    ```bash
-    curl -X POST https://api-devnet.agonx402.com/account/register \
-      -H "Content-Type: application/json" \
-      -d '{"wallet_address": "YourSolanaWalletAddress"}'
-    ```
-
-    **Response:**
-    ```json
-    {
-      "account_id": "uuid",
-      "deposit_address": "HDxxxx...",
-      "api_key": "ag_xxxxx",
-      "available_balance": 0
-    }
-    ```
-
-    <Warning>
-      Your `api_key` is returned **once only**. Store it immediately in `.env` or a secret manager — it cannot be retrieved again.
-    </Warning>
-  </Step>
-
-  <Step title="Fund Your Account">
-    Send USDC on Solana to your `deposit_address`. Balance appears automatically within seconds.
-
-    ```typescript
-    import { AgonClient } from '@agonx402/client'
-
-    const agon = new AgonClient({
-      baseUrl: 'https://api-devnet.agonx402.com',
-      apiKey: process.env.AGON_API_KEY!,
-      signer: async (msg) => myWallet.sign(msg),
-    })
-
-    const account = await agon.getAccount()
-    console.log('Send USDC to:', account.depositAddress)
-    ```
-  </Step>
-
-  <Step title="Make Your First Paid API Call">
-    ```typescript
-    // Drop-in replacement for fetch() — payment is automatic
-    const response = await agon.fetch('https://some-agon-api.com/v1/endpoint')
-    const data = await response.json()
-    console.log(data)
-    ```
-  </Step>
-
-  <Step title="Check Balance & Withdraw">
-    ```typescript
-    const account = await agon.getAccount()
-    console.log('Available:', account.availableBalance, 'micro-USDC')
-
-    // Withdraw to your wallet anytime — no lock-up
-    await agon.withdraw(5) // 5 USDC → on-chain immediately
-    ```
-  </Step>
-</Steps>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

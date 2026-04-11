@@ -1,60 +1,13 @@
 ---
 title: "Trust Model & Security"
-description: "Agon's custodial trust model, security guarantees, idempotency protections, and privacy design."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-## Custodial Architecture
+This page belongs to an older docs set and is no longer maintained.
 
-<AccordionGroup>
-  <Accordion title="How funds are held">
-    Agon is a **custodial** payment aggregator. USDC you deposit is pooled in Agon's operational Solana wallet. Your individual balance is tracked in an off-chain ledger, not directly on-chain.
+Use the current V4 docs instead:
 
-    This is the same model as Stripe, PayPal, or a bank account — a trusted intermediary holds funds and settles on your behalf. The tradeoff: you don't need to manage on-chain transactions for every payment.
-  </Accordion>
-
-  <Accordion title="What Agon guarantees">
-    | Guarantee | Mechanism |
-    |---|---|
-    | Never charged for failed requests | Reservations auto-expire after 5 minutes and return funds |
-    | No double-charges | Idempotent `request_id` on `/authorize` |
-    | Merchant always paid | Settlement retry engine with zombie recovery |
-    | Balance accuracy | Automated ledger ↔ on-chain USDC reconciliation sweep |
-    | Withdraw anytime | `available_balance` transfers on-chain immediately |
-  </Accordion>
-
-  <Accordion title="What you trust Agon to do">
-    - Maintain accurate ledger balances
-    - Execute withdrawals faithfully and promptly
-    - Not commingle funds in a way that prevents withdrawal
-    - Provide transparent settlement records
-
-    Available funds can be withdrawn on-chain at any time. Agon does not impose withdrawal lock-ups.
-  </Accordion>
-</AccordionGroup>
-
-## Idempotency
-
-Critical operations are protected against duplicate execution:
-
-| Operation | Idempotency Key | Effect of duplicate |
-|---|---|---|
-| `POST /authorize` | `request_id` | Original reservation returned, no double-reserve |
-| `POST /account/deposit` | `tx_signature` | Returns `already_credited: true`, no double-credit |
-| `POST /consume` | `reservation_id` | Idempotent — safe to retry |
-| `POST /release` | `reservation_id` | Idempotent — safe to retry |
-
-## Privacy
-
-On-chain settlement transactions originate from **Agon's central operational wallet** — not from individual consumer wallets. Merchants, blockchain explorers, and on-chain analysts cannot:
-
-- Determine which consumer paid for which API call
-- Link a consumer's wallet address to a specific merchant
-- Infer purchasing patterns or AI agent behavior from on-chain data
-
-## Settlement Resilience
-
-<Tip>
-  **Double-send protection:** The Solana transaction signature is stored *before* broadcasting. If the process crashes mid-flight, retry logic checks on-chain whether that exact signature confirmed — and only rebuilds the transaction if it definitively did not land.
-
-  **Zombie recovery:** A background janitor resets settlements stuck in `processing` for more than 15 minutes, so they are automatically retried in the next cycle.
-</Tip>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

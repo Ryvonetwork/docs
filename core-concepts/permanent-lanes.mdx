@@ -3,17 +3,13 @@ title: "Permanent Lanes"
 description: "How Agon V4 models one long-lived payment relationship."
 ---
 
-In Agon V4, a lane is one **directed** relationship from one payer to one payee for one token.
+In Agon V4, a lane is one **one-way payment channel** from one payer to one payee for one token.
 
-The canonical lane key is:
+One permanent channel exists for each `payer_id + payee_id + token_id` combination, and that channel is stored in one `ChannelState` PDA under the `channel-v2` seed scheme.
 
-`payer_id + payee_id + token_id`
+## Why Lanes Are One-Way
 
-That lane is stored in one permanent `ChannelState` PDA under the `channel-v2` seed scheme.
-
-## Why Lanes Are Directed
-
-Agon keeps lanes directed because the hot path is usually one party paying another.
+Agon keeps lanes one-way because the common case is simple: one party pays another.
 
 That matters for the most common machine-payment case:
 
@@ -21,7 +17,7 @@ That matters for the most common machine-payment case:
 - one agent paying one tool
 - one service paying one provider
 
-The payer signs a unilateral cumulative message. The payee does not need to co-sign every offchain update. That keeps the hot path simple.
+The payer signs a unilateral cumulative message. The payee does not need to co-sign every offchain update. That keeps the protocol simple.
 
 ## What `ChannelState` Stores
 
@@ -32,7 +28,7 @@ The payer signs a unilateral cumulative message. The payee does not need to co-s
 | `payee_id` | The participant that receives value on this lane |
 | `settled_cumulative` | The highest cumulative amount already settled |
 | `locked_balance` | Funds ring-fenced to this lane |
-| `authorized_signer` | The key allowed to sign unilateral lane messages |
+| `authorized_signer` | The key allowed to sign unilateral payment updates for this channel |
 | `pending_unlock_amount` + `unlock_requested_at` | Timelocked lane unlock request |
 | `pending_authorized_signer` + `authorized_signer_update_requested_at` | Timelocked signer rotation request |
 
@@ -58,7 +54,7 @@ await program.methods
   .rpc();
 ```
 
-If the payer passes `null` for `authorized_signer`, the protocol uses the payer's wallet as the lane signer by default.
+If the payer passes `null` for `authorized_signer`, the protocol uses the payer's wallet as the signing key by default.
 
 ## Locking And Unlocking Funds
 
@@ -74,9 +70,16 @@ Unlocking is intentionally delayed:
 
 This gives the payee time to settle recent commitments before the locked funds disappear.
 
-## Rotating The Lane Signer
+## Rotating The Channel Signing Key
 
-The lane signer can change, but not instantly.
+Each channel has one signing key for unilateral commitments. By default that is the payer wallet, but the payer can choose a different key for that channel.
+
+That key is different from `authorized_settler`:
+
+- `authorized_signer` signs new cumulative payment amounts
+- `authorized_settler` may submit a signed commitment onchain
+
+The signing key can change, but not instantly.
 
 V4 uses the same pattern as lane unlocks:
 
@@ -84,7 +87,7 @@ V4 uses the same pattern as lane unlocks:
 2. wait through the timelock
 3. execute the change
 
-Already-issued commitments remain valid until the rotation executes because the old signer stays active during the waiting period.
+Until the rotation executes, the old signing key stays active. Once it executes, only the new signing key can sign new commitments for that channel. The payee still settles those commitments in the usual way. If you still need older commitments signed by the previous key, settle them before the rotation is executed.
 
 ## Why Lanes Are Permanent
 
@@ -93,8 +96,7 @@ Older designs allowed lanes to close and reopen. V4 removed that behavior.
 Permanent lanes make the protocol easier to build on because:
 
 1. there is no close-and-reopen replay boundary
-2. signed messages no longer need `lane_generation`
-3. the lane key stays stable for offchain services
-4. the docs and mental model get simpler
+2. payment channels stay stable for offchain services
+3. the docs and mental model get simpler
 
 The tradeoff is more long-lived onchain state. V4 accepts that tradeoff because the simpler semantics are worth it for machine-payment integrations.

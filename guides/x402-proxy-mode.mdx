@@ -1,55 +1,13 @@
 ---
 title: "x402 Proxy Mode"
-description: "Pay any standard x402 merchant through Agon using your custodial balance."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Proxy mode lets Agon-native buyers pay standard x402 merchants — no extra configuration required on the buyer side.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  This is **Case 2** of Agon's StandardX interoperability. See the [StandardX Guide](/guides/standardx) for all 4 payment cases.
-</Info>
+Use the current V4 docs instead:
 
-## How It Works
-
-When `agon.fetch()` receives a `402 Payment Required` response from a standard x402 merchant:
-
-<Steps>
-  <Step title="Read the Payment Challenge">
-    The SDK parses the `PAYMENT-REQUIRED` header from the 402 response to get the payment amount, USDC mint, and merchant's `payTo` wallet address.
-  </Step>
-
-  <Step title="Route Through Agon Proxy">
-    The SDK sends the merchant URL and `PAYMENT-REQUIRED` value to `POST /proxy` on the Agon backend, which checks spending controls and reserves the consumer's balance.
-  </Step>
-
-  <Step title="Construct x402 PaymentPayload">
-    Agon builds a partial Solana `transferChecked` transaction from its custodial wallet. The transaction is signed by Agon (as the authority) but **not broadcast** — the `feePayer` field is left empty for the merchant's facilitator.
-  </Step>
-
-  <Step title="Send PAYMENT-SIGNATURE to Merchant">
-    Agon retries the original request to the merchant with the standard `PAYMENT-SIGNATURE` header containing the base64-encoded partial transaction. The merchant's facilitator then broadcasts it and pays SOL gas.
-  </Step>
-
-  <Step title="Settle Ledger on 200 Response">
-    If the merchant accepts (HTTP 200), Agon finalises the consumer ledger entry. If rejected, the reserved funds are released.
-  </Step>
-</Steps>
-
-```typescript
-// Transparently handles Agon-native and standard x402 merchants
-const response = await agon.fetch("https://any-x402-merchant.com/api/data");
-```
-
-## Spending Controls in Proxy Mode
-
-All configured spending controls apply equally to proxy requests:
-
-- **Per-request maximum** — proxy requests exceeding the limit require an override signature
-- **Daily spending limit** — proxy spend counts toward the daily total
-- **Domain allowlist** — set `proxyAllowedDomains` to restrict which merchants are auto-paid
-
-## Privacy Benefit
-
-<Tip>
-  In proxy mode, the on-chain payment originates from **Agon's custodial wallet**, not yours. The merchant, blockchain explorers, and on-chain analysts cannot link the payment to your personal wallet address.
-</Tip>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

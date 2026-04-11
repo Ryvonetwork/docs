@@ -1,79 +1,13 @@
 ---
 title: "Platforms"
-description: "Platform (merchant) management endpoints — registration, settlement, and settlement history."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
----
+This page belongs to an older docs set and is no longer maintained.
 
-## POST /platform/register
+Use the current V4 docs instead:
 
-Register a new API platform (merchant). Returns a `platform_key` for all subsequent platform operations.
-
-**Auth:** Privy JWT (dashboard)
-
-```json
-{
-  "name": "My API Platform",
-  "wallet_address": "7xKXtg..."
-}
-```
-
-**Response `201`:**
-```json
-{
-  "platform_id": "uuid",
-  "api_key": "pk_xxxxx",
-  "name": "My API Platform",
-  "wallet_address": "7xKXtg..."
-}
-```
-
----
-
-## POST /platform/settle
-
-Trigger settlement for all pending consumed reservations. All consumed charges per merchant are aggregated off-chain and settled in a single on-chain USDC transfer.
-
-**Auth:** `Authorization: Bearer pk_xxx`
-
-<Note>
-  Settlement must be triggered manually — call this endpoint or use the Agon dashboard. Automatic scheduling is not yet implemented.
-</Note>
-
-**Response `200`:**
-```json
-{
-  "success": true,
-  "settled_count": 12,
-  "retried_count": 0,
-  "message": "Settlement complete"
-}
-```
-
----
-
-## GET /platform/settlements
-
-List historical settlement records.
-
-**Auth:** `Authorization: Bearer pk_xxx`  **Query:** `?limit=20&offset=0`
-
-**Response `200`:**
-```json
-{
-  "settlements": [
-    {
-      "settlement_id": "uuid",
-      "platform_name": "My API Platform",
-      "amount": 150000,
-      "reservation_count": 42,
-      "status": "completed",
-      "tx_signature": "5Ht8...xyz",
-      "created_at": "2026-02-28T00:00:00Z"
-    }
-  ],
-  "total": 5
-}
-```
-
-**Settlement statuses:** `pending` | `processing` | `completed` | `failed`
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

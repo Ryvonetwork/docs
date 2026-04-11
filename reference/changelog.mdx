@@ -1,58 +1,13 @@
 ---
 title: "Changelog"
-description: "Release history for the Agon platform and SDKs."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-## v0.5 — March 2026
+This page belongs to an older docs set and is no longer maintained.
 
-**StandardX — Standard x402 Interoperability**
+Use the current V4 docs instead:
 
-- **Universal Buyer Support** — Any standard x402 buyer can now pay an Agon-powered merchant without needing an Agon account. StandardX is seamlessly active for all registered merchants. Agon automatically sponsors these transactions as the x402 facilitator on the merchant's behalf, subtracting a $0.001 facilitation fee from their Agon balance.
-- **Universal Merchant Support** — The Agon consumer client now automatically routes payments to any non-Agon x402 merchant. The client seamlessly orchestrates the payment as a standard x402 client using the consumer's Agon balance, with Agon originating the final on-chain transaction.
-- **Configurable StandardX routing** — Merchants can now configure an alternate receiving wallet (`walletAddress`) in the SDK initialization to route payments from non-Agon buyers to a separate on-chain address than their primary platform wallet.
-- **Expanded Examples** — New quickstart applications demonstrate how to build an API that accepts both Agon-native and StandardX payments concurrently, as well as a standalone StandardX buyer script.
-
-
----
-
-## v0.4 — March 2026
-
-**Security Improvements**
-
-- **Authorization rate limiting** — Requests to `POST /authorize` are now rate-limited per merchant and consumer pair. Excessive calls return `429 rate_limited`.
-- **Stricter input validation** — `request_id` now enforces a character and length limit. Invalid values return `400 validation_error`.
-- **Tighter expiry enforcement** — Consuming an expired reservation now always returns `409 reservation_expired`, regardless of background processing state.
-
----
-
-## v0.3 — February 2026
-
-**Multi-Use Budgeted Tokens**
-
-- Tokens can now carry a `budget` — a hard ceiling on total spend across multiple API calls, enabling long-running agent sessions without re-authenticating.
-- New denial codes: `token_budget_exceeded` and `amount_exceeds_token_cap`.
-
----
-
-## v0.2 — January 2026
-
-**Agent-Native Authentication & Beta Access**
-
-- AI agents can now register and authenticate without a browser or OAuth flow — using only a keypair signature.
-- Open beta on devnet — no invite required, anyone can register and start building.
-- Admin tooling for managing access and monitoring registrations.
-
----
-
-## v0.1 — December 2025
-
-**Initial Release**
-
-- USDC deposit flow with automatic balance crediting.
-- Off-chain authorization engine — reserve, consume, and release funds with full idempotency.
-- Batch settlement to merchant wallets on Solana.
-- x402 proxy mode for universal merchant compatibility.
-- Spending controls — per-request limits, daily budgets, and domain restrictions.
-- Auto-refill to keep agent balances topped up automatically.
-- SDK for Fastify, Express, and Next.js.
-- Agent demo script
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

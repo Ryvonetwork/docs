@@ -1,47 +1,13 @@
 ---
 title: "Dynamic Pricing"
-description: "Charge different amounts per request based on the model, tier, or payload — using a dynamic pricing function."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Charge different amounts per request based on the requested resource, AI model, user tier, or payload size.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-## Using `agon.pricing`
-
-The Platform SDK allows you to pass a `pricing` function that evaluates the request dynamically:
-
-```typescript
-const agon = new AgonPlatformCore({
-  agonUrl: 'https://api-devnet.agonx402.com',
-  platformKey: process.env.AGON_PLATFORM_KEY!,
-  pricing: (req) => {
-    // req is the standard framework request object (Fastify/Express/NextRequest)
-    // Extract parameters from headers, query, or body
-    
-    // Example: Pricing by tier
-    if (req.headers['x-user-tier'] === 'premium') return 500 // $0.0005
-    
-    // Example: Pricing by requested model
-    const modelPrices: Record<string, number> = {
-      'gpt-4o': 10_000,       // $0.010
-      'gpt-4o-mini': 2_000,   // $0.002
-      'claude-opus': 15_000,  // $0.015
-    }
-    
-    // Default fallback price
-    return modelPrices[req.body?.model] ?? 1_000
-  },
-})
-```
-
-## How It Works
-
-1. **Pre-flight Check:** When the middleware triggers on an unauthenticated request, it calls `pricing(req)` to determine the amount to display in the `402 Payment Required` challenge.
-2. **Authorization Call:** When a token is provided, the middleware calls `pricing(req)` again and passes that specific amount to `POST /authorize`.
-
-<Tip>
-  Because the pricing logic runs on your server, you have absolute control over the cost of every request without needing to pre-configure pricing tiers on the Agon backend.
-</Tip>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

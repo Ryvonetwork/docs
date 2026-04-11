@@ -1,75 +1,13 @@
 ---
 title: "Build a Metered API"
-description: "Build a fully gated API endpoint that charges consumers per-request using the Platform SDK."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+This page belongs to an older docs set and is no longer maintained.
 
-## Fastify (Recommended)
+Use the current V4 docs instead:
 
-```typescript
-import Fastify from 'fastify'
-import { AgonPlatformCore, generateRequestId } from '@agonx402/platform'
-
-const app = Fastify({ logger: true })
-const agon = new AgonPlatformCore({
-  agonUrl: 'https://api-devnet.agonx402.com',
-  platformKey: process.env.AGON_PLATFORM_KEY!,
-  pricing: 1000, // $0.001 per request
-})
-
-app.addHook('preHandler', async (req: any, reply) => {
-  if (!req.url.startsWith('/api/paid')) return
-
-  const token = agon.extractConsumerToken(req.headers)
-  if (!token) {
-    const { status, body } = agon.buildPaymentRequiredResponse(BigInt(1000))
-    return reply.status(status).send(body)
-  }
-
-  const auth = await agon.authorize(token, generateRequestId(), BigInt(1000))
-  if (auth.status === 'denied') return reply.status(402).send({ error: auth.reason })
-
-  req.reservationId = auth.reservation_id!
-  reply.raw.on('finish', () => {
-    reply.statusCode < 400 ? agon.consume(req.reservationId) : agon.release(req.reservationId)
-  })
-})
-
-app.get('/api/paid/data', async (req: any) => ({ result: 'premium data', rid: req.reservationId }))
-app.get('/health', async () => ({ ok: true }))
-app.listen({ port: 3000, host: '0.0.0.0' })
-```
-
-## Dynamic Pricing
-
-```typescript
-const agon = new AgonPlatformCore({
-  agonUrl: 'https://api-devnet.agonx402.com',
-  platformKey: process.env.AGON_PLATFORM_KEY!,
-  pricing: (req) => {
-    const modelPrices: Record<string, number> = {
-      'gpt-4o': 10_000,       // $0.010
-      'gpt-4o-mini': 2_000,   // $0.002
-      'claude-opus': 15_000,  // $0.015
-    }
-    return modelPrices[req.body?.model] ?? 1_000
-  },
-})
-```
-
-## Testing
-
-```bash
-# Expect 402 — no token
-curl http://localhost:3000/api/paid/data
-
-# Mint a token and call
-TOKEN=$(curl -s -X POST https://api-devnet.agonx402.com/account/create-token \
-  -H "X-AGON-KEY: $AGON_API_KEY" -H "Content-Type: application/json" \
-  -d '{"ttl": 60, "max_amount": 5000}' | jq -r .token)
-
-curl http://localhost:3000/api/paid/data -H "X-AGON-TOKEN: $TOKEN"
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

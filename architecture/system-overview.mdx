@@ -1,82 +1,13 @@
 ---
 title: "System Overview"
-description: "Agon's six primary subsystems — Authorization Engine, Settlement Engine, Deposit Manager, and how they interconnect."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Agon is composed of six primary subsystems, each with a distinct responsibility.
+This page belongs to an older docs set and is no longer maintained.
 
-```mermaid
-graph TB
-    subgraph Consumers
-        C1[Developer App]
-        C2[AI Agent]
-    end
+Use the current V4 docs instead:
 
-    subgraph Agon Backend
-        AUTH[Auth & Accounts]
-        AE[Authorization Engine]
-        SE[Settlement Engine]
-        DM["Deposit Manager\n(HD Wallet + Helius)"]
-        SC[Spending Controls]
-        BG[Background Jobs]
-    end
-
-    subgraph Storage
-        DB[(Off-chain Ledger\nBalances · State)]
-        SOL[(Solana\nUSDS · Deposits)]
-    end
-
-    subgraph Platforms
-        M1[API Merchant A]
-        M2[API Merchant B]
-    end
-
-    C1 --> AUTH
-    C2 --> AUTH
-    AUTH --> AE
-    AE --> SC
-    AE --> DB
-    DM --> DB
-    DM --> SOL
-    SE --> SOL
-    SE --> DB
-    BG --> SE
-    M1 --> AE
-    M2 --> AE
-```
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| API Server | Fastify + TypeScript |
-| Ledger | PostgreSQL (with pg transactions for atomicity) |
-| Blockchain | Solana — USDC SPL token |
-| Deposit Detection | Helius enhanced webhooks |
-| Web Auth | Privy (embedded wallets + social login) |
-| Agent Auth | Ed25519 signature verification (nacl) |
-| HD Wallet | BIP-39 mnemonic + BIP-32 derivation |
-| Frontend | Next.js 14 (App Router) |
-
-## Subsystem Responsibilities
-
-<Columns>
-  <Column>
-    **Authorization Engine**
-
-    Handles `POST /authorize`, `POST /consume`, `POST /release`. The critical-path subsystem — all operations are atomic ledger transactions. No blockchain calls on the hot path.
-
-    **Deposit Manager**
-
-    Monitors Helius webhooks for USDC transfers to HD-derived deposit addresses. Credits consumer balances automatically. A sweep job runs periodically as a fallback.
-  </Column>
-  <Column>
-    **Settlement Engine**
-
-    Triggered by the merchant via API or dashboard. Aggregates all consumed reservations per merchant, nets totals, and packs all payouts into a single Solana transaction with double-send protection.
-
-    **Background Jobs**
-
-    Periodic tasks: resolve expired reservations, reconcile off-chain ledger vs on-chain USDC balances, evaluate auto-refill triggers, recover zombie settlements.
-  </Column>
-</Columns>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

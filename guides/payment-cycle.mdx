@@ -1,75 +1,13 @@
 ---
 title: "The Payment Cycle"
-description: "Every paid API call goes through three phases — Authorize, Consume/Release, and Settle."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-## Phase 1 — Authorize
+This page belongs to an older docs set and is no longer maintained.
 
-The merchant's SDK calls Agon to reserve consumer funds **before** serving the response.
+Use the current V4 docs instead:
 
-```json
-POST /authorize
-Authorization: Bearer pk_xxxxx
-
-{
-  "consumer_token": "eyJ...",
-  "request_id": "req_abc123",
-  "amount": 1000
-}
-```
-
-Agon verifies in sequence:
-1. **Token validity** — not expired, not previously used (single-use enforcement or budget check)
-2. **Sufficient balance** — consumer has enough `available_balance`
-3. **Spending controls** — amount is within per-request and daily limits
-4. **Domain allowlist** — for proxy mode (Mode B), the merchant domain is checked against `proxy_allowed_domains`
-
-On approval, a **reservation** is created — an atomic hold on the consumer's funds.
-
-<Note>
-  `request_id` is an idempotency key. Submitting the same ID twice (e.g., on a timeout retry) returns the original reservation — no double-charge occurs.
-</Note>
-
-## Phase 2 — Consume or Release
-
-After the merchant handles the request, one of three things happens:
-
-| Outcome | Action | Balance Effect |
-|---|---|---|
-| ✅ Success (2xx) | `POST /consume` | Reservation finalized — funds queued for settlement |
-| ❌ Failure (4xx/5xx) | `POST /release` | Reservation cancelled — funds returned to `available_balance` |
-| ⏱ Timeout | Auto-expire (5 min TTL) | Same as release — funds always returned |
-
-Both `/consume` and `/release` are idempotent — calling them multiple times on the same reservation is safe.
-
-## Phase 3 — Settle
-
-Consumed funds accumulate off-chain until the merchant triggers settlement. When called:
-
-1. All consumed reservations are **grouped by merchant**
-2. Each merchant's total is **netted** — all consumers, all calls, one sum
-3. All payouts are settled in **one Solana transaction**
-4. Transaction broadcasts; off-chain ledger is reconciled
-
-<Tip>
-  A merchant always receives exactly **one USDC transfer per settlement** regardless of call volume. On-chain cost is bounded by the number of merchants, not API call count.
-</Tip>
-
-## Reservation State Machine
-
-```
-           ┌──────────────┐
-           │   reserved   │  ← POST /authorize approved
-           └──────┬───────┘
-                  │
-      ┌───────────┼─────────────┐
-      ▼           ▼             ▼
-┌──────────┐ ┌─────────┐ ┌──────────┐
-│ consumed │ │released │ │ expired  │
-│/consume  │ │/release │ │ (5 min)  │
-└────┬─────┘ └─────────┘ └──────────┘
-     ▼
-┌──────────┐
-│ settled  │  ← merchant triggers settlement
-└──────────┘
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

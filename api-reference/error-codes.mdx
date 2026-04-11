@@ -1,67 +1,13 @@
 ---
 title: "Error Codes"
-description: "All Agon API error codes, HTTP status codes, and their meanings."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-All errors use a consistent shape:
+This page belongs to an older docs set and is no longer maintained.
 
-```json
-{
-  "error": "error_code",
-  "message": "Human-readable description of the error",
-  "details": {}
-}
-```
+Use the current V4 docs instead:
 
-## Authentication Errors
-
-| Code | HTTP | Description |
-|---|---|---|
-| `invalid_api_key` | 401 | Consumer key missing, malformed, or not found |
-| `api_key_revoked` | 401 | Consumer key has been revoked |
-| `invalid_platform_key` | 401 | Platform key missing, malformed, or not found |
-| `platform_inactive` | 403 | Platform account has been deactivated |
-| `invalid_consumer_token` | 401 | Token invalid or expired |
-| `invalid_signature` | 401 | Ed25519 signature verification failed |
-| `auth_expired` | 401 | Timestamp outside ±5 minute replay-protection window |
-
-## Balance & Payment Errors
-
-| Code | HTTP | Description |
-|---|---|---|
-| `insufficient_balance` | 402 | Not enough available USDC to cover the request |
-| `withdrawal_exceeds_available` | 400 | Withdrawal amount exceeds `available_balance` |
-| `spending_limit_exceeded` | 402 | Per-request or daily limit triggered |
-| `proxy_disabled` | 402 | Proxy mode is not enabled on this account |
-| `proxy_domain_blocked` | 402 | Merchant domain is not in the proxy allowed list |
-
-## Reservation Errors
-
-| Code | HTTP | Description |
-|---|---|---|
-| `reservation_not_found` | 404 | Reservation does not exist or belongs to a different platform |
-| `reservation_already_consumed` | 409 | Already consumed — treated as success (idempotent) |
-| `reservation_already_released` | 409 | Already released — treated as success (idempotent) |
-| `reservation_expired` | 409 | TTL elapsed — funds returned to consumer; also returned by `/consume` if called after `expires_at` even if status not yet updated |
-| `duplicate_request` | 409 | `request_id` was already processed |
-| `token_already_used` | 409 | Single-use token was already spent on a different `request_id` |
-| `token_budget_exceeded` | 402 | Multi-use token cumulative spend exceeds the `budget` ceiling |
-| `amount_exceeds_token_cap` | 403 | Amount exceeds the token's `max_amount` field |
-
-## Account & Deposit Errors
-
-| Code | HTTP | Description |
-|---|---|---|
-| `account_not_found` | 404 | No account found for the provided key or wallet |
-| `account_already_exists` | 409 | Wallet address already has a registered account |
-| `wallet_address_invalid` | 400 | Not a valid base58 Solana address |
-| `deposit_tx_not_found` | 400 | Transaction not found on-chain |
-| `deposit_tx_invalid_destination` | 400 | Transfer destination is not the account's deposit address |
-| `deposit_tx_invalid_mint` | 400 | Token mint is not USDC |
-| `deposit_tx_not_confirmed` | 400 | Transaction has not yet reached finalized status |
-
-## Rate Limit Errors
-
-| Code | HTTP | Description |
-|---|---|---|
-| `rate_limited` | 429 | Global per-key limit or per-(platform, consumer) limit for `/authorize` exceeded (200 req/60 s) |
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

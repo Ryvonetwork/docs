@@ -1,6 +1,6 @@
 ---
 title: "First Payment Flow"
-description: "A concrete builder guide for registering, funding, opening a lane, signing a commitment, and settling it."
+description: "A builder's guide for registering, funding, opening a lane, signing a commitment, and settling it."
 ---
 
 This guide shows the smallest useful Agon integration: one payer, one payee, one token, one lane, and one settled `agon-cmt-v4` message.
@@ -121,7 +121,7 @@ That moves tokens from the payer's token account into the protocol vault and cre
 
 ## 5. Create The Lane
 
-One directed lane exists for one `payer_id + payee_id + token_id` relationship. In V4, lanes are permanent.
+One one-way payment channel exists for each `payer_id + payee_id + token_id` relationship. In V4, these channels are permanent.
 
 ```ts
 const channelPda = findChannelPda(
@@ -256,7 +256,12 @@ const ed25519Ix = Ed25519Program.createInstructionWithPrivateKey({
 });
 ```
 
-The signer above must match the lane's current `authorized_signer`. By default, that is the payer wallet that created the lane. If the lane uses a different signing key, that key must sign here instead.
+The signer above must match the channel's current `authorized_signer`. This key signs new cumulative payment amounts for that channel. By default, it is the payer wallet that created the channel. If the channel uses a different signing key, that key must sign here instead.
+
+This is different from `authorized_settler`:
+
+- `authorized_signer` signs the payment update
+- `authorized_settler` may submit the signed update onchain
 
 ## 9. Submit `settle_individual`
 

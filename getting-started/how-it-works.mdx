@@ -1,98 +1,13 @@
 ---
 title: "How It Works"
-description: "Trace a payment from deposit to settlement — the full Agon lifecycle."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-From deposit to settlement in four steps.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-<Steps>
-  <Step title="Create an Account & Deposit">
-    Register to receive a unique HD-derived Solana address. Send USDC there from any wallet. Agon detects the transfer via Helius webhooks and credits your balance automatically — typically within seconds.
-
-    ```typescript
-    import { AgonClient } from '@agonx402/client'
-
-    const agon = new AgonClient({
-      baseUrl: 'https://api-devnet.agonx402.com',
-      apiKey: process.env.AGON_API_KEY!,
-      signer: async (msg) => myWallet.sign(msg),
-    })
-
-    const account = await agon.getAccount()
-    console.log('Send USDC to:', account.depositAddress)
-    // Your balance appears automatically — no further action needed
-    ```
-
-    <Note>
-      A periodic sweep job also runs as a failsafe, ensuring no deposit is ever missed even if a webhook is delayed.
-    </Note>
-  </Step>
-
-  <Step title="Call a Paid API">
-    Use `agon.fetch()` as a drop-in replacement for `fetch()`. The SDK handles the entire payment lifecycle: generating a short-lived consumer token, attaching it to the request, and managing the authorization flow.
-
-    ```typescript
-    // Drop-in for fetch() — payment is handled automatically
-    const response = await agon.fetch('https://api.example.com/v1/generate')
-    const data = await response.json()
-    ```
-
-    **Under the hood:**
-    1. SDK mints a short-lived, single-use consumer token (`POST /account/create-token`)
-    2. Token is attached to the request as `X-AGON-TOKEN`
-    3. Merchant's SDK calls Agon `/authorize` — funds reserved off-chain instantly
-    4. Merchant processes and responds
-    5. Merchant calls Agon `/consume` — reservation finalized. No on-chain transaction occurs
-  </Step>
-
-  <Step title="Settlement">
-    When the merchant is ready to collect, they trigger settlement via `POST /platform/settle` or the Agon dashboard:
-
-    1. All consumed reservations are grouped by merchant
-    2. Every consumer's charges to a given merchant are **netted** into one sum
-    3. All payouts are packed into **one Solana transaction**
-    4. The transaction broadcasts and the off-chain ledger is reconciled
-
-    The merchant receives a single consolidated USDC transfer — regardless of how many consumers called their API or how many times.
-  </Step>
-
-  <Step title="Withdraw Anytime">
-    Your `available_balance` is yours. Withdraw to your owner wallet on-chain at any time — no lock-up period, no minimum, no delay.
-
-    ```typescript
-    const result = await agon.withdraw(5) // 5 USDC → your wallet immediately
-    console.log('On-chain signature:', result.txSignature)
-    ```
-  </Step>
-</Steps>
-
-## Full Flow Diagram
-
-```mermaid
-sequenceDiagram
-    participant W as Your Wallet
-    participant C as Consumer SDK
-    participant A as Agon Backend
-    participant M as Merchant API
-    participant S as Solana
-
-    W->>S: Send USDC to deposit address
-    S-->>A: Helius webhook (auto-credit)
-
-    loop Each API Call (off-chain, no fees)
-        C->>A: POST /account/create-token
-        A-->>C: consumer token (JWT)
-        C->>M: GET /endpoint  [X-AGON-TOKEN: ...]
-        M->>A: POST /authorize
-        A-->>M: approved (reservation created)
-        M-->>C: API Response
-        M->>A: POST /consume (async)
-    end
-
-    Note over A: Merchant triggers settlement
-    A->>S: 1 USDC transfer per merchant (all consumers netted)
-```
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

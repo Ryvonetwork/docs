@@ -1,82 +1,13 @@
 ---
 title: "Authentication"
-description: "The full authentication model — API keys, consumer tokens, Ed25519 wallet signatures, and platform keys."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-Agon uses distinct authentication mechanisms depending on **who** you are and **what** you're talking to.
+This page belongs to an older docs set and is no longer maintained.
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
+Use the current V4 docs instead:
 
-## Authentication Overview
-
-| Header | Used by | Sent to | Purpose |
-|---|---|---|---|
-| `X-AGON-KEY: ag_xxx` | Consumer | Agon's own API | Account management, token creation |
-| `Authorization: Bearer ag_xxx` | Consumer | Agon's own API | REST alias for X-AGON-KEY |
-| `X-AGON-TOKEN: eyJ...` | Consumer | **Merchant's API** | Short-lived payment JWT |
-| `X-AGON-WALLET` + `X-AGON-SIGNATURE` | Agent | Agon's own API | Ed25519 wallet auth (no API key needed) |
-| `Authorization: Bearer pk_xxx` | Merchant | Agon's own API | Platform auth for /authorize, /consume, /release |
-
-<Warning>
-  **Never send your `ag_xxx` API key to a merchant.** The merchant's `extractConsumerToken()` reads `X-AGON-TOKEN`, not `X-AGON-KEY`. Sending the wrong header returns a `402` as if no payment was provided.
-</Warning>
-
-## Consumer → Agon (`X-AGON-KEY`)
-
-Use this for all account management operations: `GET /account/me`, `POST /account/create-token`, `POST /account/withdraw`, etc.
-
-```http
-# Primary form
-X-AGON-KEY: ag_xxxxx
-
-# REST alias (for curl, Postman, etc.)
-Authorization: Bearer ag_xxxxx
-```
-
-## Consumer → Merchant (`X-AGON-TOKEN`)
-
-Tokens are short-lived JWTs created by calling Agon, then forwarded to the merchant:
-
-```http
-# Step 1: Mint a token from Agon
-POST https://api-devnet.agonx402.com/account/create-token
-X-AGON-KEY: ag_xxxxx
-Content-Type: application/json
-
-{ "ttl": 60, "max_amount": 10000 }
-→ { "token": "eyJ..." }
-
-# Step 2: Forward token to the merchant
-GET https://merchant-api.com/endpoint
-X-AGON-TOKEN: eyJ...
-```
-
-Your raw API key is never transmitted to or stored by the merchant.
-
-## Agent Auth — Ed25519 Wallet Signature
-
-For agents that have no API key yet, or wish to authenticate without one. This works with any Ed25519 keypair — including agentic wallets like Coinbase CDP that manage keys without exposing raw secret bytes.
-
-```http
-X-AGON-WALLET: <base58_solana_public_key>
-X-AGON-SIGNATURE: <base58_ed25519_signature_of_message>
-X-AGON-TIMESTAMP: <unix_milliseconds>
-```
-
-**Signed message format:** `agon:auth:<timestamp>`
-
-<Note>
-  **Timestamp window:** Must be within ±5 minutes of server time (replay protection). This window applies to individual auth requests — duplicate calls with the same `request_id` are idempotent regardless of timestamp.
-</Note>
-
-## Merchant → Agon (`Authorization: Bearer pk_xxx`)
-
-Merchant servers use their platform key when calling authorization endpoints:
-
-```http
-Authorization: Bearer pk_xxxxx
-```
-
-Used for: `POST /authorize`, `POST /consume`, `POST /release`, `POST /platform/settle`.
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)

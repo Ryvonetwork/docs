@@ -1,94 +1,13 @@
 ---
 title: "Register as an Agent"
-description: "Native Ed25519 wallet registration for AI agents and headless services — no browser, no OAuth."
+description: "Legacy page kept for archived links. See the current Agon Protocol V4 docs."
 ---
 
-AI agents authenticate using their native Ed25519 wallet keypair — no browser, no Privy, no OAuth. This flow is designed for autonomous agents and supports **agentic wallets** like Coinbase CDP that manage keys without exposing raw secret bytes.
+This page belongs to an older docs set and is no longer maintained.
 
-<Note>
-  **Prerequisites:** A Solana keypair or agentic wallet (e.g., Coinbase CDP). USDC for funding.
-</Note>
+Use the current V4 docs instead:
 
-<Info>
-  Examples use `https://api-devnet.agonx402.com` (devnet). For production, replace with `https://api-mainnet.agonx402.com`. See [Environments](/api-reference/introduction#environments).
-</Info>
-
-<Steps>
-  <Step title="Choose Your Wallet Approach">
-    **Option A — Agentic Wallet (Recommended)**
-
-    Use a managed wallet provider like [Coinbase CDP](https://docs.cdp.coinbase.com/) or other MPC/custodial wallet services. These give your agent a Solana identity without requiring you to generate, store, or expose raw secret keys. The wallet handles signing internally.
-
-    ```typescript
-    import { CdpAgentkit } from '@coinbase/agentkit'
-
-    // CDP handles key management — no raw secrets in your code
-    const agentkit = await CdpAgentkit.configureWithWallet()
-    const walletAddress = agentkit.wallet.defaultAddress.id
-    ```
-
-    **Option B — Self-Managed Keypair**
-
-    Generate a Solana keypair directly. Store the secret key securely in an environment variable or secrets manager — never hardcode it.
-
-    ```typescript
-    import { Keypair } from '@solana/web3.js'
-    import bs58 from 'bs58'
-
-    // Generate once, persist the secret key
-    const keypair = Keypair.generate()
-    const secretKeyB58 = bs58.encode(keypair.secretKey)
-    // Store secretKeyB58 in process.env.AGENT_SECRET_KEY
-
-    // Load on subsequent runs
-    // const keypair = Keypair.fromSecretKey(bs58.decode(process.env.AGENT_SECRET_KEY!))
-    ```
-  </Step>
-
-  <Step title="Register via Ed25519 Signature">
-    ```typescript
-    import nacl from 'tweetnacl'
-
-    const timestamp = Date.now()
-    const message = `agon:register:${timestamp}`
-    const signature = bs58.encode(
-      nacl.sign.detached(new TextEncoder().encode(message), keypair.secretKey)
-    )
-
-    const res = await fetch('https://api-devnet.agonx402.com/account/register/agent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        wallet_address: keypair.publicKey.toBase58(),
-        signature,
-        timestamp,
-        // beta_token: 'A3K7F2M9P1X8', // required during closed beta
-      }),
-    })
-
-    const { api_key, deposit_address } = await res.json()
-    ```
-
-    <Warning>
-      **Error `409`:** This wallet is already registered. You have two options:
-      - **Use your stored `api_key`** (`X-AGON-KEY: ag_xxx`) for subsequent requests
-      - **Authenticate via Ed25519 signature** using `X-AGON-WALLET` + `X-AGON-SIGNATURE` + `X-AGON-TIMESTAMP` headers — no API key needed
-    </Warning>
-  </Step>
-
-  <Step title="Fund & Make API Calls">
-    Send USDC to `deposit_address`, then mint a consumer token for each API call:
-
-    ```typescript
-    const { token } = await fetch('https://api-devnet.agonx402.com/account/create-token', {
-      method: 'POST',
-      headers: { 'X-AGON-KEY': api_key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ttl: 60, budget: 50_000 }),
-    }).then(r => r.json())
-
-    const apiRes = await fetch('https://merchant-api.com/endpoint', {
-      headers: { 'X-AGON-TOKEN': token },
-    })
-    ```
-  </Step>
-</Steps>
+- [Overview](/getting-started/v4-overview)
+- [First payment flow](/getting-started/first-payment-flow)
+- [Instruction surface](/reference/instruction-surface)
+- [Message reference](/reference/v4-message-reference)
