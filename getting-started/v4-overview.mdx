@@ -5,7 +5,7 @@ description: "A builder-first overview of how Agon Protocol V4 works."
 
 Agon Protocol V4 uses deferred settlement. Participants can make many payments first and settle later, instead of treating every interaction as a separate transfer.
 
-Each wallet registers once as a permanent participant and receives a stable `participant_id` for the lifetime of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer can lock funds to that channel if the relationship needs stronger guarantees. This keeps the protocol simple and gives builders stable identities and payment lanes to build on top of.
+Each wallet registers once as a permanent participant and receives a stable `participant_id` for the lifetime of the deployment. Participants deposit allowlisted tokens into protocol balances. Those tokens can be plain stablecoins, or fixed-balance yield-bearing stablecoins if the integration wants productive idle balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer can lock funds to that channel if the relationship needs stronger guarantees. This keeps the protocol simple and gives builders stable identities and payment lanes to build on top of.
 
 V4 uses two signed message formats:
 

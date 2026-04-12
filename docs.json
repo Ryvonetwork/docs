@@ -35,6 +35,7 @@
             "pages": [
               "core-concepts/participants",
               "core-concepts/balances-and-withdrawals",
+              "core-concepts/yield-bearing-stablecoins",
               "core-concepts/permanent-lanes",
               "core-concepts/cooperation-trust-collateral",
               "core-concepts/authorized-settler",

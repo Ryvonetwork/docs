@@ -19,6 +19,10 @@ This does not eliminate cost. It changes where the cost appears. Instead of payi
 
 Agon does not force you into deferred settlement, though. A provider can still require sign, settle, then serve if it wants exact pay-per-call behavior. The point of the protocol is that it supports both models instead of forcing one.
 
+Deferred settlement also makes yield-bearing settlement assets more interesting. If balances sit in a fixed-balance yield share between settlements, idle capital can keep accruing instead of sitting dead between tiny transactions. That does not make payments free, but it does mean the settlement asset itself can help offset part of the remaining cost.
+
+If you want to understand where that idea works well, and where it gets more complicated, see [Yield-Bearing Stablecoins](/core-concepts/yield-bearing-stablecoins).
+
 ## Why The Comparison To x402 Still Matters
 
 Agon often compares itself to an exact-payment x402-style baseline because that is the cleanest way to show the difference in transaction count.
