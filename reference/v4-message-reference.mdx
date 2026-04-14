@@ -1,11 +1,11 @@
 ---
-title: "V4 Message Reference"
-description: "The exact signed message formats used by Agon Protocol V4."
+title: "Message Reference"
+description: "The exact signed message formats used by the current Agon protocol."
 ---
 
-Agon V4 uses two signed message types:
+Agon currently uses two signed message types:
 
-1. `agon-cmt-v4` for one payment channel
+1. `agon-cmt-v5` for one payment channel
 2. `agon-round-v4` for one cooperative clearing round
 
 This page explains the exact fields and encoding rules for both.
@@ -30,13 +30,13 @@ That means the signed domain is deployment-specific.
 
 ### Compact Integers
 
-Participant ids, cumulative amounts, and fees use compact unsigned integer encoding in the signed message. In the test helpers this is implemented as `encodeCompactU64`.
+Participant ids and cumulative amounts use compact unsigned integer encoding in the signed message. In the test helpers this is implemented as `encodeCompactU64`.
 
 ### Token ID
 
 `token_id` is stored as a little-endian `u16` in both message types.
 
-## `agon-cmt-v4`
+## `agon-cmt-v5`
 
 This is the unilateral payment-channel message used by:
 
@@ -48,7 +48,7 @@ This is the unilateral payment-channel message used by:
 | Field | Meaning |
 | --- | --- |
 | `kind = 0x01` | Unilateral commitment message |
-| `version = 0x04` | V4 wire format |
+| `version = 0x05` | Current unilateral wire format |
 | `message_domain` | Deployment-scoped replay boundary |
 | `flags` | Optional field presence bits |
 | `payer_id` | Channel payer participant id |
@@ -56,21 +56,20 @@ This is the unilateral payment-channel message used by:
 | `token_id` | Allowlisted settlement token |
 | `committed_amount` | New cumulative target for the channel |
 | `authorized_settler` | Optional delegated submitter; the payee may still settle |
-| `fee_amount` | Optional settlement fee |
-| `fee_recipient_id` | Optional fee recipient participant id |
 
 ### Flags
 
 | Bit | Meaning |
 | --- | --- |
 | `0x01` | `authorized_settler` is present |
-| `0x02` | `fee_amount` and `fee_recipient_id` are present |
 
 ### Practical Meaning
 
 `committed_amount` is cumulative, not incremental.
 
 If the channel is already settled to `1_000_000` and the new message says `1_250_000`, then the settlement delta is `250_000`.
+
+Operator or coordinator payment is not embedded in `agon-cmt-v5`. If a flow needs to compensate an operator, that payment should be expressed as its own ordinary lane commitment.
 
 ## `agon-round-v4`
 
@@ -105,6 +104,6 @@ Each block says:
 
 ## Which Message To Use
 
-Use `agon-cmt-v4` when one payer is updating one channel.
+Use `agon-cmt-v5` when one payer is updating one channel.
 
 Use `agon-round-v4` when several participants are willing to sign one shared message so that several channel updates can be settled together.

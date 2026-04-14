@@ -1,17 +1,17 @@
 ---
 title: "V4 Overview"
-description: "A builder-first overview of how Agon Protocol V4 works."
+description: "A builder-first overview of how the current Agon protocol works."
 ---
 
-Agon Protocol V4 decouples payment execution from settlement. Participants can make many payments first through signed commitments and settle them later onchain.
+Agon decouples payment execution from settlement. Participants can make many payments first through signed commitments and settle them later onchain.
 
 Each wallet registers once as a participant and keeps the same `participant_id` for the life of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer can lock funds to that channel if the relationship needs guaranteed payment capacity.
 
 ## Overview
 
-V4 uses two signed message formats:
+The current protocol uses two signed message formats:
 
-- `agon-cmt-v4` for one payment channel
+- `agon-cmt-v5` for one payment channel
 - `agon-round-v4` for one cooperative clearing round
 
 Those messages feed three settlement paths:
@@ -44,7 +44,7 @@ In the common case, an integration looks like this:
 
 Agon keeps signed payment updates offchain until settlement. Most integrations store:
 
-1. the latest signed `agon-cmt-v4` per lane
+1. the latest signed `agon-cmt-v5` per lane
 2. local usage or metering state
 3. bundle assembly logic
 4. cooperative round construction logic
@@ -61,7 +61,7 @@ Use **cooperative clearing rounds** when several parties are willing to co-sign 
 
 ## Why V4 Uses Permanent Identities And Permanent Channels
 
-V4 intentionally uses stable identities and permanent channels. That means more long-lived onchain state, but it makes the protocol easier to work with:
+Agon intentionally uses stable identities and permanent channels. That means more long-lived onchain state, but it makes the protocol easier to work with:
 
 1. participant ids do not recycle
 2. offchain services can index users without worrying about identity reuse
@@ -71,7 +71,7 @@ V4 intentionally uses stable identities and permanent channels. That means more 
 
 ## Common Use Cases
 
-V4 is a good fit for:
+Agon is a good fit for:
 
 - one buyer paying one provider over time
 - many buyers paying one provider

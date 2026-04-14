@@ -1,6 +1,6 @@
 ---
 title: "Authorized Settler"
-description: "Why `authorized_settler` exists and what delegated settlement enables in Agon V4."
+description: "Why `authorized_settler` exists and what delegated settlement enables in the current Agon commitment model."
 ---
 
 `authorized_settler` lets a payment commitment name an additional submitter without changing who signed the payment update.
@@ -30,7 +30,7 @@ If you want the larger network pattern that often sits on top of this feature, r
 
 ## How It Works
 
-In V4, `authorized_settler` is additive, not exclusive.
+`authorized_settler` is additive, not exclusive.
 
 If a commitment includes `authorized_settler`, then either of these may submit it:
 
@@ -63,15 +63,20 @@ const message = createCommitmentMessage({
 
 After that message is signed by the channel's `authorized_signer`, either the payee or `operator.publicKey` may submit it.
 
-## Fees Are Separate
+## Operator Payment Is Separate
 
-`authorized_settler` does not automatically receive a fee. If the operator should be paid, the commitment must also include `fee_amount` and `fee_recipient_id`.
+`authorized_settler` does not automatically receive a fee.
 
-Those fields are independent from `authorized_settler`. A delegated settler can be unpaid, and a payee can still submit a message that routes the fee to the operator if the operator was named as the fee recipient in the signed message.
+If the operator should be paid, that payment should be modeled as its own ordinary lane commitment. In practice that means flows such as:
+
+- `payer -> provider` for the service itself
+- `provider -> operator` or `payer -> operator` for settlement or coordination services
+
+That keeps operator compensation durable and cumulative instead of embedding it as a one-off field inside the unilateral commitment message.
 
 ## Limits
 
-The current V4 feature is not an escrow primitive.
+The current feature is not an escrow primitive.
 
 It does not:
 

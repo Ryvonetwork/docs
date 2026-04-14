@@ -1,11 +1,11 @@
 ---
 title: "Bundle Settlement"
-description: "How one payee settles many `agon-cmt-v4` messages in one transaction."
+description: "How one payee settles many `agon-cmt-v5` messages in one transaction."
 ---
 
 Bundle settlement is the payee-side compression path.
 
-Each payer still signs its own `agon-cmt-v4` message for its own lane. The payee simply settles several of those messages together with `settle_commitment_bundle`.
+Each payer still signs its own `agon-cmt-v5` message for its own lane. The payee simply settles several of those messages together with `settle_commitment_bundle`.
 
 ## Overview
 
@@ -22,8 +22,6 @@ All bundle entries must:
 3. reference unique lanes
 4. have a valid current signer for each lane
 5. have a submitter that is allowed for each message
-
-If the signed messages include fees, the fee recipient must also be consistent across the bundle.
 
 ## Account Layout
 
@@ -43,21 +41,21 @@ Layout:
 
 `[payer_1, channel_1, payer_2, channel_2, ...]`
 
-If the fee recipient is not already one of the bundle participants, one extra fee-recipient participant account is passed as the leading remaining account.
-
 ## What The Program Verifies
 
 For each entry, the program checks:
 
 1. the Ed25519 signature is present and valid
-2. the signed message parses as `agon-cmt-v4`
+2. the signed message parses as `agon-cmt-v5`
 3. the token is allowlisted and matches the rest of the bundle
 4. the passed channel is the canonical `channel-v2` PDA for that payer, payee, and token
 5. the signer matches the channel's `authorized_signer`
 6. the cumulative amount moves forward
 7. the payer has enough total balance
 
-After validation, the program applies all lane updates, credits the payee once, and applies the shared fee-recipient credit if needed.
+After validation, the program applies all lane updates and credits the payee once.
+
+If an operator also needs to be paid, that operator payment should be modeled as its own lane and settled separately or through a cooperative clearing round.
 
 ## Example
 

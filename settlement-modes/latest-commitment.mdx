@@ -1,11 +1,11 @@
 ---
 title: "Latest Commitment Settlement"
-description: "How one `agon-cmt-v4` message settles one lane."
+description: "How one `agon-cmt-v5` message settles one lane."
 ---
 
 Latest commitment settlement is the simplest Agon path.
 
-One payer signs one `agon-cmt-v4` message for one lane. The payee, or a delegated submitter named in the message, submits it later with `settle_individual`.
+One payer signs one `agon-cmt-v5` message for one lane. The payee, or a delegated submitter named in the message, submits it later with `settle_individual`.
 
 ## Overview
 
@@ -37,7 +37,8 @@ If the checks pass, the program:
 2. consumes any needed `locked_balance`
 3. debits the payer's shared balance for any remaining amount
 4. credits the payee
-5. credits the fee recipient if the signed message includes fee fields
+
+If an operator should be paid, that should happen through its own ordinary lane commitment, not through a field embedded in this unilateral message.
 
 ## Example
 

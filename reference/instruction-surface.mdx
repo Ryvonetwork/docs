@@ -1,9 +1,9 @@
 ---
 title: "Instruction Surface"
-description: "The full onchain instruction surface of Agon Protocol V4."
+description: "The full onchain instruction surface of the current Agon protocol."
 ---
 
-This page lists the instruction surface exactly as it exists in the V4 program.
+This page lists the instruction surface exactly as it exists in the current program.
 
 Most integrations only need a small subset, but it is useful to know the full surface.
 
@@ -78,10 +78,10 @@ Executes the signer rotation after the timelock.
 ## Settlement
 
 `settle_individual`  
-Settles one `agon-cmt-v4` message for one channel.
+Settles one `agon-cmt-v5` message for one channel.
 
 `settle_commitment_bundle`  
-Settles many `agon-cmt-v4` messages in one transaction for one payee.
+Settles many `agon-cmt-v5` messages in one transaction for one payee.
 
 `settle_clearing_round`  
 Settles one `agon-round-v4` message signed by a roster of participants and applies only the residual balance changes after the included payments cancel each other out.
