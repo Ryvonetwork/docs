@@ -1,0 +1,114 @@
+---
+title: "Protocol Overview"
+description: "A builder-first tour of the V4 protocol: accounts, messages, and settlement paths."
+---
+
+Agon V4 decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
+
+Each wallet registers once as a participant and keeps the same `participant_id` for the life of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer may optionally lock funds to that channel if the relationship needs guaranteed payment capacity.
+
+## On-chain objects
+
+V4 exposes four primary account types:
+
+| Account | What it stores | Why it exists |
+| --- | --- | --- |
+| `GlobalConfig` | Authority, fee settings, chain ID, derived `message_domain`, timelock policy | Defines the deployment and the signing domain |
+| `TokenRegistry` | Allowlisted settlement tokens | Makes token support explicit rather than implicit |
+| `ParticipantAccount` | Stable `participant_id`, token balances, withdrawal state, inbound-channel policy | Gives every wallet one durable protocol identity |
+| `ChannelState` | One directed channel's token, payer, payee, settled cumulative, locked funds, signer state | Tracks the durable relationship between one payer and one payee |
+
+Full field-level layouts are on the [Account layouts](/reference/accounts) reference.
+
+## Signed messages
+
+V4 uses exactly two signed message formats:
+
+- **`agon-cmt-v5`** — the unilateral cumulative commitment for one channel
+- **`agon-round-v4`** — the cooperative clearing-round message for several participants
+
+Both messages embed the deployment-scoped `message_domain`, so a signature for one environment does not verify on another. Full byte-level layouts are on the [Message formats](/reference/messages) reference.
+
+## Settlement paths
+
+Those two messages feed three settlement instructions:
+
+| Mode | Instruction | When to use |
+| --- | --- | --- |
+| Direct | `settle_individual` | One payer, one payee — the simplest path |
+| Bundle | `settle_commitment_bundle` | One payee aggregating many payers' commitments in one token |
+| Cooperative clearing | `settle_clearing_round` | Several participants co-signing one shared round so payments net before balance changes are applied |
+
+All three settle into the same shared vault and the same participant balances.
+
+## End-to-end flow
+
+In the common case, an integration goes through these steps:
+
+1. Register the payer and payee as participants.
+2. Deposit an allowlisted token.
+3. Create a one-way payment channel.
+4. Optionally lock funds to that channel for guaranteed capacity.
+5. Sign cumulative commitments off-chain as usage grows.
+6. Settle the newest valid state later.
+
+[Your first payment](/getting-started/first-payment) walks through each step with working code.
+
+## What stays off-chain
+
+Agon keeps signed payment updates off-chain until settlement. Most integrations store:
+
+- the latest signed `agon-cmt-v5` per channel
+- usage or metering state
+- bundle assembly logic
+- cooperative round construction logic
+
+Only the newest valid state needs to reach the chain.
+
+## Why V4 uses permanent identities and permanent channels
+
+Agon intentionally uses stable identities and permanent channels. The tradeoff is more long-lived on-chain state, but the protocol becomes much easier to work with:
+
+- `participant_id` values do not recycle.
+- Off-chain services can index users without worrying about identity reuse.
+- Channels do not close and reopen, so there is no reopened-channel replay surface.
+- Replay protection is simpler.
+- Payment channels stay stable for clients and operators.
+
+For the rationale, see [Design principles](/thesis/design-principles).
+
+## Choosing a settlement mode
+
+- Use **direct settlement** when one payer and one payee need the smallest possible surface and each lane can settle on its own.
+- Use **bundle settlement** when one payee collects signed commitments from many payers in the same token and wants one transaction instead of many.
+- Use **cooperative clearing** when several parties are willing to co-sign one shared round so payments inside the group can cancel out before balances are updated.
+
+See [Settlement modes](/settlement-modes/overview) for the tradeoffs side by side.
+
+## Current deployment
+
+| Field | Value |
+| --- | --- |
+| Program ID | `Ba2puU8D2CLD1dYfRQ4YBXxirdyz3zVLLChvMf9AqJ1Y` |
+| Cluster | `devnet` |
+| Message domain | `b2ba0d07c5a4fcd09b933f732c3f389d` |
+| Default settlement token | `aUSDC` (`token_id = 2`, mint `AMXvvKksfCprEKY9uxzNx9MKrDq9kwDWG6Fr9sXkEpAr`) |
+
+See [Deployment](/reference/deployment) for environment-specific chain IDs and timelocks.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
+    Build the smallest useful Agon integration with real Anchor calls.
+  </Card>
+  <Card title="Payment channels" icon="route" href="/core-concepts/payment-channels">
+    How one-way, permanent channels are modeled and maintained.
+  </Card>
+  <Card title="Commitments" icon="signature" href="/core-concepts/commitments">
+    How cumulative signed messages work and why they are cheap to update.
+  </Card>
+  <Card title="Instructions" icon="code" href="/reference/instructions">
+    The full on-chain instruction surface.
+  </Card>
+</CardGroup>

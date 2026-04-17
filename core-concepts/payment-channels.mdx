@@ -1,0 +1,107 @@
+---
+title: "Payment Channels"
+description: "How Agon V4 models one long-lived, one-way payment relationship."
+---
+
+In Agon V4, a payment channel is one one-way payment relationship from a payer to a payee for a specific token.
+
+One permanent channel exists for each `payer_id + payee_id + token_id` triple. Each channel is stored in one `ChannelState` PDA under the `channel-v2` seed scheme.
+
+## Why one-way
+
+Agon channels are intentionally unidirectional because the common case is unidirectional:
+
+- one buyer paying one API
+- one agent paying one tool
+- one service paying one provider
+
+The payer signs a unilateral cumulative message; the payee does not need to co-sign every off-chain update. When a relationship needs to send value in both directions, the two parties open two channels — one in each direction — and can later settle both together in a cooperative round.
+
+## What `ChannelState` stores
+
+| Field | Meaning |
+| --- | --- |
+| `token_id` | Settlement token for this channel |
+| `payer_id` | Participant that owes value on this channel |
+| `payee_id` | Participant that receives value on this channel |
+| `settled_cumulative` | Highest cumulative amount already settled |
+| `locked_balance` | Funds reserved for this channel |
+| `authorized_signer` | Key allowed to sign unilateral payment updates |
+| `pending_unlock_amount` + `unlock_requested_at` | Timelocked unlock request |
+| `pending_authorized_signer` + `authorized_signer_update_requested_at` | Timelocked signer rotation request |
+
+Crucially, the channel does **not** store the latest signed message. That stays off-chain until settlement.
+
+## Creating a channel
+
+The payer creates the channel and pays the account rent. The payee may also need to sign, depending on its [inbound channel policy](/core-concepts/participants#inbound-channel-policy).
+
+```ts
+await program.methods
+  .createChannel(tokenId, null)
+  .accounts({
+    tokenRegistry,
+    owner: payer.publicKey,
+    payerAccount,
+    payeeAccount,
+    payeeOwner: payee.publicKey,
+    channelState,
+    systemProgram: SystemProgram.programId,
+  } as any)
+  .signers([payer, payee])
+  .rpc();
+```
+
+If the payer passes `null` for `authorized_signer`, the protocol uses the payer wallet as the signing key by default.
+
+## Locked funds
+
+Locked funds are optional. Use them when the payee wants guaranteed payment capacity on the channel.
+
+If funds are locked, settlement spends locked balance first and shared participant balance second.
+
+Unlocking is intentionally delayed:
+
+1. The payer requests an unlock (`request_unlock_channel_funds`).
+2. The protocol waits through the configured timelock.
+3. The payer executes the unlock (`execute_unlock_channel_funds`) and receives the remaining locked amount back into `available_balance`.
+
+The timelock gives the payee time to settle recent commitments before the locked funds are released.
+
+## Channel signing key
+
+Each channel has one signing key for unilateral commitments. By default that is the payer wallet, but the payer can choose a different key at creation time or rotate it later.
+
+<Note>
+  The signing key is distinct from `authorized_settler`:
+  - `authorized_signer` signs new cumulative payment amounts.
+  - `authorized_settler` may submit a signed commitment on-chain.
+</Note>
+
+Rotations are timelocked:
+
+1. `request_update_channel_authorized_signer`
+2. Wait through the timelock.
+3. `execute_update_channel_authorized_signer`
+
+Until the rotation executes, the old signing key stays active. After it executes, only the new signing key can sign new commitments for that channel.
+
+## Why channels are permanent
+
+Older designs allowed channels to close and reopen. V4 removed that behavior.
+
+Permanent channels make the protocol easier to work with:
+
+1. There is no close-and-reopen replay boundary.
+2. Payment channels stay stable for off-chain services.
+3. The protocol has fewer lifecycle rules to handle.
+
+The tradeoff is more long-lived on-chain state. V4 accepts that tradeoff because the simpler semantics are worth it for machine-payment integrations.
+
+## See also
+
+- [Commitments](/core-concepts/commitments) — the signed messages that flow over channels
+- [Balances and withdrawals](/core-concepts/balances-and-withdrawals)
+- [Trust and collateral](/core-concepts/trust-and-collateral)
+- [Direct settlement](/settlement-modes/direct-settlement)
+- [Account layouts](/reference/accounts)

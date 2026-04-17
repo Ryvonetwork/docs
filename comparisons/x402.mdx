@@ -1,0 +1,45 @@
+---
+title: "x402"
+description: "How Agon's deferred-settlement model differs from exact per-payment x402 settlement."
+---
+
+Agon does not reject x402. It questions exact settlement on every interaction as the default model for high-frequency machine commerce.
+
+## What x402 does well
+
+x402 standardizes how a server can require payment inside the HTTP lifecycle. It solves a real discovery and authorization problem: it gives clients a uniform way to pay for an API call and gives servers a uniform way to express "this response costs this much on this chain."
+
+For one-off or infrequent payments, that model is clean. The authorization is tied directly to the HTTP request, and there is no state to maintain between parties.
+
+## What changes at high frequency
+
+When the same payer and payee interact many times, exact per-payment settlement inherits an obvious cost: every call pays for its own on-chain transaction, its own signatures, and its own confirmation latency.
+
+That cost is amortized trivially at low volume and becomes the bottleneck at high volume. It also compresses the minimum economic price of an API call to at least its share of on-chain settlement, even when the underlying service is nearly free.
+
+## Agon's take
+
+Agon treats exact per-payment x402 as a **baseline to measure against**, not as an adversary.
+
+Concretely:
+
+- Agon's benchmarks count how many exact-payment transactions a scenario would have required.
+- They compare that count to the number of Agon settlement transactions actually submitted on-chain.
+- The ratio is published as settlement compression.
+
+That baseline is reported directly in [Live devnet benchmarks](/benchmarks/live-devnet).
+
+## Where x402 and Agon compose
+
+x402 and Agon can coexist at the API surface:
+
+- A server can accept exact x402 payments for one-shot clients and Agon commitments for recurring clients.
+- An operator can offer both a pay-per-call x402 endpoint and an Agon-backed account for heavier integrations.
+
+The two are not mutually exclusive. Agon narrows the model to the repeated-relationship case and makes settlement cost independent of request volume inside that case.
+
+## See also
+
+- [Why not fee-per-payment](/thesis/why-not-fee-per-payment)
+- [Live devnet benchmarks](/benchmarks/live-devnet)
+- [Operator hubs](/core-concepts/operator-hubs)

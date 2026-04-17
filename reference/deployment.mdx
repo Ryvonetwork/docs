@@ -1,0 +1,87 @@
+---
+title: "Deployment"
+description: "Current live deployment details for the Agon Protocol."
+---
+
+The Agon protocol is currently live on Solana devnet. This page records the canonical identifiers and parameters of that deployment.
+
+## Live deployment
+
+| Field | Value |
+| --- | --- |
+| Program ID | `Ba2puU8D2CLD1dYfRQ4YBXxirdyz3zVLLChvMf9AqJ1Y` |
+| Cluster | `devnet` |
+| Chain ID | `1` |
+| Framework | Anchor |
+| Source | [github.com/Agonx402/agon-protocol](https://github.com/Agonx402/agon-protocol) |
+
+## Chain IDs
+
+Agon distinguishes deployments by a protocol-level chain ID stored in `GlobalConfig` and folded into the signed [message domain](/reference/messages#message-domain).
+
+| Chain ID | Network |
+| --- | --- |
+| `0` | Mainnet |
+| `1` | Devnet |
+| `2` | Testnet |
+| `3` | Localnet |
+
+Different chain IDs produce different message domains even when the program ID is identical. A commitment signed for one chain will never verify on another.
+
+## Timelocks
+
+Timelocks differ between mainnet and non-mainnet deployments:
+
+| Action | Mainnet | Devnet / Testnet / Localnet |
+| --- | --- | --- |
+| Withdrawal unlock | 7 days | 2 seconds |
+| Channel unlock | 7 days | 2 seconds |
+| Authorized signer rotation | 7 days | 2 seconds |
+
+Non-mainnet timelocks are intentionally short to make integration testing fast. Do not model production flows against devnet timelocks.
+
+## Fee parameters
+
+| Parameter | Range |
+| --- | --- |
+| Withdrawal fee (`fee_bps`) | `3`–`30` bps (0.03%–0.3%) |
+| Minimum withdrawal fee | 50,000 native units (6-decimal tokens) |
+| Registration fee | `0`, or between 0.001 SOL and 0.01 SOL |
+
+The fee recipient is a wallet configured in `GlobalConfig` and can be updated by the config authority.
+
+## Authority model
+
+Agon uses two administrative roles, both of which use a two-step pending/accept handoff:
+
+- **Config authority** — can update `fee_recipient`, `fee_bps`, `registration_fee_lamports`, and nominate a successor.
+- **Registry authority** — can register new settlement tokens in `TokenRegistry`.
+
+Neither authority can:
+
+- move participant funds
+- alter settled balances
+- rewrite the chain ID or message domain (these are fixed at initialize time)
+- upgrade which token an existing `token_id` maps to
+
+See [Trust model](/security/trust-model) for the full security posture and upgrade model.
+
+## Message domain
+
+The signing domain for a deployment is derived inside the program as:
+
+```
+message_domain = SHA256(
+    "agon-message-domain-v1"
+    || program_id
+    || chain_id (little-endian u16)
+)[..16]
+```
+
+Every signed `agon-cmt-v5` and `agon-round-v4` message carries this 16-byte domain, and the program rejects any message whose domain does not match `GlobalConfig.message_domain` for the executing deployment. See [Message formats](/reference/messages#message-domain).
+
+## See also
+
+- [Quickstart](/getting-started/quickstart)
+- [Message formats](/reference/messages)
+- [On-chain properties](/security/properties)

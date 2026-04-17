@@ -1,0 +1,114 @@
+---
+title: "Accounts"
+description: "The on-chain account layouts used by the Agon protocol."
+---
+
+Agon stores all protocol state in four account types, each held at a canonical PDA. This page describes their layouts, seeds, and roles.
+
+## GlobalConfig
+
+Singleton account holding protocol-wide configuration.
+
+**Seeds:** `["global-config"]`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `authority` | `Pubkey` | Active config authority |
+| `fee_recipient` | `Pubkey` | Receives withdrawal fees and registration fees |
+| `fee_bps` | `u16` | Withdrawal fee in basis points (3–30) |
+| `withdrawal_timelock_seconds` | `i64` | Fixed at initialize time by chain ID |
+| `registration_fee_lamports` | `u64` | Flat SOL fee charged at `initialize_participant` |
+| `next_participant_id` | `u32` | Monotonic counter for new participants |
+| `bump` | `u8` | PDA bump |
+| `chain_id` | `u16` | Deployment chain ID, fixed at initialize |
+| `message_domain` | `[u8; 16]` | Deployment-scoped signing domain |
+| `pending_authority` | `Pubkey` | Nominated successor (two-step handoff) |
+| `_reserved` | `[u8; 14]` | Future expansion |
+
+`chain_id` and `message_domain` are immutable after `initialize`. Updating them would require a fresh deployment.
+
+## TokenRegistry
+
+Singleton account holding the allowlist of supported settlement tokens.
+
+**Seeds:** `["token-registry"]`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `authority` | `Pubkey` | Registry authority — can register new tokens |
+| `tokens` | `Vec<TokenEntry>` | Up to 198 entries |
+| `bump` | `u8` | PDA bump |
+| `pending_authority` | `Pubkey` | Nominated successor (two-step handoff) |
+
+Each `TokenEntry` (51 bytes):
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | `u16` | Unique `token_id` used in signed messages |
+| `mint` | `Pubkey` | SPL token mint |
+| `decimals` | `u8` | Token decimals (≤ 20) |
+| `symbol` | `[u8; 8]` | ASCII symbol, null-terminated |
+| `registered_at` | `i64` | Unix timestamp of registration (immutable) |
+
+A registered `(id, mint)` mapping is immutable. The registry authority cannot swap which mint a `token_id` refers to.
+
+## ParticipantAccount
+
+One account per registered wallet. Holds all per-token balances and the inbound channel policy.
+
+**Seeds:** `["participant", owner_pubkey]`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `owner` | `Pubkey` | Wallet that owns this participant |
+| `participant_id` | `u32` | Permanent protocol identity |
+| `token_balances` | `Vec<TokenBalance>` | Up to 16 entries |
+| `bump` | `u8` | PDA bump |
+| `inbound_channel_policy` | `u8` | Permissionless / ConsentRequired / Disabled |
+| `_reserved` | `[u8; 7]` | Future expansion |
+
+Each `TokenBalance`:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `token_id` | `u16` | Registered token |
+| `available_balance` | `u64` | Spendable balance |
+| `withdrawing_balance` | `u64` | Amount queued for withdrawal |
+| `withdrawal_unlock_at` | `i64` | Timelock unlock timestamp |
+| `withdrawal_destination` | `Pubkey` | Fixed destination token account |
+
+Participant identities are permanent: the `participant_id` never changes, and the PDA is bound to `owner`. See [Participants](/core-concepts/participants).
+
+## ChannelState
+
+One account per one-way channel `(payer, payee, token)`.
+
+**Seeds:** `["channel-v2", payer_id (LE u32), payee_id (LE u32), token_id (LE u16)]`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `token_id` | `u16` | Settlement token |
+| `payer_id` | `u32` | Payer participant ID |
+| `payee_id` | `u32` | Payee participant ID |
+| `settled_cumulative` | `u64` | Highest cumulative amount ever settled |
+| `locked_balance` | `u64` | Funds earmarked for this channel |
+| `authorized_signer` | `Pubkey` | Key that signs `agon-cmt-v5` for this channel |
+| `pending_unlock_amount` | `u64` | Amount in a pending unlock request |
+| `unlock_requested_at` | `i64` | Timestamp of pending unlock |
+| `pending_authorized_signer` | `Pubkey` | Nominated new signer |
+| `authorized_signer_update_requested_at` | `i64` | Timestamp of pending rotation |
+| `bump` | `u8` | PDA bump |
+
+Channels are permanent. Both `settled_cumulative` and the PDA persist for the life of the deployment, so replays of older commitments always lose against the highest cumulative already seen.
+
+## Protocol vault
+
+Tokens deposited into Agon live in per-token vault token accounts derived from the program. They are SPL Token accounts owned by the program, not participant balances. Participant `available_balance` and channel `locked_balance` are ledger positions against this vault — the vault is the single source of truth for tokens actually held by the program.
+
+See [Balances and withdrawals](/core-concepts/balances-and-withdrawals) for how the vault relates to participant state.
+
+## See also
+
+- [Instructions](/reference/instructions)
+- [Events](/reference/events)
+- [On-chain properties](/security/properties)

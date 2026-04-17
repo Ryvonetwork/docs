@@ -3,16 +3,48 @@ title: "Lightning"
 description: "How Agon's deferred-settlement model differs from Lightning's routing and liquidity model."
 ---
 
-Lightning and Agon both move authorization offchain, but they scale in different ways.
+Lightning and Agon both move payment authorization off-chain, but they scale in fundamentally different ways.
 
-## Overview
+## What Lightning optimizes for
 
-Lightning scales through routing, channel liquidity, and path-dependent forwarding fees.
+Lightning is designed to move value across an arbitrary network of participants who don't have a pre-existing relationship. Its core problems are:
 
-Agon scales through cumulative obligations, payee-side bundling, and cooperative clearing.
+- **Routing** — finding a path of channels that can carry a payment from sender to receiver.
+- **Liquidity** — maintaining enough inbound and outbound capacity along that path.
+- **Path-dependent fees** — each hop prices its share of the forwarding cost.
+- **HTLCs** — atomic multi-hop updates with time-locked resolution.
 
-## When Each Model Fits Best
+This is the right design when the goal is open, trust-minimized internet money across a graph of peers who may never transact with each other again.
 
-Lightning is a strong fit when the goal is open, trust-minimized internet money across an arbitrary network.
+## What Agon optimizes for
 
-Agon is a stronger fit when the goal is repeated machine-payment relationships that want to compress settlement rather than price every hop in a routing graph.
+Agon assumes the opposite shape: the same payer and payee interact constantly, and the system should compress their on-chain settlement as that volume grows.
+
+Agon does not route. Every channel is **one-way** and **direct** between a named payer and a named payee. There is no multi-hop path, no forwarding fee market, and no liquidity rebalancing.
+
+Density comes from a different place:
+
+- **Cumulative commitments** collapse many payments along one channel into a single signed value.
+- **Bundle settlement** collapses many channels feeding the same payee into one transaction.
+- **Cooperative clearing rounds** collapse many channels across many participants into one shared transaction that advances them all at once.
+
+## When each model fits best
+
+| | Lightning | Agon |
+| --- | --- | --- |
+| Shape of relationships | Sparse, often one-shot, across an arbitrary graph | Dense, repeated, between known pairs |
+| Scaling primitive | Routing + channel liquidity | Cumulative commitments + cooperative clearing |
+| Asset | Bitcoin | Allowlisted SPL tokens on Solana |
+| Settlement substrate | Bitcoin L1 | Solana |
+| Fee model | Per-hop forwarding | Per-settlement-tx |
+| Operator role | Routing nodes | Optional hubs / delegated settlers |
+
+Lightning is a strong fit when the goal is permissionless, privacy-preserving, network-wide payments where any pair of nodes might transact once.
+
+Agon is a stronger fit when the goal is **repeated machine-payment relationships** — agents paying APIs, services paying services, operators routing value between the two — that want settlement density to scale with the relationship, not with the number of participants in the network.
+
+## See also
+
+- [Payment channels](/core-concepts/payment-channels)
+- [Clearing rounds](/settlement-modes/clearing-rounds)
+- [Motivation](/thesis/motivation)

@@ -14,19 +14,21 @@
         "tab": "Protocol Docs",
         "groups": [
           {
-            "group": "Overview",
+            "group": "Introduction",
             "pages": [
               "index",
-              "thesis/cooperative-scaling",
+              "thesis/motivation",
+              "thesis/design-principles",
               "thesis/why-not-fee-per-payment",
-              "thesis/bls-roadmap"
+              "thesis/roadmap"
             ]
           },
           {
             "group": "Getting Started",
             "pages": [
-              "getting-started/v4-overview",
-              "getting-started/first-payment-flow",
+              "getting-started/quickstart",
+              "getting-started/protocol-overview",
+              "getting-started/first-payment",
               "getting-started/devnet-demo"
             ]
           },
@@ -35,56 +37,63 @@
             "pages": [
               "core-concepts/participants",
               "core-concepts/balances-and-withdrawals",
-              "core-concepts/yield-bearing-stablecoins",
-              "core-concepts/permanent-lanes",
-              "core-concepts/cooperation-trust-collateral",
+              "core-concepts/payment-channels",
+              "core-concepts/commitments",
+              "core-concepts/trust-and-collateral",
               "core-concepts/authorized-settler",
-              "core-concepts/operator-hubs"
+              "core-concepts/operator-hubs",
+              "core-concepts/yield-bearing-assets"
             ]
           },
           {
             "group": "Settlement",
             "pages": [
-              "settlement-modes/latest-commitment",
+              "settlement-modes/overview",
+              "settlement-modes/direct-settlement",
               "settlement-modes/bundle-settlement",
-              "settlement-modes/cooperative-clearing-rounds"
+              "settlement-modes/clearing-rounds"
             ]
           },
           {
             "group": "Security",
             "pages": [
-              "security/security-properties",
-              "security/trust-model"
+              "security/trust-model",
+              "security/properties"
             ]
           },
           {
             "group": "Benchmarks",
             "pages": [
-              "benchmarks/overview",
-              "benchmarks/generated-live-devnet",
-              "benchmarks/generated-synthetic-capacity"
+              "benchmarks/methodology",
+              "benchmarks/live-devnet",
+              "benchmarks/synthetic-capacity"
             ]
           },
           {
             "group": "Comparisons",
             "pages": [
-              "comparisons/exact-payment-x402",
+              "comparisons/overview",
+              "comparisons/x402",
               "comparisons/lightning",
-              "comparisons/circle-nanopayments"
+              "comparisons/managed-rails"
             ]
           },
           {
             "group": "Examples",
             "pages": [
               "demos/protocol-demo",
-              "demos/ows-gateway-example"
+              "demos/ows-gateway"
             ]
           },
           {
             "group": "Reference",
             "pages": [
-              "reference/instruction-surface",
-              "reference/v4-message-reference",
+              "reference/deployment",
+              "reference/instructions",
+              "reference/messages",
+              "reference/accounts",
+              "reference/events",
+              "reference/errors",
               "reference/glossary"
             ]
           }
@@ -119,8 +128,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "First Payment Flow",
-      "href": "/getting-started/first-payment-flow"
+      "label": "Quickstart",
+      "href": "/getting-started/quickstart"
     }
   },
   "contextual": {

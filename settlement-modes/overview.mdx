@@ -1,0 +1,61 @@
+---
+title: "Settlement Modes Overview"
+description: "The three settlement paths in Agon V4 and when to use each."
+---
+
+Agon V4 exposes three settlement paths, each built on the previous one. All three settle into the same shared vault and the same participant balances — they differ only in how many channels and how many participants are settled together.
+
+## The three modes at a glance
+
+| Mode | Message format | Instruction | Best for |
+| --- | --- | --- | --- |
+| [Direct](/settlement-modes/direct-settlement) | `agon-cmt-v5` | `settle_individual` | One payer, one payee, one channel |
+| [Bundle](/settlement-modes/bundle-settlement) | Many `agon-cmt-v5` | `settle_commitment_bundle` | One payee aggregating many payers |
+| [Cooperative clearing](/settlement-modes/clearing-rounds) | `agon-round-v4` | `settle_clearing_round` | Several participants netting mutual payments |
+
+Direct settlement is always available as a fallback, even when bundle or cooperative paths are used. See [Design principles](/thesis/design-principles#always-available-fallback-path) for why.
+
+## Direct settlement
+
+One signed `agon-cmt-v5` moves one channel forward. The payee (or a delegated `authorized_settler`) submits it with `settle_individual`.
+
+- **Signatures:** 1 (the channel's `authorized_signer`)
+- **On-chain writes:** 1 channel, 2 participants
+- **Coordination:** none
+- **When to use:** the baseline path for any new integration
+
+## Bundle settlement
+
+The payee collects many `agon-cmt-v5` messages from many payers in the same token and settles them in one transaction with `settle_commitment_bundle`.
+
+- **Signatures:** one per included channel (each payer signs independently)
+- **On-chain writes:** N channels, N+1 participants
+- **Coordination:** none between payers
+- **When to use:** one provider with many paying clients
+
+Bundle settlement is **not** multilateral netting. Each channel still settles independently; the bundle only reduces transaction count and per-transaction overhead.
+
+## Cooperative clearing
+
+Several participants sign one shared `agon-round-v4` message. `settle_clearing_round` advances every included channel and applies only the **residual participant balance changes** that remain after the included payments cancel each other out.
+
+- **Signatures:** one per participant block (today under Ed25519; BLS is a roadmap item)
+- **On-chain writes:** all included channels, plus net balance changes per participant
+- **Coordination:** all participants must agree on and sign the same round
+- **When to use:** a known group of participants with bidirectional payment flow
+
+This is the densest settlement path in V4. Cooperative rounds scale the protocol's compression beyond anything a single unilateral path can achieve.
+
+## Choosing a mode
+
+Start with direct settlement. Promote to bundle settlement when one payee is settling many payers in the same token. Promote to cooperative clearing when a known set of participants has mutual payment flow and is willing to coordinate.
+
+You do not have to pick one. A real deployment can use all three simultaneously — different relationships at different points on the coordination / density spectrum.
+
+## See also
+
+- [Commitments](/core-concepts/commitments) — the shared signed-message primitive
+- [Direct settlement](/settlement-modes/direct-settlement)
+- [Bundle settlement](/settlement-modes/bundle-settlement)
+- [Clearing rounds](/settlement-modes/clearing-rounds)
+- [Benchmarks methodology](/benchmarks/methodology)

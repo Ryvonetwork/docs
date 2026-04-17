@@ -1,0 +1,90 @@
+---
+title: "Direct Settlement"
+description: "Settle one channel with one signed `agon-cmt-v5` message."
+---
+
+Direct settlement is the simplest path in Agon V4.
+
+One payer signs one `agon-cmt-v5` message for one channel. The payee, or a delegated `authorized_settler` named in the message, submits it with `settle_individual`.
+
+## What the message represents
+
+The signed message does not say *"charge 25 more."* It says: *"this channel is now authorized up to cumulative amount `X`."*
+
+The program compares that new cumulative amount to the channel's current `settled_cumulative` and settles only the difference. That is why the payee only needs to hold the **newest valid message** — everything older is superseded.
+
+See [Commitments](/core-concepts/commitments) for the cumulative model in depth.
+
+## What the program verifies
+
+When `settle_individual` runs, the program checks:
+
+1. The Ed25519 instruction is present and self-contained.
+2. The signer matches the channel's current `authorized_signer`.
+3. The signed `message_domain` matches the deployment.
+4. The message's payer, payee, and token match the passed participant accounts and channel.
+5. The submitter is either the payee owner or the optional `authorized_settler`.
+6. The new cumulative amount is strictly greater than the existing `settled_cumulative`.
+7. The payer has enough total balance, counting channel-specific locked balance first and shared participant balance second.
+
+Only after all checks pass does the program write any state.
+
+## What changes on-chain
+
+If the checks pass, the program:
+
+1. Advances `channel.settled_cumulative`.
+2. Consumes any needed `locked_balance`.
+3. Debits the payer's shared balance for any remaining amount.
+4. Credits the payee.
+5. Emits an `IndividualSettled` event.
+
+If an operator should be paid, model that as its own ordinary channel commitment rather than as a field embedded in this message. See [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
+
+## Example
+
+```ts
+const message = createCommitmentMessage({
+  payerId: channel.payerId,
+  payeeId: channel.payeeId,
+  tokenId: 1,
+  committedAmount: channel.settledCumulative.add(new anchor.BN(250_000)),
+  messageDomain,
+});
+
+const ed25519Ix = Ed25519Program.createInstructionWithPrivateKey({
+  privateKey: payer.secretKey,
+  message,
+});
+
+await program.methods
+  .settleIndividual()
+  .accounts({
+    channelState: channelPda,
+    payerAccount: payerParticipantPda,
+    payeeAccount: payeeParticipantPda,
+    submitter: payee.publicKey,
+  } as any)
+  .preInstructions([ed25519Ix])
+  .signers([payee])
+  .rpc();
+```
+
+## When to use this path
+
+Choose direct settlement when:
+
+- One payer and one payee interact repeatedly.
+- You want the smallest possible protocol surface.
+- You do not yet need bundle or cooperative compression.
+- You want an always-available fallback regardless of cooperation state.
+
+Direct settlement is the baseline for every V4 integration. Denser paths build on top of it.
+
+## See also
+
+- [Commitments](/core-concepts/commitments)
+- [Bundle settlement](/settlement-modes/bundle-settlement)
+- [Clearing rounds](/settlement-modes/clearing-rounds)
+- [Authorized settler](/core-concepts/authorized-settler)
+- [Message formats](/reference/messages#agon-cmt-v5)

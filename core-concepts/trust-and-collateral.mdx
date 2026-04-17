@@ -1,0 +1,86 @@
+---
+title: "Trust and Collateral"
+description: "How Agon lets different payment relationships pick different safety and efficiency tradeoffs."
+---
+
+Agon does not force every payment relationship into the same shape.
+
+Some integrations want fully-collateralized channels with locked funds. Others are comfortable with partial lockup or periodic settlement, which makes the relationship trust-minimized rather than trustless. Many real deployments sit somewhere in the middle.
+
+## Three levers
+
+Every integration picks a point in a three-dimensional space:
+
+### 1. Locked funds
+
+You can lock part of a payer's balance to a specific channel. That amount is ring-fenced for the relationship and cannot be consumed by any other channel. The payee gains stronger guarantees proportional to how much is locked.
+
+### 2. Settlement frequency
+
+You can settle after every call, after every few calls, or much later. More frequent settlement means less timing risk. Less frequent settlement means better compression.
+
+### 3. Operational trust
+
+You can settle directly, or you can layer an operator using `authorized_settler` for batching, compliance, retries, or payment operations. The operator never takes custody, but it may gate availability of the service itself.
+
+## What "trust" means here
+
+In Agon, trust does **not** mean an operator holds balances in a private database. Balances always live in protocol state.
+
+In practice, trust usually means one or more of:
+
+- how long payments stay unsettled before being redeemed
+- how much locked balance the payee expects
+- how much the parties rely on off-chain monitoring, retries, and operator tooling
+
+Each of these is a relationship-level choice. The protocol supports all of them on the same base.
+
+## Common relationship shapes
+
+### Fully collateralized
+
+The payer locks enough funds to the channel to cover expected usage. The payee has effectively guaranteed payment capacity on that relationship.
+
+- Payer accepts reduced shared liquidity.
+- Payee accepts almost no timing or counterparty risk.
+- Settlement can be infrequent.
+
+Good fit: public APIs charging unknown or unverified users.
+
+### Periodically-settled trust-minimized
+
+The payer locks partial expected usage, or nothing at all, and the payee settles frequently.
+
+- Payee accepts some timing risk between settlements.
+- Payer keeps shared liquidity for other relationships.
+- Compression is high because settlement happens when convenient.
+
+Good fit: internal services paying other internal services; known customers; small, frequent workloads.
+
+### Credit-extending
+
+The payee serves first and settles later based on an off-chain credit policy. The protocol still holds balances non-custodially; the business logic lives in the operator or payee.
+
+- Payee accepts larger counterparty risk.
+- Risk is bounded by external credit and monitoring.
+- Compression and UX are the best.
+
+Good fit: high-volume, well-known counterparty relationships; operator hubs that want to pre-approve usage.
+
+## All three use the same protocol
+
+The relationships above all run on the same protocol surface. They differ only in:
+
+- how much is locked
+- how often they settle
+- what operator tooling sits above the protocol
+
+That is the property that lets Agon serve the full spectrum without forking the base layer.
+
+## See also
+
+- [Trust model](/security/trust-model) — what the protocol guarantees
+- [Security properties](/security/properties) — the on-chain checks
+- [Payment channels](/core-concepts/payment-channels) — where locked balance lives
+- [Authorized settler](/core-concepts/authorized-settler) — delegated submission
+- [Operator hubs](/core-concepts/operator-hubs) — hub-shaped deployments

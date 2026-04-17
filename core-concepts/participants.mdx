@@ -1,42 +1,37 @@
 ---
 title: "Participants"
-description: "How participant accounts work in Agon V4."
+description: "How permanent, wallet-bound protocol identities work in Agon V4."
 ---
 
-Every wallet that uses Agon registers once as a participant.
+Every wallet that uses Agon registers once as a participant. That registration binds one wallet to one stable `participant_id`. The mapping does not recycle, so off-chain systems can treat `wallet → participant_id` as stable for the life of the deployment.
 
-That participant account binds one wallet to one stable `participant_id`. The mapping does not recycle, so offchain systems can safely treat `wallet -> participant_id` as stable for the life of the deployment.
+## What a participant stores
 
-## Overview
-
-The participant account is the protocol's long-lived identity record.
+The participant account is Agon's long-lived identity record. Each account holds:
 
 | Field | Meaning |
 | --- | --- |
 | `owner` | The wallet that controls the participant |
-| `participant_id` | The compact numeric id used inside signed messages and PDA seeds |
+| `participant_id` | The compact numeric ID used inside signed messages and PDA seeds |
 | `token_balances` | One balance record per allowlisted token |
 | `inbound_channel_policy` | Whether other parties may open channels to this participant |
 | `bump` | PDA bump for canonical address checks |
 
-The `token_balances` vector stores available balance, pending withdrawal state, and withdrawal destination data for each token.
+The `token_balances` vector stores available balance, pending-withdrawal state, and withdrawal destination for each token the participant has used. Up to 16 tokens can coexist per participant. See [Account layouts](/reference/accounts) for the exact byte layout.
 
-## Why Participants Are Permanent
+## Why participants are permanent
 
-V4 does not let participants close and recreate their accounts.
+V4 does not let participants close and recreate their accounts. This preserves three simple invariants:
 
-This keeps the model simple:
+1. `participant_id` stays stable for the life of the deployment.
+2. Off-chain services can index users without worrying about ID reuse.
+3. Replay protection is simpler because there is no reopened identity for an old signed message to target.
 
-1. `participant_id` stays stable
-2. offchain services can index users without worrying about id reuse
-3. replay protection is simpler
-4. clients do not need to handle participant lifecycle resets
+If a team wants a new protocol identity, they use a new wallet.
 
-If a team wants a new protocol identity, it should use a new wallet.
+## Inbound channel policy
 
-## Inbound Channel Policy
-
-Each participant chooses how other parties may create channels to it:
+Each participant chooses how other parties may open channels to it:
 
 | Policy | Meaning |
 | --- | --- |
@@ -44,11 +39,11 @@ Each participant chooses how other parties may create channels to it:
 | `ConsentRequired` | The payee must sign channel creation |
 | `Disabled` | New inbound channels are rejected |
 
-The default is `ConsentRequired`.
+The default is `ConsentRequired`. The policy can be changed later with `update_inbound_channel_policy`.
 
 ## Registration
 
-The registration flow is intentionally small:
+Registration is deliberately small:
 
 ```ts
 await program.methods
@@ -61,14 +56,29 @@ await program.methods
   .rpc();
 ```
 
-After registration, derive the canonical participant PDA from the wallet address and fetch the account whenever you need the stable `participant_id`.
+After registration, derive the canonical participant PDA from the wallet address and fetch the account whenever you need the stable `participant_id`:
 
-## What Participants Do Not Store
+```ts
+const participantPda = PublicKey.findProgramAddressSync(
+  [Buffer.from("participant"), wallet.publicKey.toBytes()],
+  program.programId
+)[0];
 
-Participants are identity and balance containers. They do not store:
+const participant = await program.account.participantAccount.fetch(participantPda);
+```
 
-- who you are paying
+## What participants do not store
+
+Participants are identity and balance containers. They do **not** store:
+
+- whom they are paying
 - the latest signed commitments
 - operator business logic
 
-That data lives elsewhere in the protocol or in offchain systems.
+That data lives in `ChannelState`, in off-chain systems, or both.
+
+## See also
+
+- [Balances and withdrawals](/core-concepts/balances-and-withdrawals)
+- [Payment channels](/core-concepts/payment-channels)
+- [Account layouts](/reference/accounts)

@@ -1,0 +1,91 @@
+---
+title: "Commitments"
+description: "Cumulative signed payment updates are Agon's hot-path primitive."
+---
+
+A commitment is the signed off-chain message that moves a payment channel forward. It is the unilateral hot-path primitive in Agon V4 and the building block underneath every settlement mode.
+
+## What a commitment represents
+
+A commitment does **not** say *"charge 25 more."* It says: *"this channel is now authorized up to cumulative amount X."*
+
+Concretely, an `agon-cmt-v5` message carries:
+
+- the deployment-scoped `message_domain`
+- the `payer_id` and `payee_id`
+- the `token_id`
+- a new `committed_amount` (cumulative, not incremental)
+- an optional `authorized_settler`
+- an Ed25519 signature by the channel's current `authorized_signer`
+
+When a payee settles the commitment on-chain, the program computes the delta against the channel's current `settled_cumulative` and moves only that difference. Everything about the commitment that is not the delta is bookkeeping.
+
+For the exact byte layout, see [Message formats](/reference/messages#agon-cmt-v5).
+
+## Why cumulative
+
+Cumulative commitments have two practical consequences:
+
+1. **The payee only needs the newest valid message.** Intermediate commitments are superseded automatically. A payee can throw away older commitments as soon as a newer one arrives.
+2. **Replay is monotonic and trivial to check.** The program rejects any commitment whose `committed_amount` is less than or equal to the current `settled_cumulative`.
+
+This is what lets one settlement transaction discharge many underlying payments.
+
+## How commitments are issued
+
+```ts
+const channel = await program.account.channelState.fetch(channelPda);
+
+const delta = new anchor.BN(250_000);
+const committedAmount = channel.settledCumulative.add(delta);
+
+const message = createCommitmentMessage({
+  payerId: channel.payerId,
+  payeeId: channel.payeeId,
+  tokenId,
+  committedAmount,
+  messageDomain,
+});
+
+const signature = ed25519Sign(message, channel.authorizedSigner);
+```
+
+The signer above must match the channel's current `authorized_signer`. The signature is verified by Solana's Ed25519 program as a prefix instruction on the settlement transaction.
+
+See [Your first payment](/getting-started/first-payment) for working code that builds and settles a commitment end-to-end.
+
+## Off-chain lifecycle
+
+Commitments live off-chain until settlement. Most integrations keep:
+
+1. the latest signed `agon-cmt-v5` per channel
+2. local usage or metering state
+3. policy for when to sign the next commitment
+
+Older commitments can be discarded. Only the newest valid one needs to reach the chain.
+
+## What commitments do *not* encode
+
+Commitments are deliberately minimal. They do not encode:
+
+- per-call pricing or metadata
+- fees to operators or coordinators
+- dispute or escape conditions
+- payee-side policy
+
+Those concerns live in the application layer, in operator software, or in a separate channel. For operator compensation specifically, see [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
+
+## Commitments inside cooperative rounds
+
+In a cooperative round, each channel's cumulative target is still expressed the same way, but the target is carried inside a shared `agon-round-v4` message signed by the participant roster instead of a standalone `agon-cmt-v5`.
+
+The channel semantics are identical: the program advances `settled_cumulative` to the signed target and applies the resulting balance changes. The difference is that cooperative rounds let many channels advance together and net against each other before participant balances are touched.
+
+See [Clearing rounds](/settlement-modes/clearing-rounds) for the full cooperative flow.
+
+## See also
+
+- [Payment channels](/core-concepts/payment-channels)
+- [Direct settlement](/settlement-modes/direct-settlement)
+- [Bundle settlement](/settlement-modes/bundle-settlement)
+- [Message formats](/reference/messages)

@@ -1,62 +1,82 @@
 ---
 title: "Trust Model"
-description: "What Agon guarantees onchain, and what still depends on the relationship between participants."
+description: "What Agon guarantees on-chain, and what remains a relationship-level choice."
 ---
 
-Agon is non-custodial, but it is not based on the idea that every machine-payment relationship should look fully trustless at every moment.
+Agon is non-custodial, but it is not built on the idea that every machine-payment relationship should look fully trustless at every moment. The protocol separates hard on-chain guarantees from soft product-level choices that integrations make for themselves.
 
-## What The Protocol Guarantees
+## What the protocol guarantees
 
-Agon guarantees these things onchain:
+On-chain, Agon guarantees:
 
-1. balances live in protocol state, not in an operator database
-2. only allowlisted tokens can be used
-3. signed settlement messages are checked against the deployment message domain
-4. lanes and participants are checked against canonical PDAs
-5. settlement only moves cumulative state forward
-6. withdrawals, lane unlocks, and signer rotations follow the configured timelocks
+1. **Balances live in protocol state**, not in an operator database.
+2. **Only allowlisted tokens can be used** for settlement.
+3. **Signed settlement messages are checked against the deployment `message_domain`**, which is derived in-program from a fixed Agon tag, the program ID, and the chain ID.
+4. **Channels and participants are checked against canonical PDAs**, even when they arrive through `remaining_accounts`.
+5. **Settlement only moves cumulative state forward** — any message that does not increase `settled_cumulative` is rejected.
+6. **Withdrawals, channel unlocks, and signer rotations follow configured timelocks.**
+7. **Self-channels are explicitly rejected** to prevent using settlement to bypass unlock timing.
 
-If a valid settlement message is submitted with the right accounts, the protocol enforces it according to those rules.
+If a valid settlement message is submitted with the right accounts, the program enforces these rules regardless of who submits the transaction.
 
-## What Still Depends On The Relationship
+## What still depends on the relationship
 
-Agon does not remove all real-world tradeoffs between participants.
+Agon does not try to remove every real-world tradeoff between participants. For example:
 
-For example:
+- One payee may require enough locked funds to make signed value effectively guaranteed; another may accept partial lockup or periodic settlement.
+- One integration may settle every few seconds; another may settle in larger batches.
+- One team may run settlement directly; another may use an operator through `authorized_settler`.
 
-- one payee may require enough locked funds to make signed value effectively guaranteed
-- another may accept partial lockup or periodic settlement instead
-- one integration may settle every few seconds
-- another may settle in larger batches
-- one team may run settlement directly
-- another may use an operator through `authorized_settler`
+These are product and relationship choices on top of the same protocol. See [Trust and collateral](/core-concepts/trust-and-collateral) for the three levers each integration picks from.
 
-Those are product and relationship choices built on top of the same protocol.
+## What "trust" means in Agon
 
-## What "Trust" Means In Agon
-
-In most Agon integrations, trust means one or more of these things:
+In most Agon integrations, trust means one or more of:
 
 1. how much unsettled usage a payee is willing to tolerate
-2. how much locked balance a payer is willing to dedicate to one lane
-3. how much the parties rely on offchain monitoring, retries, and operator tooling
+2. how much locked balance a payer is willing to dedicate to a specific channel
+3. how much the parties rely on off-chain monitoring, retries, and operator tooling
 
-It does not mean the user has handed custody of protocol balances to a centralized ledger.
+It does **not** mean the user has handed custody of protocol balances to a centralized ledger.
 
-## Operators And Delegated Submission
+## Operators and delegated submission
 
-Agon supports optional operator layers on top through `authorized_settler`.
+Agon supports optional operator layers through `authorized_settler`. A delegated operator can:
 
-That lets a team delegate submission work such as:
+- relay settlements
+- batch and schedule submissions
+- retry and monitor
+- handle invoicing
+- apply compliance checks
 
-- relaying
-- batching
-- retries
-- invoicing
-- compliance checks
+V4 keeps the payee's direct settlement path alongside delegated submission. `authorized_settler` is **additive**, not exclusive — the payee can always bypass the operator and settle directly. See [Authorized settler](/core-concepts/authorized-settler) for the full semantics.
 
-But the current V4 design keeps the payee's direct settlement path. `authorized_settler` is additive, not exclusive.
+## Authorities and upgrades
+
+Two administrative roles exist in V4, each with a two-step handoff:
+
+| Role | Controls | Handoff |
+| --- | --- | --- |
+| Config authority | Fee recipient, fee basis points, registration fee, pending authority | `update_config` → `accept_config_authority` |
+| Registry authority | Adding new allowlisted tokens, pending registry authority | `update_registry_authority` → `accept_registry_authority` |
+
+Neither authority can:
+
+- change `message_domain`
+- change `chain_id`
+- drain vault balances
+- bypass withdrawal, unlock, or signer timelocks
+- modify participant or channel state outside the normal instruction surface
+
+The program upgrade authority on Solana retains the standard ability to upgrade the program binary, which is outside the protocol's on-chain guarantees. Immutability of the signing domain and the non-custodial invariants are enforced inside the program as long as the deployed binary enforces them.
 
 ## Summary
 
-Agon is a public settlement and clearing protocol for repeated machine-payment relationships. It gives those relationships room to choose how much they want to pay in locked capital, settlement frequency, and operational overhead.
+Agon is a public settlement and clearing protocol for repeated machine-payment relationships. It gives those relationships room to choose their own point on the locked-capital / settlement-frequency / operational-trust spectrum, while holding a small set of properties constant: balances stay in protocol state, messages are bound to the deployment, settlement only moves forward, and channel maintenance is timelocked.
+
+## See also
+
+- [Security properties](/security/properties) — the specific on-chain checks
+- [Design principles](/thesis/design-principles)
+- [Trust and collateral](/core-concepts/trust-and-collateral)
+- [Authorized settler](/core-concepts/authorized-settler)

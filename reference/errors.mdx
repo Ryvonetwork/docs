@@ -1,0 +1,101 @@
+---
+title: "Errors"
+description: "Custom program errors returned by the Agon protocol."
+---
+
+The Agon program returns typed errors from the `VaultError` enum. Each error falls into one of three client-handling categories:
+
+- **User action** — the caller must do something (deposit more, wait, cancel) before retrying.
+- **Retriable** — transient or timing-dependent; retrying later may succeed.
+- **Permanent** — the input or state is invalid; retrying will not succeed.
+
+## Balances and withdrawals
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `InsufficientBalance` | User action | Payer balance too low for the requested debit. |
+| `WithdrawalAlreadyPending` | User action | A withdrawal is already pending for this token. |
+| `NoWithdrawalPending` | Permanent | No withdrawal to execute or cancel. |
+| `WithdrawalLocked` | Retriable | Timelock has not yet expired; try again after `unlock_at`. |
+| `InvalidWithdrawalDestination` | Permanent | Destination is the zero address or not a valid token account. |
+| `AmountMustBePositive` | Permanent | Zero-value operation. |
+
+## Channels
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `ChannelNotInitialized` | Permanent | `create_channel` must be called first. |
+| `ChannelAlreadyExists` | Permanent | A channel already exists for this `(payer, payee, token)` triple. |
+| `SelfChannelNotAllowed` | Permanent | Payer and payee cannot be the same participant. |
+| `InsufficientLockedBalance` | User action | Requested unlock exceeds the channel's `locked_balance`. |
+| `NoChannelUnlockPending` | Permanent | No pending unlock to execute. |
+| `InvalidAuthorizedSigner` | Permanent | Signer cannot be zero or equal to the current signer. |
+| `NoAuthorizedSignerUpdatePending` | Permanent | No pending signer rotation. |
+| `InboundChannelConsentRequired` | User action | Payee requires explicit consent before inbound channels. |
+| `InboundChannelsDisabled` | Permanent | Payee does not accept new inbound channels. |
+| `InvalidInboundChannelPolicy` | Permanent | Unknown inbound channel policy value. |
+
+## Settlement and signatures
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `CommitmentAmountMustIncrease` | Permanent | New `committed_amount` is not strictly greater than `settled_cumulative`. Stale replay. |
+| `InvalidCommitmentMessage` | Permanent | `agon-cmt-v5` message failed structural validation. |
+| `InvalidClearingRoundMessage` | Permanent | `agon-round-v4` message failed structural validation. |
+| `InvalidMessageDomain` | Permanent | Signed domain does not match this deployment. |
+| `InvalidSignature` | Permanent | Ed25519 verification failed. |
+| `InvalidEd25519Data` | Permanent | Preceding Ed25519 instruction is malformed. |
+| `SignatureAlreadyUsed` | Permanent | Signature or clearing round already consumed. |
+| `CpiNotAllowed` | Permanent | Settlement instructions may not be called via CPI. |
+| `UnauthorizedSettler` | Permanent | Caller is neither the payee nor the `authorized_settler` of the message. |
+| `NetFlowImbalance` | Permanent | Clearing-round net flows do not sum to zero. |
+| `NetPositionOverflow` | Permanent | Clearing-round net position computation overflowed. |
+
+## Participants and accounts
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `ParticipantNotFound` | Permanent | Participant referenced in a message is not registered. |
+| `AccountIdMismatch` | Permanent | Account `participant_id` does not match the message `participant_id`. |
+| `TooManyTokenBalances` | User action | Participant already holds the maximum of 16 different token balances. |
+
+## Tokens and registry
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `TokenNotFound` | Permanent | `token_id` is not in the registry. |
+| `TokenAlreadyRegistered` | Permanent | Mint is already registered under a different `token_id`. |
+| `TokenIdAlreadyInUse` | Permanent | `token_id` already maps to a different mint. |
+| `UnauthorizedTokenRegistration` | Permanent | Caller is not the registry authority. |
+| `InvalidTokenId` | Permanent | `token_id` must be greater than zero. |
+| `InvalidTokenSymbol` | Permanent | Symbol must be valid ASCII. |
+| `InvalidTokenDecimals` | Permanent | Token decimals exceed the protocol maximum (20). |
+| `TokenRegistryFull` | Permanent | Registry account has no remaining capacity. |
+| `InvalidTokenMint` | Permanent | Token account mint doesn't match registered token. |
+
+## Configuration and authorities
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `InvalidAuthority` | Permanent | Authority cannot be the zero address. |
+| `InvalidFeeRecipient` | Permanent | Fee recipient cannot be the zero address. |
+| `InvalidFeeBps` | Permanent | Fee must be between 3 and 30 basis points. |
+| `InvalidRegistrationFee` | Permanent | Registration fee must be 0 or between 0.001 and 0.01 SOL. |
+| `InvalidDepositFor` | Permanent | `deposit_for` amounts must match recipients, up to 16. |
+| `UnauthorizedInitializer` | Permanent | Only the program upgrade authority can call `initialize`. |
+| `InvalidAuthoritySignature` | Permanent | Authority check failed. |
+| `InvalidChainId` | Permanent | Chain ID not supported by this deployment. |
+| `NoPendingAuthorityTransfer` | Permanent | No authority transfer is currently pending. |
+| `UnauthorizedPendingAuthority` | Permanent | Caller is not the nominated pending authority. |
+
+## Arithmetic
+
+| Error | Category | Meaning |
+| --- | --- | --- |
+| `MathOverflow` | Permanent | Arithmetic overflow during balance or size computation. |
+
+## See also
+
+- [Instructions](/reference/instructions)
+- [Message formats](/reference/messages)
+- [On-chain properties](/security/properties)

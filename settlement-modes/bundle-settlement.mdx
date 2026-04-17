@@ -1,61 +1,59 @@
 ---
 title: "Bundle Settlement"
-description: "How one payee settles many `agon-cmt-v5` messages in one transaction."
+description: "One payee settles many `agon-cmt-v5` messages in one transaction."
 ---
 
 Bundle settlement is the payee-side compression path.
 
-Each payer still signs its own `agon-cmt-v5` message for its own lane. The payee simply settles several of those messages together with `settle_commitment_bundle`.
+Each payer still signs its own `agon-cmt-v5` message for its own channel. The payee settles several of those messages together with `settle_commitment_bundle`.
 
-## Overview
+## Why it exists
 
-Bundle settlement is useful when one provider has many incoming payments in the same token.
+Without bundling, a provider receiving payments from many clients would submit one settlement transaction per payer. Bundle settlement lets the provider move several channels forward in a single transaction while keeping payer-side signing independent.
 
-Without bundling, that provider would submit one settlement transaction per payer. With bundling, the provider can move several lanes forward in one transaction while keeping payer-side signing simple.
+It is **not** multilateral netting. Each channel still settles independently — the bundle only compresses transaction count and per-transaction overhead.
 
-## Bundle Requirements
+## Bundle requirements
 
 All bundle entries must:
 
 1. point to the same payee
 2. use the same token
-3. reference unique lanes
-4. have a valid current signer for each lane
+3. reference unique channels
+4. have a valid current signer for each channel
 5. have a submitter that is allowed for each message
 
-## Account Layout
+## Account layout
 
-The bundle instruction keeps its main accounts small:
+The bundle instruction keeps its fixed accounts small:
 
 - `payee_account`
 - `submitter`
 
-Then it reads the rest from `remaining_accounts`.
-
-For each bundle entry, the transaction passes:
+The rest arrives through `remaining_accounts`. For each bundle entry, the transaction passes:
 
 1. the payer participant account
 2. the corresponding `channel-v2` account
 
-Layout:
+Layout in `remaining_accounts`:
 
-`[payer_1, channel_1, payer_2, channel_2, ...]`
+```text
+[payer_1, channel_1, payer_2, channel_2, ...]
+```
 
-## What The Program Verifies
+## What the program verifies
 
 For each entry, the program checks:
 
-1. the Ed25519 signature is present and valid
-2. the signed message parses as `agon-cmt-v5`
-3. the token is allowlisted and matches the rest of the bundle
-4. the passed channel is the canonical `channel-v2` PDA for that payer, payee, and token
-5. the signer matches the channel's `authorized_signer`
-6. the cumulative amount moves forward
-7. the payer has enough total balance
+1. The Ed25519 signature is present and valid.
+2. The signed message parses as `agon-cmt-v5`.
+3. The token is allowlisted and matches the rest of the bundle.
+4. The passed channel is the canonical `channel-v2` PDA for that payer, payee, and token.
+5. The signer matches the channel's `authorized_signer`.
+6. The cumulative amount moves forward.
+7. The payer has enough total balance.
 
-After validation, the program applies all lane updates and credits the payee once.
-
-If an operator also needs to be paid, that operator payment should be modeled as its own lane and settled separately or through a cooperative clearing round.
+After validation, the program applies all channel updates and credits the payee once, then emits a `CommitmentBundleSettled` event summarizing the batch.
 
 ## Example
 
@@ -77,6 +75,26 @@ await program.methods
   .rpc();
 ```
 
-## When To Use This Path
+The single Ed25519 pre-instruction contains all the payer signatures at once. Solana's Ed25519 program verifies the batch, and `settle_commitment_bundle` cross-checks each signature against its corresponding channel.
 
-Use bundle settlement when one payee is collecting several signed unilateral commitments and wants transaction compression without needing every participant in the set to coordinate.
+## Operator payment inside a bundle
+
+If an operator also needs to be paid, model that payment as its own channel and settle it separately, or include it in a cooperative clearing round. Do **not** try to embed operator fees inside a bundle entry — `agon-cmt-v5` does not carry that field for good reasons. See [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
+
+## When to use this path
+
+Choose bundle settlement when:
+
+- One payee is collecting signed commitments from many payers in the same token.
+- You want transaction compression without requiring every participant to coordinate.
+- The paying side prefers independent, unilateral signing.
+
+Bundle settlement is the natural next step after direct settlement for any provider with more than a handful of clients.
+
+## See also
+
+- [Direct settlement](/settlement-modes/direct-settlement)
+- [Clearing rounds](/settlement-modes/clearing-rounds)
+- [Commitments](/core-concepts/commitments)
+- [Benchmarks](/benchmarks/live-devnet)
+- [Message formats](/reference/messages#agon-cmt-v5)

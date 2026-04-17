@@ -1,0 +1,128 @@
+---
+title: "Instructions"
+description: "The full on-chain instruction surface of the current Agon protocol."
+---
+
+This page lists every instruction the deployed Agon program exposes. Most integrations only need a small subset — see [Minimum useful subset](#minimum-useful-subset) at the bottom.
+
+## Bootstrap and admin
+
+<ResponseField name="initialize" type="instruction">
+  Creates `GlobalConfig`, fixes the deployment chain ID, derives the immutable message domain, and sets the initial config authority.
+</ResponseField>
+
+<ResponseField name="update_config" type="instruction">
+  Updates mutable configuration (`fee_recipient`, `fee_bps`, `registration_fee_lamports`) and can nominate a pending config authority.
+</ResponseField>
+
+<ResponseField name="accept_config_authority" type="instruction">
+  Completes the two-step config authority handoff. Must be signed by the nominated pending authority.
+</ResponseField>
+
+<ResponseField name="initialize_token_registry" type="instruction">
+  Creates the singleton `TokenRegistry` account after bootstrap.
+</ResponseField>
+
+<ResponseField name="register_token" type="instruction">
+  Adds one allowlisted settlement token to the registry and creates its vault token account PDA.
+</ResponseField>
+
+<ResponseField name="update_registry_authority" type="instruction">
+  Nominates a pending registry authority.
+</ResponseField>
+
+<ResponseField name="accept_registry_authority" type="instruction">
+  Completes the two-step registry authority handoff.
+</ResponseField>
+
+## Participants
+
+<ResponseField name="initialize_participant" type="instruction">
+  Registers one wallet as one permanent participant. Assigns a monotonically increasing `participant_id` and initializes the participant's inbound channel policy.
+</ResponseField>
+
+<ResponseField name="update_inbound_channel_policy" type="instruction">
+  Sets whether inbound channels are permissionless, consent-based, or disabled for this participant.
+</ResponseField>
+
+## Funding and withdrawals
+
+<ResponseField name="deposit" type="instruction">
+  Moves tokens from the caller's token account into the protocol vault and credits the participant's available balance for that token.
+</ResponseField>
+
+<ResponseField name="deposit_for" type="instruction">
+  Lets one funder credit several participants for the same token in a single transaction (up to 16 recipients per call).
+</ResponseField>
+
+<ResponseField name="request_withdrawal" type="instruction">
+  Starts a timelocked withdrawal for one token. Records the destination token account and moves the requested amount from `available_balance` to `withdrawing_balance`.
+</ResponseField>
+
+<ResponseField name="cancel_withdrawal" type="instruction">
+  Cancels a pending withdrawal and returns the amount to `available_balance`.
+</ResponseField>
+
+<ResponseField name="execute_withdrawal_timelocked" type="instruction">
+  Executes a pending withdrawal after the timelock has elapsed. Transfers the net amount to the destination and the protocol fee to the fee recipient.
+</ResponseField>
+
+## Channels
+
+<ResponseField name="create_channel" type="instruction">
+  Creates one permanent one-way payment channel from payer to payee for one token, respecting the payee's inbound channel policy.
+</ResponseField>
+
+<ResponseField name="lock_channel_funds" type="instruction">
+  Moves part of the payer's `available_balance` into this channel's `locked_balance`. Locked funds cannot be withdrawn, cannot fund other channels, and can only be consumed by settlement against this channel.
+</ResponseField>
+
+<ResponseField name="request_unlock_channel_funds" type="instruction">
+  Starts a timelocked request to return some locked channel balance to the payer's `available_balance`.
+</ResponseField>
+
+<ResponseField name="execute_unlock_channel_funds" type="instruction">
+  Completes the channel unlock after the timelock has elapsed.
+</ResponseField>
+
+<ResponseField name="request_update_channel_authorized_signer" type="instruction">
+  Starts a timelocked rotation of the channel's `authorized_signer` (the key that signs `agon-cmt-v5` commitments).
+</ResponseField>
+
+<ResponseField name="execute_update_channel_authorized_signer" type="instruction">
+  Completes the `authorized_signer` rotation after the timelock has elapsed.
+</ResponseField>
+
+## Settlement
+
+<ResponseField name="settle_individual" type="instruction">
+  Settles one `agon-cmt-v5` message against one channel. The caller must be the payee or the `authorized_settler` named in the message. See [Direct settlement](/settlement-modes/direct-settlement).
+</ResponseField>
+
+<ResponseField name="settle_commitment_bundle" type="instruction">
+  Settles many `agon-cmt-v5` messages in one transaction for one payee. Each commitment must be for the same token and payee. See [Bundle settlement](/settlement-modes/bundle-settlement).
+</ResponseField>
+
+<ResponseField name="settle_clearing_round" type="instruction">
+  Settles one `agon-round-v4` message signed by the roster of participants, advancing many channels in one transaction and applying only the net residual balance changes. See [Clearing rounds](/settlement-modes/clearing-rounds).
+</ResponseField>
+
+## Minimum useful subset
+
+If you are building a provider, gateway, or agent client, the smallest useful subset is usually:
+
+1. `initialize_participant`
+2. `deposit`
+3. `create_channel`
+4. optionally `lock_channel_funds`
+5. `settle_individual` or `settle_commitment_bundle`
+
+If you are building a cooperative settlement coordinator, add `settle_clearing_round`.
+
+## See also
+
+- [First payment](/getting-started/first-payment)
+- [Message formats](/reference/messages)
+- [Accounts](/reference/accounts)
+- [Events](/reference/events)
+- [Errors](/reference/errors)

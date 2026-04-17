@@ -3,10 +3,86 @@ title: "Glossary"
 description: "Key terms used throughout the Agon Protocol docs."
 ---
 
-- **Participant**: a permanent wallet-bound protocol identity with a stable `participant_id`
-- **Channel**: a permanent one-way payment relationship keyed by `payer_id + payee_id + token_id`
-- **Latest commitment**: the newest unilateral cumulative state for one channel
-- **Bundle settlement**: several unilateral commitments for one payee settled in fewer transactions
-- **Clearing round**: one shared signed message that advances several channels together
-- **Gross routed value**: total value represented by all advanced unilateral obligations before netting
-- **Residual net flow**: the final participant balance change that remains after cooperative offsetting
+**Agon Protocol**
+A non-custodial clearing and settlement protocol for machine payments on Solana.
+
+**Participant**
+A permanent, wallet-bound protocol identity with a stable `participant_id` that never changes. See [Participants](/core-concepts/participants).
+
+**Channel**
+A permanent, one-way payment relationship keyed by `(payer_id, payee_id, token_id)`. Tracks `settled_cumulative`, `locked_balance`, and an `authorized_signer`. See [Payment channels](/core-concepts/payment-channels).
+
+**Commitment**
+A signed off-chain message that sets a new cumulative amount for one channel. The hot-path primitive. See [Commitments](/core-concepts/commitments).
+
+**Cumulative amount**
+The total value the payer has ever committed to send over a channel, from inception to now. Settlement on-chain applies only the delta against `settled_cumulative`.
+
+**Latest commitment / direct settlement**
+Settling one channel by submitting one `agon-cmt-v5` message via `settle_individual`. See [Direct settlement](/settlement-modes/direct-settlement).
+
+**Bundle settlement**
+One payee settling many `agon-cmt-v5` messages — from many payers — in one transaction via `settle_commitment_bundle`. See [Bundle settlement](/settlement-modes/bundle-settlement).
+
+**Clearing round**
+One shared `agon-round-v4` message signed by several participants that advances many channels in one transaction via `settle_clearing_round`. Only the net residual flow is applied on-chain. See [Clearing rounds](/settlement-modes/clearing-rounds).
+
+**Gross routed value**
+The total value represented by all cumulative advances implied by a clearing round, before netting.
+
+**Residual / net flow**
+The remaining participant balance change after payments implied by a clearing round cancel each other out. This is the value actually moved between participant balances on-chain.
+
+**`agon-cmt-v5`**
+The unilateral cumulative commitment message format. See [Message formats](/reference/messages#agon-cmt-v5).
+
+**`agon-round-v4`**
+The cooperative clearing-round message format. See [Message formats](/reference/messages#agon-round-v4).
+
+**Message domain**
+A 16-byte deployment-scoped tag derived from the program ID and chain ID. Every signed Agon message carries it; messages signed for one deployment will not verify on another. See [Deployment](/reference/deployment#message-domain).
+
+**`authorized_signer`**
+The key allowed to sign `agon-cmt-v5` commitments for a specific channel. Stored on-chain in `ChannelState` and rotatable under a timelock.
+
+**`authorized_settler`**
+An optional delegate named inside a signed `agon-cmt-v5` message that is allowed to submit the message on-chain in addition to the payee. See [Authorized settler](/core-concepts/authorized-settler).
+
+**Operator hub**
+A service that coordinates payments between many users and providers using Agon channels, without taking custody. See [Operator hubs](/core-concepts/operator-hubs).
+
+**Vault**
+The protocol's SPL token accounts, one per registered token, where deposited funds actually live. Participant `available_balance` and channel `locked_balance` are ledger positions against the vault.
+
+**Available balance**
+A participant's spendable balance for a token — usable to lock into channels or request withdrawals.
+
+**Locked balance**
+Funds in a participant's balance that have been earmarked to a specific channel's `locked_balance`. They can only be consumed by settlement against that channel (or released via a timelocked unlock).
+
+**Timelock**
+A mandatory waiting period between requesting and executing a sensitive action — withdrawals, channel unlocks, and channel signer rotations. Prevents sudden disruption of in-flight payments.
+
+**Chain ID**
+A protocol-level identifier (`0` mainnet, `1` devnet, `2` testnet, `3` localnet) folded into the message domain. See [Deployment](/reference/deployment#chain-ids).
+
+**`GlobalConfig`**
+Singleton PDA that holds fee parameters, authority keys, chain ID, and the message domain. See [Accounts](/reference/accounts#globalconfig).
+
+**`TokenRegistry`**
+Singleton PDA holding the allowlist of settlement tokens. See [Accounts](/reference/accounts#tokenregistry).
+
+**`ParticipantAccount`**
+PDA holding per-token balances and the inbound channel policy for one wallet. See [Accounts](/reference/accounts#participantaccount).
+
+**`ChannelState`**
+PDA holding the settled cumulative amount, locked balance, and authorized signer for one channel. See [Accounts](/reference/accounts#channelstate).
+
+**Inbound channel policy**
+A participant-level setting that controls whether others can open inbound channels to them: permissionless, consent-required, or disabled.
+
+**Ed25519 program**
+Solana's native Ed25519 signature verification program. Agon uses it to verify off-chain `agon-cmt-v5` and `agon-round-v4` signatures as part of settlement transactions.
+
+**BLS signature aggregation**
+A roadmap item for compressing cooperative rounds further by aggregating many signatures into one. Not shipped in V4. See [Roadmap](/thesis/roadmap#bls-signature-aggregation).

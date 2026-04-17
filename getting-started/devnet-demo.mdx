@@ -1,9 +1,18 @@
 ---
 title: "Devnet Demo"
-description: "How to run the protocol-only Agon devnet demo."
+description: "The protocol-only devnet demo: what it covers and what it produces."
 ---
 
-The protocol demo is devnet-native and does not depend on the OWS gateway example. It exercises the settlement primitives directly against the live V4 deployment.
+The protocol demo is devnet-native and self-contained. It exercises every V4 settlement primitive directly against the live deployment and writes a machine-readable manifest used by this docs site's live benchmark pages.
+
+## Live deployment under test
+
+| Field | Value |
+| --- | --- |
+| Program ID | `Ba2puU8D2CLD1dYfRQ4YBXxirdyz3zVLLChvMf9AqJ1Y` |
+| Cluster | `devnet` |
+| Message domain | `b2ba0d07c5a4fcd09b933f732c3f389d` |
+| Default settlement token | `aUSDC` (`token_id = 2`, mint `AMXvvKksfCprEKY9uxzNx9MKrDq9kwDWG6Fr9sXkEpAr`) |
 
 ## Run
 
@@ -13,17 +22,31 @@ npm run demo:agon-protocol
 npm run benchmarks:generate
 ```
 
-The first command executes the live scenarios. The second turns the last-run manifest plus the synthetic sizing scripts into committed benchmark snapshots and generated benchmark pages for this docs site.
+- The first command executes the live scenarios.
+- The second turns the last-run manifest plus the synthetic sizing scripts into committed benchmark snapshots and refreshes the generated benchmark pages in this docs site.
 
-## What The Demo Covers
+## What the demo covers
 
-1. latest-commitment settlement
-2. bundle settlement
-3. single-payer cooperative clearing
-4. bilateral cooperative clearing
-5. the largest executable multilateral round found on the current devnet deployment
-6. capacity summary and artifact output
+The demo walks through every V4 settlement path:
+
+1. **Latest-commitment settlement** — one channel, one signed message, one transaction.
+2. **Bundle settlement** — one payee, many payers, one transaction.
+3. **Single-payer cooperative clearing** — several channels co-signed by one payer.
+4. **Bilateral cooperative clearing** — two parties netting outgoing channels.
+5. **Largest executable multilateral round** — the densest cooperative round that fits in a v0 transaction with Address Lookup Tables on the current devnet deployment.
+6. **Capacity summary and artifact output** — compressed results ready for publication.
 
 ## Output
 
-The run writes a machine-readable manifest to `config/agon-protocol-demo-last-run.json`. That manifest is the source for the live benchmark export pipeline.
+The run writes a machine-readable manifest to `config/agon-protocol-demo-last-run.json`. That manifest is the source of truth for the [Live devnet benchmarks](/benchmarks/live-devnet) page and for the explorer links it surfaces.
+
+## When to use this
+
+Use the demo when you want to:
+
+- verify the live deployment end-to-end
+- produce new benchmark artifacts after a protocol change
+- generate explorer links for a blog post, pitch, or audit
+- see every settlement path execute in sequence without building a client
+
+If you instead want to see how to integrate at the code level, start with [Your first payment](/getting-started/first-payment).

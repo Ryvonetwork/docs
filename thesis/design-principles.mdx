@@ -1,0 +1,94 @@
+---
+title: "Design Principles"
+description: "The non-negotiable properties Agon preserves across every settlement path."
+---
+
+Agon is designed around a small set of properties that hold across direct, bundled, and cooperative settlement. Everything else is a policy choice layered on top.
+
+## Non-custodial by construction
+
+Funds live inside program-owned accounts. Operators, facilitators, and submitters never take custody of user balances.
+
+- Deposits and withdrawals are enforced by the program against on-chain state.
+- Settlement can only move balances according to verified signed messages.
+- No operator, authority, or upgrade path can drain user balances outside these rules.
+
+This is the property that separates Agon from managed payment rails. The convenience features layered above it — delegated submission, operator hubs, compliance — never require surrendering custody to use the settlement layer.
+
+## Execution off-chain, settlement on-chain
+
+The hot path is a signed cumulative commitment. The cold path is an on-chain settlement transaction.
+
+- A commitment says *"this lane is authorized up to cumulative amount X"* — not *"charge Y now."*
+- The payee holds the newest valid commitment and decides when to settle.
+- The program enforces `committed_amount > settled_cumulative` on settlement so only monotonic forward movement is accepted.
+
+This split is what allows one settlement to discharge many underlying payments.
+
+## Permanent identities, permanent channels
+
+V4 intentionally avoids participant recycling and channel close-and-reopen:
+
+- A wallet registers once as a participant and keeps its `participant_id` for the life of the deployment.
+- One payment channel exists per `payer_id + payee_id + token_id` triple. Once created, it stays.
+
+The tradeoff is more long-lived on-chain state. The benefit is structural simplicity:
+
+- Off-chain services can treat `wallet → participant_id` as stable.
+- Replay protection is simpler because there is no reopened channel to attack.
+- Lifecycle edge cases disappear from client code.
+
+## Deployment-scoped replay protection
+
+Every signed message is bound to a specific deployment:
+
+- A 16-byte `message_domain` is derived in-program from a fixed Agon tag, the program ID, and the chain ID.
+- Mainnet, devnet, testnet, and localnet each have distinct chain IDs and therefore distinct domains.
+- A message signed for one environment will not verify on another.
+
+This eliminates a whole class of cross-environment and cross-deployment replay mistakes, including most tooling misconfigurations.
+
+## Always-available fallback path
+
+Cooperation is an optimization. Direct settlement is a right.
+
+Any valid signed commitment can be settled by its payee directly through `settle_individual`, without asking any other participant or operator to co-sign. Bundle settlement and cooperative clearing rounds are denser, but they are never the only way to redeem value.
+
+This is the property that keeps operator hubs from becoming gatekeepers. A hub can improve UX without becoming a chokepoint.
+
+## Composable trust models on a shared base
+
+The same protocol must support relationships with very different risk postures:
+
+- **Fully collateralized** flows with lane-specific locked funds.
+- **Trust-minimized** flows with partial lockup or frequent settlement.
+- **Credit-based** flows where an operator extends balance between settlements.
+
+Agon treats these as policy choices on top of a common settlement base rather than as mutually exclusive architectures. Two integrations that pick opposite points on this spectrum still use the same primitives.
+
+## Operators are useful but not controlling
+
+`authorized_settler`, bundle submission, and operator hubs all make the protocol more practical to operate at scale. None of them are required to keep balances safe.
+
+- An operator can submit on behalf of a payee, but cannot change the amount, the payer, or the lane identified in the signed message.
+- An operator can propose a clearing round, but every participant must sign the shared round message.
+- An operator can coordinate routing, but balances continue to move only through protocol instructions.
+
+This keeps the operator layer open and competitive. Any team can run a hub on top of the same base layer; users and providers are not bound to one operator just to access settlement.
+
+## Small, auditable surface
+
+V4 keeps the on-chain program deliberately compact:
+
+- Four primary account types: `GlobalConfig`, `TokenRegistry`, `ParticipantAccount`, `ChannelState`.
+- Two signed message types: `agon-cmt-v5` and `agon-round-v4`.
+- Three settlement instructions: `settle_individual`, `settle_commitment_bundle`, `settle_clearing_round`.
+
+Everything else is either administrative (registration, config, tokens) or lifecycle (deposits, withdrawals, lane locks, signer rotation). A smaller surface is easier to reason about, easier to audit, and easier to integrate correctly.
+
+## Where to read next
+
+- [Motivation](/thesis/motivation) — why this model exists
+- [Trust model](/security/trust-model) — what the protocol guarantees
+- [Security properties](/security/properties) — the specific on-chain checks
+- [Protocol overview](/getting-started/protocol-overview) — how the pieces connect in V4

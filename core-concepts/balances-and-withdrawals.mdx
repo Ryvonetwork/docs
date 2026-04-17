@@ -1,21 +1,21 @@
 ---
-title: "Balances And Withdrawals"
-description: "How participant balances, pending withdrawals, and lane locks work in Agon V4."
+title: "Balances and Withdrawals"
+description: "How participant balances, pending withdrawals, and channel locks work in Agon V4."
 ---
 
 Agon keeps user funds in two places:
 
-1. the protocol vault, which holds the real SPL tokens
-2. protocol state, which tracks who is entitled to what inside that vault
+1. **The protocol vault**, which holds real SPL tokens.
+2. **Protocol state**, which tracks who is entitled to what inside that vault.
 
-That means you should think about balance in two layers:
+Balance accounting sits at two layers:
 
-- **participant balance** inside `ParticipantAccount`
-- **lane lock** inside `ChannelState`
+- **Participant balance** — stored in `ParticipantAccount`
+- **Channel lock** — stored in `ChannelState.locked_balance`
 
-## Participant Balance Has Three Important States
+## Participant balance states
 
-For each allowlisted token, a participant can have:
+For each allowlisted token, a participant can hold:
 
 | State | Meaning |
 | --- | --- |
@@ -23,22 +23,20 @@ For each allowlisted token, a participant can have:
 | `withdrawing_balance` | Amount reserved for a pending withdrawal |
 | `withdrawal_destination` + `withdrawal_unlock_at` | Where a pending withdrawal will go and when it becomes executable |
 
-The first time a participant deposits a token, that amount appears in `available_balance`.
+The first deposit for a token appears entirely in `available_balance`.
 
-## Lane Locks Are Separate
+## Channel locks are separate
 
-Lane locks live in `ChannelState.locked_balance`, not in `ParticipantAccount`.
+Channel locks live in `ChannelState.locked_balance`, not in `ParticipantAccount`. A participant can therefore hold:
 
-This matters because a participant can have:
+- shared available balance that may flow across several relationships, plus
+- one or more channel-specific locked amounts that are ring-fenced for specific payees.
 
-- shared available balance that may be used across several relationships
-- plus one or more lane-specific locked amounts that are ring-fenced for specific payees
+During settlement, the protocol spends **channel-specific locked balance first** and **shared participant balance second**.
 
-During settlement, the protocol uses lane-specific locked balance first and shared participant balance second.
+## Deposit flow
 
-## Deposit Flow
-
-Depositing is a normal SPL token transfer from the user's token account into the protocol vault, followed by a credit to protocol balance.
+Depositing is a normal SPL token transfer from the user's token account into the protocol vault, followed by a credit to protocol balance:
 
 ```ts
 await program.methods
@@ -53,67 +51,74 @@ await program.methods
   .rpc();
 ```
 
-`deposit_for` is the batch version of the same idea. It lets one funder credit several participants in a single transaction.
+`deposit_for` is the batch version of the same idea. It lets one funder credit up to 16 participants in one transaction.
 
-## Withdrawal Flow
+## Withdrawal flow
 
-Withdrawals are intentionally two-step on mainnet.
+Withdrawals are intentionally two-step. This protects the payee from a payer draining shared balance immediately after signing a commitment.
 
-### Step 1: Request
+### Step 1 — request
 
 `request_withdrawal` moves funds from `available_balance` to `withdrawing_balance`, records the destination token account, and starts the timelock.
 
-### Step 2: Execute
+### Step 2 — execute
 
-Once the timelock has expired, `execute_withdrawal_timelocked` transfers the net amount to the destination token account and the fee to the protocol fee recipient's token account.
+Once the timelock has expired, `execute_withdrawal_timelocked` transfers the net amount to the destination token account and the withdrawal fee to the protocol fee recipient.
 
 The withdrawal fee is the larger of:
 
-1. the configured basis-point fee
-2. a minimum fee floor scaled to the token's decimals
+1. the configured basis-point fee, or
+2. a minimum fee floor scaled to the token's decimals.
 
-On mainnet the timelock is seven days. On devnet, testnet, and localnet the timelock is short so the flow is practical for testing.
+On mainnet the timelock is seven days. On devnet, testnet, and localnet the timelock is short so the flow is practical for testing. See [Deployment](/reference/deployment) for exact values.
 
-## Pending Withdrawal Does Not Mean Final
+## Pending withdrawal is not final
 
-One important V4 behavior surprises people at first:
+One V4 behavior surprises people at first:
 
-A pending withdrawal can still be consumed by later settlement before it is executed.
+<Warning>
+  A pending withdrawal can still be consumed by later settlement before it is executed.
+</Warning>
 
-That happens because a withdrawal request is not final settlement. It is only a request to leave the protocol after the timelock. Until the execute step succeeds, the funds are still part of the participant's total protocol balance.
+A withdrawal request is not final settlement. Until the execute step succeeds, the funds are still part of the participant's total protocol balance. If later settlement consumes that balance:
 
-So if later settlement uses that balance:
+- the withdrawal may execute with only the residual amount, or
+- it may execute with zero and simply clear the pending state.
 
-- the withdrawal may execute with only the residual amount
-- or it may execute with zero and simply clear the pending state
+This is deliberate. *"Requested for withdrawal"* is not stronger than *"already withdrawn."*
 
-This behavior is deliberate. It means "requested for withdrawal" is not stronger than "already withdrawn."
+## Cancelling a withdrawal
 
-## Canceling A Withdrawal
+If the participant changes their mind before execution, `cancel_withdrawal` moves `withdrawing_balance` back to `available_balance` and clears the stored destination and unlock time.
 
-If the participant changes its mind before execution, it can cancel the pending withdrawal. That moves `withdrawing_balance` back to `available_balance` and clears the stored destination and unlock time.
+## Channel unlock flow
 
-## Lane Unlock Flow
-
-Lane locks have their own two-step flow:
+Channel locks have their own two-step flow:
 
 1. `request_unlock_channel_funds`
 2. `execute_unlock_channel_funds`
 
-This is separate from participant withdrawals because lane locks are not the same thing as participant balances.
+This is separate from participant withdrawals because channel locks are not the same thing as participant balances.
 
-When a lane unlock executes, the protocol returns `min(pending_unlock_amount, locked_balance)` to the payer's `available_balance`. If later settlement has already used part or all of the locked balance, the unlock releases only what remains.
+When a channel unlock executes, the protocol returns `min(pending_unlock_amount, locked_balance)` to the payer's `available_balance`. If later settlement has already used part or all of the locked balance, the unlock releases only what remains.
 
-## Practical Guidance
+## Practical rules
 
-If you are building a gateway or agent client, these are the balance rules that matter most:
+If you are building a provider, client, or gateway, these are the balance rules that matter most:
 
-1. deposits increase `available_balance`
-2. lane locks reduce shared flexibility but make one relationship safer
-3. pending withdrawals are not final until executed
-4. settlement can consume both shared balance and lane-specific locks
-5. unlock requests and signer rotations are also timelocked
+1. Deposits increase `available_balance`.
+2. Channel locks reduce shared flexibility but strengthen one specific relationship.
+3. Pending withdrawals are not final until executed.
+4. Settlement can consume both shared balance and channel-specific locks — locked balance first.
+5. Unlock requests and signer rotations are also timelocked.
 
-If you keep those five rules in mind, the rest of the protocol becomes much easier to reason about.
+<Tip>
+  If you are considering a yield-bearing settlement asset, prefer a fixed-balance share token over a rebasing one. Agon's internal accounting is aligned with tokens whose balances stay constant while redemption value rises over time — see [Yield-bearing assets](/core-concepts/yield-bearing-assets).
+</Tip>
 
-If you are considering a yield-bearing settlement asset, prefer a fixed-balance share token over a rebasing one. Agon's internal accounting is much more naturally aligned with tokens whose balances stay constant while redemption value rises over time.
+## See also
+
+- [Participants](/core-concepts/participants)
+- [Payment channels](/core-concepts/payment-channels)
+- [Deployment](/reference/deployment)
+- [Yield-bearing assets](/core-concepts/yield-bearing-assets)

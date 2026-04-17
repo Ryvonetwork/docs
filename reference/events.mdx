@@ -1,0 +1,207 @@
+---
+title: "Events"
+description: "Anchor events emitted by the Agon program."
+---
+
+The Agon program emits Anchor events for every state-changing instruction. Indexers, gateways, and monitoring systems should key off these events rather than scraping transaction logs.
+
+## Participant events
+
+### `ParticipantInitialized`
+
+| Field | Type |
+| --- | --- |
+| `owner` | `Pubkey` |
+| `participant_id` | `u32` |
+| `registration_fee_lamports` | `u64` |
+| `inbound_channel_policy` | `u8` |
+
+### `InboundChannelPolicyUpdated`
+
+| Field | Type |
+| --- | --- |
+| `participant_id` | `u32` |
+| `inbound_channel_policy` | `u8` |
+
+## Funding and withdrawal events
+
+### `Deposited`
+
+| Field | Type |
+| --- | --- |
+| `participant_id` | `u32` |
+| `token_id` | `u16` |
+| `amount` | `u64` |
+
+### `WithdrawalRequested`
+
+| Field | Type |
+| --- | --- |
+| `participant_id` | `u32` |
+| `token_id` | `u16` |
+| `amount` | `u64` |
+| `destination` | `Pubkey` |
+| `unlock_at` | `i64` |
+
+### `WithdrawalCancelled`
+
+| Field | Type |
+| --- | --- |
+| `participant_id` | `u32` |
+| `token_id` | `u16` |
+| `amount_returned` | `u64` |
+
+### `Withdrawn`
+
+| Field | Type |
+| --- | --- |
+| `participant_id` | `u32` |
+| `token_id` | `u16` |
+| `net_amount` | `u64` |
+| `fee_amount` | `u64` |
+| `destination` | `Pubkey` |
+
+## Channel events
+
+### `ChannelCreated`
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+
+### `ChannelFundsLocked`
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `amount` | `u64` |
+| `total_locked` | `u64` |
+
+### `ChannelUnlockRequested`
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `requested_amount` | `u64` |
+| `unlock_at` | `i64` |
+
+### `ChannelFundsUnlocked`
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `released_amount` | `u64` |
+| `remaining_locked` | `u64` |
+
+### `ChannelAuthorizedSignerUpdateRequested`
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `current_authorized_signer` | `Pubkey` |
+| `pending_authorized_signer` | `Pubkey` |
+| `activate_at` | `i64` |
+
+### `ChannelAuthorizedSignerUpdated`
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `previous_authorized_signer` | `Pubkey` |
+| `new_authorized_signer` | `Pubkey` |
+
+## Settlement events
+
+### `IndividualSettled`
+
+Emitted by `settle_individual`.
+
+| Field | Type |
+| --- | --- |
+| `payer_id` | `u32` |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `amount` | `u64` |
+| `committed_amount` | `u64` |
+| `from_locked` | `bool` |
+
+### `CommitmentBundleSettled`
+
+Emitted by `settle_commitment_bundle`.
+
+| Field | Type |
+| --- | --- |
+| `payee_id` | `u32` |
+| `token_id` | `u16` |
+| `channel_count` | `u16` |
+| `total` | `u64` |
+
+### `ClearingRoundSettled`
+
+Emitted by `settle_clearing_round`.
+
+| Field | Type |
+| --- | --- |
+| `token_id` | `u16` |
+| `participant_count` | `u16` |
+| `channel_count` | `u16` |
+| `total_gross` | `u64` |
+| `total_net_adjusted` | `u64` |
+
+`total_gross` is the sum of all cumulative deltas implied by the round. `total_net_adjusted` is the magnitude of the net residual flow actually applied on-chain — often dramatically smaller, especially in bilateral or near-balanced rounds.
+
+## Authority events
+
+### `ConfigUpdated`
+
+| Field | Type |
+| --- | --- |
+| `authority` | `Pubkey` |
+| `fee_recipient` | `Pubkey` |
+| `fee_bps` | `u16` |
+| `chain_id` | `u16` |
+
+### `ConfigAuthorityTransferStarted`
+
+| Field | Type |
+| --- | --- |
+| `current_authority` | `Pubkey` |
+| `pending_authority` | `Pubkey` |
+
+### `ConfigAuthorityTransferred`
+
+| Field | Type |
+| --- | --- |
+| `previous_authority` | `Pubkey` |
+| `new_authority` | `Pubkey` |
+
+### `RegistryAuthorityTransferStarted`
+
+| Field | Type |
+| --- | --- |
+| `current_authority` | `Pubkey` |
+| `pending_authority` | `Pubkey` |
+
+### `RegistryAuthorityTransferred`
+
+| Field | Type |
+| --- | --- |
+| `previous_authority` | `Pubkey` |
+| `new_authority` | `Pubkey` |
+
+## See also
+
+- [Instructions](/reference/instructions)
+- [Accounts](/reference/accounts)

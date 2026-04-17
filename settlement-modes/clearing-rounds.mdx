@@ -1,0 +1,109 @@
+---
+title: "Cooperative Clearing Rounds"
+description: "One signed roster advances many channels and applies only residual balance changes."
+---
+
+Cooperative clearing rounds are the densest settlement path in Agon V4.
+
+Instead of each channel settling independently, a group of participants signs one shared `agon-round-v4` message. That round advances many channel targets at once and updates only the participant balances that still need to move after the included payments cancel each other out.
+
+## Worked example
+
+Suppose Alice owes Bob, Bob owes Carol, and Carol owes Alice.
+
+If every channel settles independently, the protocol touches each participant balance for each edge. If all three sign one clearing round, the protocol can:
+
+1. Move each channel's `settled_cumulative` forward.
+2. Compute the net effect on each participant.
+3. Apply only the residual balance changes that remain.
+
+With concrete numbers — `A → B = 50`, `B → C = 10`, `C → A = 10` — Agon advances every included channel to its new cumulative target and then applies:
+
+- `A = -40`
+- `B = +40`
+- `C = 0`
+
+That is what multilateral clearing means in Agon.
+
+## What is signed
+
+`agon-round-v4` signs:
+
+1. the deployment `message_domain`
+2. one shared `token_id`
+3. the participant roster
+4. each participant block's outgoing channel targets
+
+Each block names the payer by `participant_id`. Each entry inside the block points to the payee by `payee_ref`, which is an index into the signed roster. Reusing the roster by index is what keeps cooperative rounds byte-efficient.
+
+For the exact byte layout, see [Message formats](/reference/messages#agon-round-v4).
+
+## What the program verifies
+
+When `settle_clearing_round` runs, the program checks:
+
+1. The Ed25519 instruction is present and self-contained.
+2. Every signer signed the exact same round message.
+3. The number of signers matches the participant roster length.
+4. Each participant account is the canonical PDA for the participant block it represents.
+5. Each channel account is the canonical `channel-v2` PDA for the payer, payee, and token it represents.
+6. Every target cumulative amount moves forward.
+7. Every participant with a negative final position has enough balance to cover it.
+
+Only after all these checks pass does the program write the new channel states and apply the net participant balance changes.
+
+## What changes on-chain
+
+A clearing round updates two kinds of state:
+
+### Channel state
+
+Every included channel gets a new `settled_cumulative`. If the channel had locked balance, the round consumes that first.
+
+### Participant balances
+
+After all channel deltas are known, the program computes the net change per participant and applies only those residual changes.
+
+A `ClearingRoundSettled` event summarizes the round with total gross and net-adjusted flow.
+
+## Example round construction
+
+```ts
+const message = createClearingRoundMessage({
+  tokenId: 1,
+  blocks: [
+    {
+      participantId: aToB.channel.payerId,
+      entries: [{ payeeRef: 1, targetCumulative: nextA }],
+    },
+    {
+      participantId: bToC.channel.payerId,
+      entries: [{ payeeRef: 2, targetCumulative: nextB }],
+    },
+    {
+      participantId: cToA.channel.payerId,
+      entries: [{ payeeRef: 0, targetCumulative: nextC }],
+    },
+  ],
+});
+```
+
+Each block owner must sign the final round message. The resulting Ed25519 pre-instruction attaches all signatures at once.
+
+## When to use this path
+
+Choose cooperative clearing when:
+
+- Several participants are already coordinating and willing to co-sign one shared round.
+- There is real value in letting payments inside the group cancel out before balances are updated.
+- The participants are willing to block briefly on round construction in exchange for much denser settlement.
+
+Today this path is already useful under Ed25519. BLS aggregation can make rounds denser later without changing the signed-round body — see [Roadmap](/thesis/roadmap#bls-signature-aggregation).
+
+## See also
+
+- [Settlement modes overview](/settlement-modes/overview)
+- [Direct settlement](/settlement-modes/direct-settlement)
+- [Bundle settlement](/settlement-modes/bundle-settlement)
+- [Message formats](/reference/messages#agon-round-v4)
+- [Live benchmarks](/benchmarks/live-devnet)

@@ -1,24 +1,24 @@
 ---
 title: "Operator Hubs"
-description: "How hub-style operators can be built on top of Agon without turning the base protocol into one managed rail."
+description: "How hub-style payment operators can be built on top of Agon without turning the base protocol into a managed rail."
 ---
 
 Agon supports an operator hub model on top of the base protocol.
 
-In this model, users open payment channels to a hub, providers open payment channels with that same hub, and the hub handles payment flow between both sides. The hub can enforce its own pricing, compliance, and routing logic while settlement still happens through Agon's protocol state.
+In this model, users open payment channels to a hub, providers open payment channels with that same hub, and the hub handles payment flow between both sides. The hub can enforce its own pricing, compliance, and routing logic, while settlement still happens through Agon's protocol state.
 
-## Overview
+## The shape
 
-Instead of every user opening a direct channel to every provider, the graph can look like this:
+Instead of every user opening a direct channel to every provider, the payment graph looks like this:
 
 ```text
-user -> hub
-hub -> provider
+user → hub
+hub  → provider
 ```
 
 This is useful when one operator wants to coordinate access, billing, and settlement for many users and many providers.
 
-## How It Works
+## How a hub works
 
 The hub becomes the party that:
 
@@ -28,7 +28,9 @@ The hub becomes the party that:
 4. signs outbound payment updates to providers
 5. settles both sides later through normal Agon settlement
 
-## Why It Fits Agon
+The hub is doing payment **coordination**. Balances still live in protocol state.
+
+## Why it fits Agon
 
 Agon does not do Lightning-style multi-hop routing. It does have the primitives that a hub needs:
 
@@ -38,70 +40,86 @@ Agon does not do Lightning-style multi-hop routing. It does have the primitives 
 4. payee-side bundle settlement
 5. cooperative clearing when several participants want to co-sign one shared update
 
-That means a hub can be built **without changing the base protocol**.
+A hub can be built entirely on top of these primitives — no protocol changes required.
 
-## Example
+## Worked example
 
-Imagine Alice wants to pay an RPC provider through a hub.
+Alice wants to pay an RPC provider through a hub.
 
 1. Alice has a channel to the hub.
 2. The provider has a channel from the hub.
 3. Alice signs a cumulative commitment increasing what she owes the hub.
 4. The hub checks Alice's balance, channel lock, policy rules, and rate limits.
-5. The hub serves or forwards the RPC call.
+5. The hub serves the RPC call (or forwards it to the provider).
 6. The hub signs a cumulative commitment increasing what it owes the provider.
 7. Later, the hub settles inbound and outbound channels through normal Agon settlement.
 
-The hub is doing payment coordination, but the balances still live in protocol state.
+## Operating models
 
-## Common Operating Models
+### Guaranteed-capacity
 
-The hub model can be used in more than one way.
+If the spending side locks enough funds to the channel, the receiving side has guaranteed payment capacity on that relationship. The hub operates the service layer, but it does not need off-chain custody to make the payment valid.
 
-### Guaranteed channel flow
+### Trust-minimized
 
-If the spending side locks enough funds to the channel, the receiving side has guaranteed payment capacity on that relationship. The hub still operates the service layer, but it is not relying on offchain custody to make the payment valid.
+If only partial expected usage is locked — or if balances are mostly shared rather than locked per channel — the model becomes trust-minimized. The payee takes more timing and credit risk between settlements, but the protocol is still non-custodial.
 
-### Trust-minimized flow
+### Credit
 
-If only part of expected usage is locked, or if balances are mostly shared rather than locked to one channel, the model becomes trust-minimized. The payee is taking more timing and credit risk between settlements.
+If the hub extends credit in either direction, the trust surface grows. Balances continue to live non-custodially in protocol state, but the hub's business logic is now bearing risk and liquidity exposure.
 
-### Credit flow
+## What the hub controls (and what it does not)
 
-If the hub is extending credit in either direction, then the trust surface becomes larger still. The protocol still handles balances non-custodially, but the business logic is now relying on the hub's own risk and liquidity management.
-
-## Why This Is Different From A Single Managed Rail
-
-This model can look similar to Circle-style nanopayment infrastructure at the product level:
-
-1. one operator coordinates payment flow
-2. one operator can gate access or apply policy
-3. users and providers do not need a full mesh of direct payment channels
-
-The difference is that Agon does not require one global operator.
-
-Any team can build a hub on top of the protocol. Users and providers are not bound to one payment company just to access the settlement rail itself. They can choose different hubs, use direct channels, or mix both models.
-
-## What The Hub Controls
-
-A hub can still control service access. It can:
+A hub can still control **service access**. It can:
 
 1. deny service
 2. delay forwarding
 3. require additional lockup
 4. choose which providers it will work with
 
-That is not a protocol bug. It is the service-layer business model of the hub.
+That is not a protocol bug — it is the service-layer business model of the hub.
 
-The important difference is that service control and settlement control are no longer the same thing. The protocol underneath remains open and non-custodial.
+The important distinction is that service control and settlement control are no longer the same thing. A hub can be picky about who it serves without becoming the only path to settle. Users and providers can choose different hubs, use direct channels, or mix both.
 
-## Relationship To `authorized_settler`
+## Operator payment is separate
 
-`authorized_settler` can help a hub with relaying, settlement automation, and payment operations, but it is not the main reason the hub model works.
+A hub is an economic participant like any other. If a hub should be paid, that payment should be modeled as its own ordinary channel commitment — typically:
 
-The main reason the hub model works is simpler:
+- `payer → hub` for access
+- `hub → provider` for fulfillment
 
-1. users owe the hub on one set of channels
-2. the hub owes providers on another set of channels
+This keeps hub compensation cumulative and durable instead of stuffing a fee into a unilateral commitment meant for a different relationship. It also lets the hub's inbound balance participate in bundle or cooperative settlement.
 
-`authorized_settler` is useful around the edges. The channel graph is the core of the model.
+## Relationship to `authorized_settler`
+
+`authorized_settler` helps a hub with relaying and payment operations, but it is not the main reason the hub model works.
+
+The main reason is simpler:
+
+1. Users owe the hub on one set of channels.
+2. The hub owes providers on another set of channels.
+
+`authorized_settler` is useful around the edges; the channel graph is the core.
+
+## Why this is different from a single managed rail
+
+At the product layer, a hub can look similar to a centralized micropayment rail:
+
+1. one operator coordinates payment flow
+2. one operator can gate access or apply policy
+3. users and providers do not need a full mesh of direct channels
+
+The difference is that Agon does not require one global operator.
+
+- Any team can build a hub on top of the protocol.
+- Users and providers are not bound to one payment company just to access the settlement rail.
+- Multiple hubs can coexist and compete, or a team can bypass hubs entirely with direct channels.
+
+See [vs. Managed rails](/comparisons/managed-rails) for the explicit side-by-side.
+
+## See also
+
+- [Authorized settler](/core-concepts/authorized-settler)
+- [Trust and collateral](/core-concepts/trust-and-collateral)
+- [vs. Managed rails](/comparisons/managed-rails)
+- [vs. Lightning](/comparisons/lightning)

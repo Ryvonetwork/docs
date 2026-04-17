@@ -1,41 +1,59 @@
 ---
 title: "Agon Protocol"
-description: "A non-custodial clearing protocol for machine payments on Solana."
+description: "A non-custodial clearing and settlement protocol for machine payments on Solana."
 ---
 
-Agon Protocol is a non-custodial clearing protocol for machine payments on Solana.
+Agon is a non-custodial clearing and settlement protocol for machine payments on Solana. It is designed for repeated, high-frequency relationships — agents paying APIs, services paying services, and operators routing payments between both — where settling every interaction as its own on-chain transfer is too expensive.
 
-Agon lets agents and services make many payments first and settle them later. It is designed for repeated API usage, machine-to-machine commerce, and other payment flows where settling every interaction as its own transfer is too expensive.
+Agon decouples **payment execution** from **settlement**. Participants exchange signed cumulative commitments off-chain in the hot path, then settle only the latest valid state on-chain. The same protocol supports direct settlement for one channel, bundled settlement for one payee, and cooperative clearing rounds across many participants.
 
-## Quick Start
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Run your first payment flow against the live devnet deployment in minutes.
+  </Card>
+  <Card title="Protocol overview" icon="diagram-project" href="/getting-started/protocol-overview">
+    Understand the on-chain objects, signed messages, and settlement paths in V4.
+  </Card>
+  <Card title="Live benchmarks" icon="chart-line" href="/benchmarks/live-devnet">
+    See compression ratios, transaction sizes, and explorer links from devnet runs.
+  </Card>
+  <Card title="Reference" icon="book" href="/reference/deployment">
+    Deployment info, instructions, message formats, account layouts, events, and errors.
+  </Card>
+</CardGroup>
 
-If you are new to Agon, start with these pages:
+## What Agon provides
 
-- [V4 overview](/getting-started/v4-overview)
-- [First payment flow](/getting-started/first-payment-flow)
-- [Run the devnet demo](/getting-started/devnet-demo)
-- [See live benchmark artifacts](/benchmarks/generated-live-devnet)
+- **Permanent participant identities.** Every wallet registers once and keeps a stable `participant_id` for the life of the deployment.
+- **Permanent payment channels.** One one-way channel per `payer → payee → token` triple. No close-and-reopen lifecycle.
+- **Signed cumulative commitments.** `agon-cmt-v5` is the unilateral hot-path message. The payer signs the new cumulative target; the payee settles the delta later.
+- **Three settlement modes.** Direct settlement, bundle settlement, and cooperative clearing rounds — all settling into the same shared vault.
+- **Non-custodial by construction.** Balances live in program-owned accounts. Operators and facilitators can help submit settlements without holding funds.
 
-## What Agon Includes
+## Who Agon is for
 
-Agon V4 includes:
+Agon is a good fit when the same parties interact repeatedly and per-payment settlement cost matters:
 
-- permanent participant identities
-- permanent one-way payment channels
-- signed cumulative commitments
-- direct settlement
-- bundle settlement
-- cooperative clearing rounds
+- agent-driven API and tool consumption
+- metered service relationships (inference, RPC, data feeds, compute)
+- operator hubs routing payments between users and providers
+- payment networks among a known set of counterparties
 
-## Common Use Cases
+It is not intended to replace Solana's native transfer for one-off, high-value payments.
 
-Agon is a good fit for:
+## Where to go next
 
-- agent payments for APIs and infrastructure
-- repeated buyer-to-provider payment flows
-- payment hubs and operator services
-- payment flows that need guaranteed or trust-minimized options
-
-## Where To Go Next
-
-Read [V4 overview](/getting-started/v4-overview) for the protocol model, then use [First payment flow](/getting-started/first-payment-flow) to build the smallest useful integration.
+<CardGroup cols={2}>
+  <Card title="Why cooperative scaling" icon="lightbulb" href="/thesis/motivation">
+    Why machine payments benefit from a clearing layer, not more transactions.
+  </Card>
+  <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
+    The smallest useful integration — register, deposit, open a channel, sign, settle.
+  </Card>
+  <Card title="Settlement modes" icon="layer-group" href="/settlement-modes/overview">
+    Choose between direct, bundle, and cooperative clearing paths.
+  </Card>
+  <Card title="Security model" icon="shield-halved" href="/security/trust-model">
+    What Agon guarantees on-chain, and what stays a relationship-level choice.
+  </Card>
+</CardGroup>

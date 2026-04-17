@@ -1,0 +1,40 @@
+---
+title: "Methodology"
+description: "How Agon publishes benchmark artifacts for the protocol."
+---
+
+Agon publishes two benchmark families — one grounded in live devnet execution, one grounded in deterministic wire-format sizing. Both are generated from committed artifacts rather than hand-maintained prose, so every number on these pages traces back to a reproducible source.
+
+## Live devnet benchmarks
+
+Live benchmarks come from the protocol-only devnet demo. Each scenario captures:
+
+- scenario shape (participants, channels, underlying payments)
+- explorer links for every submitted transaction
+- serialized transaction bytes where measured
+- settlement compression against an exact-payment baseline
+
+The demo script writes a machine-readable manifest to `config/agon-protocol-demo-last-run.json`, and the docs build turns that manifest into the [Live devnet benchmarks](/benchmarks/live-devnet) table. Re-running the demo and the benchmark generator publishes fresh numbers without editing markdown by hand.
+
+## Synthetic capacity benchmarks
+
+Synthetic benchmarks come from deterministic sizing scripts inside the protocol repo. They measure the structural capacity of each settlement path:
+
+- unilateral commitment message density
+- bundle settlement limits
+- cooperative clearing-round headroom
+- projected BLS headroom
+
+These are not live transactions — they are bounded-size reconstructions of what will fit on the wire given the current message formats, account layouts, and Solana transaction envelope (v0 with Address Lookup Tables). They are published in [Synthetic capacity benchmarks](/benchmarks/synthetic-capacity).
+
+## Source of truth
+
+The generated pages in this section are built from committed JSON snapshots rather than hand-maintained copy. Each snapshot is pinned to a specific commit of the protocol repo and a specific program deployment.
+
+If you are citing Agon benchmarks externally, link the specific snapshot page and cite the protocol commit and program ID shown on it. That way the numbers remain verifiable over time, even as the deployment evolves.
+
+## See also
+
+- [Live devnet benchmarks](/benchmarks/live-devnet)
+- [Synthetic capacity benchmarks](/benchmarks/synthetic-capacity)
+- [Devnet demo](/getting-started/devnet-demo)

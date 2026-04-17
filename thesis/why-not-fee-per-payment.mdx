@@ -1,38 +1,62 @@
 ---
 title: "Why Not Fee Per Payment"
-description: "Why exact payment on every interaction hits a constant-cost floor."
+description: "Why exact settlement on every interaction hits a constant cost floor that Agon is designed to remove."
 ---
 
-Exact payment per interaction is simple to explain because each request settles independently.
+Exact payment per interaction is simple to explain: each request settles independently, so each request inherits the same settlement cost. That cost is fine when payments are large or infrequent. It becomes the dominant cost when an agent makes many small requests to the same provider.
 
-The problem is that every request inherits the same settlement cost, even when the underlying work is tiny.
+## The per-payment cost floor
 
-## Overview
+Per-payment settlement means every interaction pays for:
 
-Per-payment settlement usually means that each interaction needs its own settlement transaction and its own fee. That is fine when payments are large or infrequent. It becomes inefficient when an agent is making many very small requests to the same provider.
+- its own transaction fee
+- its own confirmation and retry handling
+- its own signature overhead
+- its own slot of scarce client-side transaction throughput
 
-## How Agon Changes The Cost Model
+That cost is independent of what the request is worth. A $0.0005 inference call pays the same settlement cost as a $5 one. Over a high-frequency workload, the settlement overhead stops being a rounding error and starts being a structural tax on the business model.
 
-Agon uses deferred settlement. Payment execution happens first through signed cumulative updates, and settlement happens later onchain.
+This is the floor Agon is designed to remove.
 
-This does not eliminate cost. It changes where the cost appears. Instead of paying the full settlement cost every time, the relationship pays for occasional settlement.
+## How Agon changes the cost model
 
-Agon does not force you into deferred settlement. A provider can still require sign, settle, then serve if it wants exact pay-per-call behavior.
+Agon uses deferred settlement. Payment execution happens first, through signed cumulative commitments. Settlement happens later on-chain, on the newest valid state.
 
-Deferred settlement also makes yield-bearing settlement assets more interesting. If balances sit in a fixed-balance yield share between settlements, idle capital can keep accruing instead of sitting dead between tiny transactions.
+This does not eliminate cost. It changes where the cost appears:
 
-If you want to understand where that idea works well, and where it gets more complicated, see [Yield-Bearing Stablecoins](/core-concepts/yield-bearing-stablecoins).
+- Instead of paying a full settlement per request, the relationship pays for occasional settlement.
+- The on-chain overhead is amortized over many underlying payments.
+- Cooperative rounds can compress even further by netting payments between many participants.
 
-## Why The x402 Comparison Still Matters
+Agon does not force deferred settlement. A provider can still require *"sign, settle, then serve"* if it wants exact pay-per-call semantics. The protocol just removes the requirement that every interaction must settle individually.
 
-Agon often compares itself to an exact-payment x402-style baseline because that is the cleanest way to show the difference in transaction count.
+## When per-payment settlement still makes sense
 
-The point of that comparison is not that x402 is bad. It is that exact settlement per request creates a constant-cost floor. Agon is designed for the cases where that floor is too high relative to the value of each interaction.
+Per-payment settlement is a good fit when:
 
-## Common Use Cases
+- Payments are one-off or infrequent.
+- Payments are large enough that settlement cost is a rounding error.
+- Counterparties are unknown or fully untrusted.
+- There is no persistent relationship worth modeling as a channel.
 
-This tradeoff matters most when:
+In those cases, the extra machinery of participants, channels, and commitments is not earning its keep.
 
-- the same payer makes many small requests to the same provider
-- the service can tolerate delayed settlement
-- the cost of settlement is large relative to each individual request
+## Why deferred settlement unlocks yield
+
+Because balances sit inside the protocol between settlements, deferred settlement pairs naturally with fixed-balance yield-bearing dollar assets. Idle working capital stays productive without being moved in and out of a separate savings product just to earn.
+
+This is an efficiency gain on top of the core compression argument, not a replacement for it. See [Yield-bearing assets](/core-concepts/yield-bearing-assets) for where it works well and where it gets more complicated.
+
+## The x402 comparison, framed correctly
+
+Agon often measures itself against an exact-payment x402-style baseline because that baseline is the cleanest reference point for transaction count.
+
+The comparison is not "x402 is bad." x402 and related payment-request standards are an important authorization interface — and Agon's settlement layer is compatible with serving requests that look the same to the caller.
+
+The comparison is: exact settlement per request creates a constant cost floor, and Agon is designed for the cases where that floor is too high relative to the value of each interaction.
+
+## Where to read next
+
+- [Motivation](/thesis/motivation) — the full argument for cooperative scaling
+- [vs. Exact-payment x402](/comparisons/x402) — the side-by-side framing
+- [Settlement modes](/settlement-modes/overview) — the three compression paths

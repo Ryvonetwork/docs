@@ -1,0 +1,91 @@
+---
+title: "Quickstart"
+description: "See Agon run end-to-end against the live devnet deployment in a few minutes."
+---
+
+This page is the fastest way to see the Agon protocol execute real settlements. It runs the committed devnet demo, which exercises every settlement path against the live V4 deployment and produces the benchmark artifacts used throughout these docs.
+
+If you want the integration-level walkthrough instead, go to [Your first payment](/getting-started/first-payment).
+
+<Steps>
+  <Step title="Clone the protocol repository">
+    ```bash
+    git clone https://github.com/Agonx402/agon-protocol.git
+    cd agon-protocol
+    npm install
+    ```
+  </Step>
+  <Step title="Run the devnet demo">
+    ```bash
+    npm run demo:agon-protocol
+    ```
+
+    This executes the committed end-to-end flow against the live devnet program:
+
+    1. latest-commitment settlement
+    2. bundle settlement
+    3. single-payer cooperative clearing
+    4. bilateral cooperative clearing
+    5. the largest executable multilateral clearing round on devnet
+
+    The run writes a machine-readable manifest to `config/agon-protocol-demo-last-run.json`.
+  </Step>
+  <Step title="Generate benchmark artifacts (optional)">
+    ```bash
+    npm run benchmarks:generate
+    ```
+
+    This combines the demo manifest with deterministic sizing scripts and refreshes the live and synthetic benchmark pages in this docs site.
+  </Step>
+</Steps>
+
+## Live devnet deployment
+
+| Field | Value |
+| --- | --- |
+| Program ID | `Ba2puU8D2CLD1dYfRQ4YBXxirdyz3zVLLChvMf9AqJ1Y` |
+| Cluster | `devnet` |
+| Message domain | `b2ba0d07c5a4fcd09b933f732c3f389d` |
+| Default settlement token | `aUSDC` (`token_id = 2`, mint `AMXvvKksfCprEKY9uxzNx9MKrDq9kwDWG6Fr9sXkEpAr`) |
+
+The full reference is on the [Deployment](/reference/deployment) page.
+
+## Prerequisites
+
+- Node.js 18 or newer
+- Rust toolchain (only required if you want to rebuild the program)
+- Solana CLI
+- Anchor
+
+If you only want to integrate against the live deployment, you do not need to rebuild the program. Build tools are only required when working inside the protocol repository itself.
+
+## Repository commands
+
+From inside the protocol repo, these are the commands you will use most often:
+
+```bash
+cargo fmt --check
+cargo clippy --lib --features no-entrypoint -- -D warnings
+anchor build
+node ./node_modules/typescript/bin/tsc --noEmit
+powershell -ExecutionPolicy Bypass -File scripts/test-local.ps1
+```
+
+The PowerShell script spins up a local validator, deploys the program, and runs the full Anchor test suite — useful on Windows + WSL developer machines.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Protocol overview" icon="diagram-project" href="/getting-started/protocol-overview">
+    The on-chain objects, signed messages, and settlement paths in V4.
+  </Card>
+  <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
+    Build the smallest useful Agon integration end-to-end.
+  </Card>
+  <Card title="Run the devnet demo" icon="terminal" href="/getting-started/devnet-demo">
+    More detail on the demo script and what it produces.
+  </Card>
+  <Card title="Live benchmarks" icon="chart-line" href="/benchmarks/live-devnet">
+    See the compression ratios and explorer links this demo generates.
+  </Card>
+</CardGroup>

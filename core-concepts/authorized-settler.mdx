@@ -1,24 +1,22 @@
 ---
 title: "Authorized Settler"
-description: "Why `authorized_settler` exists and what delegated settlement enables in the current Agon commitment model."
+description: "How delegated submission works under unilateral settlement."
 ---
 
 `authorized_settler` lets a payment commitment name an additional submitter without changing who signed the payment update.
 
 The distinction is simple:
 
-- `authorized_signer` signs the payment update
-- `authorized_settler` can submit that signed update onchain
+- **`authorized_signer`** signs the payment update.
+- **`authorized_settler`** can submit that signed update on-chain.
 
-## Overview
+## Why it exists
 
-Many teams do not want to run settlement operations themselves. They may want a third party to handle relaying, batching, invoicing, compliance checks, or payment operations.
+Many teams do not want to run settlement operations themselves. They may prefer a third party to handle relaying, batching, invoicing, compliance checks, or payment operations.
 
-`authorized_settler` gives them a protocol-level way to delegate submission while keeping balances in protocol state.
+`authorized_settler` gives them a protocol-level way to delegate submission while balances stay in protocol state.
 
-## Common Use Cases
-
-Common examples include:
+Common examples:
 
 - payment gateways
 - invoicing providers
@@ -26,27 +24,25 @@ Common examples include:
 - operator hubs
 - internal payment operations services
 
-If you want the larger network pattern that often sits on top of this feature, read [Operator Hubs](/core-concepts/operator-hubs).
+For the larger network pattern that often sits on top of this feature, see [Operator hubs](/core-concepts/operator-hubs).
 
-## How It Works
+## Additive, not exclusive
 
-`authorized_settler` is additive, not exclusive.
+`authorized_settler` does not remove the payee's right to settle. If a commitment includes `authorized_settler`, then **either** of these may submit it:
 
-If a commitment includes `authorized_settler`, then either of these may submit it:
+1. the payee owner, or
+2. the delegated settler named in the signed message.
 
-1. the payee owner
-2. the delegated settler named in the signed message
+This preserves the always-available direct settlement path while still allowing operational delegation. See [Design principles](/thesis/design-principles#always-available-fallback-path) for why this matters.
 
-This design keeps the payee's direct settlement path intact while still allowing operational delegation.
-
-## Where It Applies
+## Where it applies
 
 `authorized_settler` only applies to unilateral commitment messages:
 
 - `settle_individual`
 - `settle_commitment_bundle`
 
-It does not affect cooperative clearing rounds because those rounds are keyed to the signed participant roster, not to a delegated unilateral submitter.
+It does **not** affect cooperative clearing rounds. Clearing rounds are keyed to the signed participant roster, not to a delegated unilateral submitter.
 
 ## Example
 
@@ -61,28 +57,33 @@ const message = createCommitmentMessage({
 });
 ```
 
-After that message is signed by the channel's `authorized_signer`, either the payee or `operator.publicKey` may submit it.
+After the message is signed by the channel's `authorized_signer`, either the payee or `operator.publicKey` may submit it.
 
-## Operator Payment Is Separate
+## Operator payment is separate
 
-`authorized_settler` does not automatically receive a fee.
+`authorized_settler` does not automatically pay the operator.
 
-If the operator should be paid, that payment should be modeled as its own ordinary lane commitment. In practice that means flows such as:
+If the operator should be compensated, model that payment as its own ordinary channel commitment. In practice that means flows like:
 
-- `payer -> provider` for the service itself
-- `provider -> operator` or `payer -> operator` for settlement or coordination services
+- `payer → provider` for the service itself
+- `provider → operator` or `payer → operator` for settlement or coordination services
 
-That keeps operator compensation durable and cumulative instead of embedding it as a one-off field inside the unilateral commitment message.
+Keeping operator compensation on its own channel makes it durable and cumulative instead of embedding it as a one-off field in the unilateral commitment message. It also lets the operator's inbound balance participate in bundle or cooperative settlement.
 
-## Limits
+## What it is not
 
-The current feature is not an escrow primitive.
-
-It does not:
+`authorized_settler` is not an escrow primitive. It does not:
 
 1. give the delegated settler control over the amount
 2. make the delegated settler the only party allowed to settle
 3. add dispute-resolution logic
-4. let an external program control settlement policy onchain
+4. let an external program control settlement policy on-chain
 
-Today, `authorized_settler` is best understood as delegated submission for unilateral settlement.
+It is strictly **delegated submission** for unilateral settlement. Everything else stays in the payer's hands.
+
+## See also
+
+- [Commitments](/core-concepts/commitments)
+- [Direct settlement](/settlement-modes/direct-settlement)
+- [Bundle settlement](/settlement-modes/bundle-settlement)
+- [Operator hubs](/core-concepts/operator-hubs)
