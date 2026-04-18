@@ -1,0 +1,110 @@
+---
+title: "Quickstart"
+description: "Make your first paid call to the live Agon Gateway in minutes."
+---
+
+This quickstart uses the `call-gateway` CLI — a ready-made client that pays the live gateway with a real Solana wallet. It is the fastest way to see the x402 and SIWX flows end-to-end.
+
+## Prerequisites
+
+- Node.js 20+.
+- A Solana mainnet wallet with a small USDC balance (a few cents covers many paid calls).
+- The wallet must be **different** from the gateway's `payTo` wallet — x402 exact SVM will reject a self-transfer.
+
+<Warning>
+The gateway settles on **Solana mainnet**. Keep the buyer wallet funded with only as much USDC as you intend to spend while testing.
+</Warning>
+
+## 1. Clone and install
+
+```bash
+git clone https://github.com/Agonx402/call-gateway
+cd call-gateway
+npm install
+```
+
+## 2. Configure your wallet
+
+```bash
+cp .env.example .env
+```
+
+Then set one of these in `.env`:
+
+```ini
+SOLANA_PRIVATE_KEY_BASE58=<your base58-encoded 64-byte secret key>
+# or
+SOLANA_PRIVATE_KEY_JSON_PATH=/absolute/path/to/keypair.json
+```
+
+Recommended to avoid public-RPC throttling:
+
+```ini
+SOLANA_MAINNET_RPC_URL=<your mainnet RPC URL>
+SOLANA_DEVNET_RPC_URL=<your devnet RPC URL>
+```
+
+## 3. Make your first paid call
+
+Call a single paid Solana RPC route against the live gateway:
+
+```bash
+npm run call -- --path /v1/x402/solana/mainnet/alchemy/rpc/getBalance
+```
+
+The CLI will:
+
+1. Resolve the route against `GET /v1/catalog`.
+2. Send an unpaid request and receive a `402 Payment Required` challenge.
+3. Build and sign an x402 exact payment on Solana mainnet.
+4. Retry the request with the `PAYMENT-SIGNATURE` header.
+5. Print the JSON response and the Solana settlement transaction hash.
+
+Try a SIWX (auth-only) route to hit the Tokens API without any payment:
+
+```bash
+npm run call -- --path /v1/x402/tokens/health
+```
+
+The CLI handles the sign-in-with-x challenge automatically and the response arrives with no on-chain transaction.
+
+## 4. Seed all routes (optional)
+
+To verify every route in the catalog works from your wallet:
+
+```bash
+npm run seed
+```
+
+Seed mode fetches the catalog, builds cheap requests for every route, handles SIWX and x402 payment flows automatically, and prints a success/failure summary. You can target a subset:
+
+```bash
+npm run seed -- --provider alchemy --cluster mainnet --method getTransaction
+npm run seed -- --path /v1/x402/solana/mainnet/helius/das/getAsset
+```
+
+See the [call-gateway CLI reference](/gateway/call-gateway) for every flag.
+
+## What just happened
+
+- **Paid route:** your request was gated behind x402 `exact` on Solana mainnet. The gateway verified the USDC transfer via the CDP facilitator, forwarded the request to Alchemy, and returned the upstream JSON response.
+- **Auth-only route:** your wallet signed a one-shot sign-in message that the gateway verified server-side, and the Tokens API response was returned without a payment.
+
+Both flows use standard x402 headers. Any x402-compatible client can talk to the gateway — the CLI is just one reference implementation.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Access modes" icon="shield-check" href="/gateway/access-modes">
+    Understand when the gateway asks for payment vs. a SIWX signature.
+  </Card>
+  <Card title="Routes" icon="route" href="/gateway/routes/solana-rpc">
+    Browse Solana RPC, DAS, and Tokens routes.
+  </Card>
+  <Card title="Integrate in your app" icon="code" href="/gateway/integration-guide">
+    Call the gateway from TypeScript or any HTTP client.
+  </Card>
+  <Card title="How it works" icon="diagram-project" href="/gateway/how-it-works">
+    Inspect the x402 exact and SIWX flows in detail.
+  </Card>
+</CardGroup>

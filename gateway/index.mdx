@@ -1,0 +1,67 @@
+---
+title: "Agon Gateway"
+description: "A hosted x402 gateway for paid Solana RPC/DAS and wallet-authenticated Tokens API routes."
+---
+
+Agon Gateway is a hosted, Vercel-ready [x402](https://x402.org) gateway that turns major Solana infrastructure providers and the Tokens API into permissionless, pay-per-call HTTP endpoints. Clients do not need upstream API keys — they authenticate and settle directly with a Solana wallet.
+
+The gateway is intentionally narrow and safe:
+
+- Standard x402 `exact` flow for paid Solana RPC and DAS routes.
+- SIWX (sign-in-with-x) auth-only x402 flow for Tokens API routes.
+- CDP facilitator for standard x402 verification and settlement.
+- Solana mainnet USDC settlement.
+- Alchemy and Helius as upstreams for Solana RPC/DAS.
+- Tokens API v1 proxied with server-side auth, exposed to clients via wallet signatures instead of end-user API keys.
+- Replay protection and rate limiting backed by Upstash Redis.
+- Internal self-hosted facilitator endpoints protected by a shared secret.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/gateway/quickstart">
+    Make your first paid call against the live gateway in minutes.
+  </Card>
+  <Card title="How it works" icon="diagram-project" href="/gateway/how-it-works">
+    Understand the x402 exact and SIWX flows end-to-end.
+  </Card>
+  <Card title="Routes" icon="route" href="/gateway/routes/solana-rpc">
+    Browse Solana RPC, DAS, and Tokens API routes.
+  </Card>
+  <Card title="Integration guide" icon="code" href="/gateway/integration-guide">
+    Integrate the gateway into your own client or service.
+  </Card>
+</CardGroup>
+
+## When to use the gateway
+
+The gateway is a good fit when any of the following are true:
+
+- You want paid Solana RPC/DAS access **without** managing an upstream API key.
+- You want wallet-authenticated access to the Tokens API **without** shipping an API key.
+- You are building an agent or automated client and want to pay per request from a Solana wallet.
+- You want to prototype an x402 integration against real infrastructure before running your own resource server.
+
+If you want to understand the underlying settlement protocol — **Agon Protocol** — see the [Protocol Docs](/index). The gateway is one application-layer example of where Agon-style machine payments are useful; the protocol itself is a separate product.
+
+## Live deployment
+
+| Field | Value |
+| --- | --- |
+| Base URL | `https://gateway.agonx402.com` |
+| Payment network | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` (Solana mainnet) |
+| Payment asset | `USDC` (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`) |
+| Facilitator | CDP |
+| Catalog | `GET /v1/catalog` |
+| Health | `GET /healthz` |
+
+## What it is not
+
+- **Not a custodian.** The gateway never holds client funds. Payments settle directly on Solana through the CDP facilitator.
+- **Not a protocol.** The gateway is a standard x402 resource server. It composes with any x402 client.
+- **Not a token.** There is no gateway token. Every request settles in USDC on Solana mainnet.
+
+## See also
+
+- [Quickstart](/gateway/quickstart)
+- [How it works](/gateway/how-it-works)
+- [Access modes](/gateway/access-modes)
+- [Route catalog](/gateway/catalog)

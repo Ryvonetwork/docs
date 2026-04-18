@@ -98,6 +98,52 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Agon Gateway",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "gateway/index",
+              "gateway/quickstart",
+              "gateway/how-it-works"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "gateway/access-modes",
+              "gateway/pricing",
+              "gateway/catalog",
+              "gateway/rate-limiting"
+            ]
+          },
+          {
+            "group": "Routes",
+            "pages": [
+              "gateway/routes/solana-rpc",
+              "gateway/routes/solana-das",
+              "gateway/routes/tokens-api"
+            ]
+          },
+          {
+            "group": "Clients & Operators",
+            "pages": [
+              "gateway/call-gateway",
+              "gateway/integration-guide",
+              "gateway/deploy",
+              "gateway/facilitator"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "gateway/reference/endpoints",
+              "gateway/reference/payment-headers"
+            ]
+          }
+        ]
       }
     ],
     "global": {

@@ -1,0 +1,118 @@
+---
+title: "Catalog"
+description: "Discover every gateway route, its price, and its schema via GET /v1/catalog."
+---
+
+The gateway publishes a single discovery endpoint:
+
+```
+GET /v1/catalog
+```
+
+Clients should use this endpoint instead of hard-coding route lists. Any route that is live, its price, its access mode, and its input/output schema are all available here.
+
+## Fetching the catalog
+
+```bash
+curl https://gateway.agonx402.com/v1/catalog | jq .
+```
+
+A response includes the full route list plus provider categories:
+
+```json
+{
+  "ok": true,
+  "version": 1,
+  "payment": {
+    "modes": ["exact", "siwx"],
+    "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    "pricingModel": "mixed",
+    "asset": {
+      "symbol": "USDC",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "decimals": 6
+    }
+  },
+  "catalog": {
+    "totalRoutes": 45,
+    "returnedRoutes": 45,
+    "filters": { "provider": null }
+  },
+  "categories": {
+    "providers": [
+      { "id": "alchemy", "label": "Alchemy", "routeCount": 18, "href": "https://gateway.agonx402.com/v1/catalog?provider=alchemy" },
+      { "id": "helius", "label": "Helius", "routeCount": 18, "href": "https://gateway.agonx402.com/v1/catalog?provider=helius" },
+      { "id": "tokens", "label": "TokensAPI", "routeCount": 19, "href": "https://gateway.agonx402.com/v1/catalog?provider=tokens" }
+    ]
+  },
+  "routes": [ /* ... CatalogRouteEntry[] ... */ ]
+}
+```
+
+## Filtering by provider
+
+To fetch only one provider's routes:
+
+```bash
+curl "https://gateway.agonx402.com/v1/catalog?provider=alchemy"
+curl "https://gateway.agonx402.com/v1/catalog?provider=helius"
+curl "https://gateway.agonx402.com/v1/catalog?provider=tokens"
+```
+
+Aliases accepted for the Tokens provider: `tokens`, `tokensapi`, `tokens-api`.
+
+An unknown value returns `400` with `supportedProviders` listed in the body.
+
+## Route entry shape
+
+Each item in `routes[]` is a `CatalogRouteEntry`:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `path` | `string` | Fully-qualified route path (supports `:param` templating). |
+| `httpMethod` | `"GET" \| "POST" \| "HEAD"` | Canonical HTTP method for the route. |
+| `cluster` | `"mainnet" \| "devnet"` (optional) | Only present for Solana routes. |
+| `provider` | `"alchemy" \| "helius" \| "tokens"` | Upstream provider identifier. |
+| `surface` | `"rpc" \| "das" \| "tokens"` | Logical surface. |
+| `method` | `string` | Canonical method name (`getBalance`, `search`, …). |
+| `description` | `string` | Human-readable route description. |
+| `accessMode` | `"exact" \| "siwx"` | Payment vs. auth-only. See [Access modes](/gateway/access-modes). |
+| `paymentRequired` | `boolean` | `true` for paid routes, `false` for SIWX. |
+| `priceUsd` | `string` (optional) | Decimal USD price, present for paid routes. |
+| `authNetworks` | `string[]` (optional) | SIWX networks, present for SIWX routes. |
+| `paymentNetwork` | `string` (optional) | CAIP-2 of the settlement network (paid routes only). |
+| `paymentAsset` | `{ symbol, mint, decimals }` (optional) | Asset descriptor (paid routes only). |
+| `enabled` | `boolean` | Always `true` for routes returned here. |
+| `inputSchema` | `object` | JSON Schema for the request input. |
+| `outputSchema` | `object` | JSON Schema for the response body. |
+| `pathParamsSchema` | `object` (optional) | JSON Schema for `:param` path segments. |
+
+## Catalog envelope
+
+The top-level `catalog` object reports:
+
+| Field | Meaning |
+| --- | --- |
+| `catalog.totalRoutes` | Total number of routes across every provider. |
+| `catalog.returnedRoutes` | Number of routes returned given the current filter. |
+| `catalog.filters.provider` | The active provider filter (`null` if unfiltered). |
+
+Backwards compatibility: clients that only read `routes` continue to work unchanged. The additional envelope fields are additive.
+
+## Using the catalog
+
+Typical client flow:
+
+1. Fetch `GET /v1/catalog` once on startup (or per reload).
+2. Render routes grouped by `categories.providers`.
+3. For each user action, look up the matching `CatalogRouteEntry`, build the request according to `inputSchema`, and fire it.
+4. If `paymentRequired: true`, let your x402 client library handle the `exact` flow using the price from the `402` challenge.
+5. If `paymentRequired: false` and `accessMode: "siwx"`, let your client handle SIWX using the `authNetworks` from the `402` challenge.
+
+The [call-gateway CLI](/gateway/call-gateway) does exactly this — its `seed` mode fetches the catalog and loops over every entry automatically.
+
+## See also
+
+- [Access modes](/gateway/access-modes)
+- [Pricing](/gateway/pricing)
+- [Endpoints reference](/gateway/reference/endpoints)

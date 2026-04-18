@@ -1,0 +1,128 @@
+---
+title: "Deploy"
+description: "Deploy the Agon Gateway to Vercel and configure upstream credentials."
+---
+
+The gateway is a Next.js app-router service. It is designed to run on Vercel with Upstash Redis for stateful concerns (replay protection, rate limiting, usage counters).
+
+## Requirements
+
+- A Vercel project (or any Node.js 20+ host that supports Next.js app router).
+- An Upstash Redis database (REST URL + REST token).
+- A CDP (Coinbase Developer Platform) API key with access to the x402 facilitator.
+- Upstream provider URLs for Alchemy and Helius (mainnet + devnet).
+- A Tokens API key (for auth-only Tokens routes).
+- A Solana mainnet wallet to receive settled USDC (the gateway `payTo` wallet).
+
+## Environment variables
+
+Copy `.env.example` and fill in the values below.
+
+### Core
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `PORT` | Optional | Defaults to `8080` for local dev. Ignored on Vercel. |
+| `AGON_GATEWAY_BASE_URL` | **Required** | Fully-qualified base URL, e.g. `https://gateway.agonx402.com`. Used when building `resource` fields and catalog `href`s. |
+| `CDP_API_KEY_ID` | **Required** | CDP API key id for the facilitator. |
+| `CDP_API_KEY_SECRET` | **Required** | CDP API key secret. |
+
+### Payment rail
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `AGON_X402_PAY_TO_WALLET` | **Required** | Solana address that receives USDC settlement. |
+| `AGON_X402_USDC_MINT` | Optional | Defaults to mainnet USDC (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`). |
+| `SOLANA_MAINNET_RPC_URL` | Optional | Defaults to `https://api.mainnet-beta.solana.com`. Use a private RPC to avoid throttling when constructing payment payloads. |
+
+### Rate limits (all optional, sensible defaults)
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `AGON_RATE_LIMIT_RPC_RPS` | `50` | RPC requests per second per `provider:cluster:rpc` scope. |
+| `AGON_RATE_LIMIT_DAS_RPS` | `10` | DAS requests per second per `provider:cluster:das` scope. |
+| `AGON_RATE_LIMIT_TOKENS_PER_MINUTE` | `30` | Shared Tokens API rpm. |
+| `AGON_RATE_LIMIT_CHALLENGE_PER_MINUTE` | `120` | Unpaid `402` challenges per minute per IP. |
+
+### Provider upstreams
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `ALCHEMY_MAINNET_RPC_URL` | **Required** | Alchemy mainnet RPC URL (includes API key). |
+| `ALCHEMY_DEVNET_RPC_URL` | **Required** | Alchemy devnet RPC URL. |
+| `HELIUS_MAINNET_RPC_URL` | **Required** | Helius mainnet RPC URL. |
+| `HELIUS_DEVNET_RPC_URL` | **Required** | Helius devnet RPC URL. |
+| `TOKENS_API_BASE_URL` | Optional | Defaults to `https://api.tokens.xyz`. |
+| `TOKENS_API_KEY` | **Required** | Server-side Tokens API key. Never returned to clients. |
+
+### Upstash Redis (required for hosted safety)
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `UPSTASH_REDIS_REST_URL` | **Required** | Upstash REST URL. |
+| `UPSTASH_REDIS_REST_TOKEN` | **Required** | Upstash REST token. |
+
+### Internal facilitator (optional)
+
+See [Facilitator](/gateway/facilitator) for when to enable these.
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `AGON_INTERNAL_SETTLEMENT_SECRET` | Optional | Shared secret required by internal facilitator routes. |
+| `AGON_FACILITATOR_WALLET_BASE58` | Optional | Base58-encoded 64-byte secret key for the internal facilitator wallet. Do not paste a JSON array here. |
+
+## Local development
+
+```bash
+cp .env.example .env
+# fill in required values
+npm install
+npm run dev
+```
+
+Build and health-check:
+
+```bash
+npm run check
+npm run build
+```
+
+## Vercel deploy
+
+The repo builds as a standard Next.js app-router backend on Vercel.
+
+Recommended rollout:
+
+1. Deploy to the default `*.vercel.app` domain first.
+2. Verify `GET /healthz` returns `{ "ok": true, ... }`.
+3. Verify `GET /v1/catalog` returns a non-empty `routes` list with real env values.
+4. Test one unpaid `402` challenge against a paid route (no `PAYMENT-SIGNATURE` header).
+5. Test one successful paid request end-to-end.
+6. Point your production domain (for example, `gateway.agonx402.com`) at the Vercel project.
+
+### vercel.json
+
+The repo ships a minimal `vercel.json` that keeps the default Next.js app router behavior.
+
+### Regions
+
+Hot-path routes are pinned to `iad1` (`preferredRegion`). Any single Vercel region works; the stateful layer lives in Upstash so there is no session pinning required for correctness.
+
+## Docker (self-hosting)
+
+A `Dockerfile` is provided for self-hosting. The image is a standard Node.js 20 container running `next start` against port `8080`. All environment variables above apply unchanged.
+
+```bash
+docker build -t agon-gateway .
+docker run --env-file .env -p 8080:8080 agon-gateway
+```
+
+## Observability
+
+Every request emits a structured event to stdout, which Vercel collects into its log pipeline. Field shape is stable across routes — see [Rate limiting & guardrails](/gateway/rate-limiting) for the event record format.
+
+## See also
+
+- [Facilitator](/gateway/facilitator)
+- [Rate limiting & guardrails](/gateway/rate-limiting)
+- [Endpoints reference](/gateway/reference/endpoints)

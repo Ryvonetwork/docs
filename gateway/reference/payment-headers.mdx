@@ -1,0 +1,113 @@
+---
+title: "Payment Headers"
+description: "The HTTP headers the gateway reads and returns for x402 exact and SIWX flows."
+---
+
+The gateway speaks standard x402 over HTTP. This page lists every header it reads from clients and returns in responses, along with the status codes clients should expect.
+
+## Request headers
+
+### `PAYMENT-SIGNATURE` (aka `X-PAYMENT`)
+
+Used by **paid routes** (`accessMode: "exact"`).
+
+- Base64-encoded x402 exact payment payload.
+- Must match the `maxAmountRequired`, `network`, and `payTo` fields from the route's `402 Payment Required` challenge envelope.
+- The gateway accepts either `PAYMENT-SIGNATURE` or `X-PAYMENT`.
+- Reusing the same header for a second request returns `400` — replay protection is enforced in Redis.
+
+### `SIGN-IN-WITH-X`
+
+Used by **auth-only routes** (`accessMode: "siwx"`).
+
+- Base64-encoded SIWX payload.
+- Must be signed by a Solana wallet and target one of the `authNetworks` from the challenge envelope.
+- Must be used within `expirationSeconds` (300s) of being signed.
+- Each signature can only authorize one request. Replays are rejected.
+
+### `Content-Type`
+
+- `application/json` for any request with a body.
+- Required for paid Solana routes. Rejected with `415` for any other content type on body routes.
+
+### `x-agon-internal-secret`
+
+Used only by **internal facilitator routes** (`/api/internal/facilitator/...`). Absent or incorrect value returns `401`.
+
+## Response headers
+
+### `WWW-Authenticate`
+
+Emitted on `402 Payment Required` responses. Describes the accepted scheme(s) — either `exact` with a Solana network or `sign-in-with-x` with one or more networks.
+
+### `X-PAYMENT-RESPONSE` (aka `PAYMENT-RESPONSE`)
+
+Emitted on **successful paid responses** (`accessMode: "exact"`). Contains the Solana settlement transaction hash and payer address. Clients should read this to get a proof of settlement.
+
+Example shape after decoding:
+
+```json
+{
+  "success": true,
+  "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+  "transaction": "<tx hash>",
+  "payer": "<payer pubkey>",
+  "settledAt": "2026-04-18T11:32:00Z"
+}
+```
+
+SIWX routes never return this header.
+
+### `access-control-*`
+
+Full CORS preflight is supported. See [Endpoints](/gateway/reference/endpoints#cors-and-options) for the exact allowlist.
+
+## Status codes
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Successful upstream response. | `{ ok: true, ..., result: {...} }` |
+| `204 No Content` | Preflight `OPTIONS` response. | empty |
+| `400 Bad Request` | Input failed validation, reused payment, or invalid provider filter. | `{ ok: false, error, ... }` |
+| `401 Unauthorized` | Missing or wrong `x-agon-internal-secret` on an internal facilitator route. | `{ ok: false, error: "unauthorized" }` |
+| `402 Payment Required` | x402 `exact` or SIWX challenge. Retry with the matching header. | `{ x402Version: 2, accepts: [...] }` |
+| `404 Not Found` | Unknown route path. | `{ ok: false, error: "not_found" }` |
+| `405 Method Not Allowed` | Wrong HTTP method for the route. | `{ ok: false, error: "method_not_allowed" }` |
+| `415 Unsupported Media Type` | Non-JSON body on a JSON route. | `{ ok: false, error: "unsupported_media_type" }` |
+| `422 Unprocessable Entity` | Payment verification failed after a valid challenge. | `{ ok: false, error: "payment_verification_failed" }` |
+| `429 Too Many Requests` | Rate limit hit. | `{ ok: false, error: "rate_limited", retryAfterMs }` |
+| `5xx` | Upstream or facilitator failure. No settlement occurs. | `{ ok: false, error, detail }` |
+
+## Challenge envelope
+
+`402` responses always include a JSON body with a standard x402 envelope:
+
+```json
+{
+  "x402Version": 2,
+  "accepts": [
+    {
+      "scheme": "exact" | "sign-in-with-x",
+      "network": "<CAIP-2 or array>",
+      "maxAmountRequired": "<micro-USDC>",       // exact only
+      "statement": "...",                          // siwx only
+      "expirationSeconds": 300,                    // siwx only
+      "resource": "<full URL>",
+      "description": "...",
+      "mimeType": "application/json",
+      "payTo": "<address>",                        // exact only
+      "asset": { "address": "...", "symbol": "USDC", "decimals": 6 },
+      "facilitator": { "url": "<cdp facilitator url>" },
+      "extensions": { /* discovery + siwx */ }
+    }
+  ]
+}
+```
+
+Clients should not rely on the ordering of fields. Treat `accepts` as a list of possible authorization strategies.
+
+## See also
+
+- [Access modes](/gateway/access-modes)
+- [Rate limiting & guardrails](/gateway/rate-limiting)
+- [Integration guide](/gateway/integration-guide)

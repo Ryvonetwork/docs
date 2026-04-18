@@ -1,0 +1,112 @@
+---
+title: "Tokens API Routes"
+description: "Wallet-authenticated proxy for Tokens API v1, gated with SIWX."
+---
+
+Tokens API routes proxy [Tokens API](https://tokens.xyz) v1 with a server-side API key held by the gateway. Clients authenticate per request with a Solana wallet signature using the x402 **sign-in-with-x** (SIWX) extension. No USDC is transferred; these are auth-only routes.
+
+All routes sit under:
+
+```
+/v1/x402/tokens/...
+```
+
+All Tokens routes:
+
+- **Access mode:** `siwx` (auth-only, no payment)
+- **Auth networks:** Solana mainnet and Solana devnet
+- **Rate limit:** `30 rpm` across the shared upstream API key (configurable)
+- **Challenge expiry:** `300 seconds`
+
+## Surface
+
+### Public helpers
+
+| Route | Method | Notes |
+| --- | --- | --- |
+| `/v1/x402/tokens/health` | `GET` | Proxies the Tokens API v1 health check |
+
+### Search, resolve, curated
+
+| Route | Method | Notes |
+| --- | --- | --- |
+| `/v1/x402/tokens/assets/search` | `GET` | Search canonical assets. `q` required, `limit <= 50` |
+| `/v1/x402/tokens/assets/resolve` | `GET` | Exactly one of `ref` or `mint` |
+| `/v1/x402/tokens/assets/curated` | `GET` | `list` required, one of: `all, majors, lsts, currencies, rwas, etfs, metals, stocks`. Optional `groupBy` = `asset` or `mint` |
+
+### Market snapshots
+
+| Route | Method | Notes |
+| --- | --- | --- |
+| `/v1/x402/tokens/assets/market-snapshots` | `POST` | Batch lookup. Accepts `mints` and/or `addresses` arrays, combined `<= 250` ids |
+| `/v1/x402/tokens/assets/variant-markets` | `GET` | Comma-separated `mints` / `addresses`, combined `<= 50` |
+| `/v1/x402/tokens/assets/risk-summary` | `GET` | Per-mint risk summary. `mint` required |
+
+### Per-asset routes
+
+All per-asset routes take a path parameter `:assetId` (canonical asset id such as `solana`, or a `solana-<mint>` singleton id).
+
+| Route | Method | Notes |
+| --- | --- | --- |
+| `/v1/x402/tokens/assets/:assetId` | `GET` | Asset detail + optional includes (`include=profile,risk,ohlcv,markets`) |
+| `/v1/x402/tokens/assets/:assetId/variants` | `GET` | Variants, filterable by `kind`, `liquidityTier`, `trustTier`, `mint`, `variantsMode=all` |
+| `/v1/x402/tokens/assets/:assetId/variant-top-markets` | `GET` | Top market per variant. `limit <= 100` |
+| `/v1/x402/tokens/assets/:assetId/variant-market` | `GET` | Cached variant-market snapshot for one mint |
+| `/v1/x402/tokens/assets/:assetId/markets` | `GET` | DEX markets for one mint. `limit <= 50` |
+| `/v1/x402/tokens/assets/:assetId/ohlcv` | `GET` | OHLCV candles. `interval` ∈ `1m, 5m, 15m, 1H, 4H, 1D, 1W` |
+| `/v1/x402/tokens/assets/:assetId/price-chart` | `GET` | Canonical price candles |
+| `/v1/x402/tokens/assets/:assetId/profile` | `GET` | Cached external profile + market stats |
+| `/v1/x402/tokens/assets/:assetId/tickers` | `GET` | Exchange tickers. `limit <= 50` |
+| `/v1/x402/tokens/assets/:assetId/risk-summary` | `GET` | Simple per-mint risk summary |
+| `/v1/x402/tokens/assets/:assetId/risk-details` | `GET` | Detailed per-mint risk summary |
+| `/v1/x402/tokens/assets/:assetId/description` | `GET` | Cached per-mint description |
+
+### Not proxied
+
+`GET /v1/whoami` is a first-party Clerk-session endpoint in the Tokens API, not an API-key endpoint. It is intentionally excluded from the gateway surface.
+
+## Valid enumerations
+
+The gateway mirrors the Tokens API enums and validates before calling upstream:
+
+| Parameter | Allowed values |
+| --- | --- |
+| `include` | `profile`, `risk`, `ohlcv`, `markets` |
+| `interval` / `ohlcvInterval` | `1m`, `5m`, `15m`, `1H`, `4H`, `1D`, `1W` |
+| `kind` (variants) | `native, wrapped, bridged, etf, yield, leveraged, basket, lst, stablecoin, tokenized_equity` |
+| `liquidityTier` | `tier1`, `tier2`, `tier3` |
+| `trustTier` | `tier1`, `tier2`, `tier3`, `experimental` |
+| `list` (curated) | `all, majors, lsts, currencies, rwas, etfs, metals, stocks` |
+| `groupBy` | `asset`, `mint` |
+
+## Example request
+
+```bash
+curl https://gateway.agonx402.com/v1/x402/tokens/assets/search?q=solana&limit=5
+# => 402 Payment Required with a sign-in-with-x challenge
+
+curl "https://gateway.agonx402.com/v1/x402/tokens/assets/search?q=solana&limit=5" \
+  -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
+```
+
+Example successful response:
+
+```json
+{
+  "ok": true,
+  "provider": "tokens",
+  "surface": "tokens",
+  "method": "search",
+  "result": {
+    "items": [ { "id": "solana", "...": "..." } ]
+  }
+}
+```
+
+No `X-PAYMENT-RESPONSE` header is returned for SIWX routes.
+
+## See also
+
+- [Access modes](/gateway/access-modes)
+- [Rate limiting & guardrails](/gateway/rate-limiting)
+- [Integration guide](/gateway/integration-guide)

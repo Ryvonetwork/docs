@@ -1,0 +1,102 @@
+---
+title: "Pricing"
+description: "How paid routes are priced and how Tokens API auth-only routes fit in."
+---
+
+Paid routes are priced directly from each upstream provider's public PAYG schedule. The gateway does not add a spread — the price you see is the price the upstream charges for one call, rounded up to the nearest USDC micro when necessary.
+
+All paid routes settle in **USDC on Solana mainnet**.
+
+## Alchemy — Compute Unit pricing
+
+Alchemy routes are priced on their Solana PAYG compute-unit schedule.
+
+- **Reference price:** `$0.45 per 1,000,000 CU`
+- **Pricing source checked:** official Alchemy Solana PAYG docs on 2026-04-18.
+
+Per-method Compute Units used by the gateway:
+
+### RPC
+
+| Method | Compute Units |
+| --- | --- |
+| `getBalance` | 10 |
+| `getAccountInfo` | 10 |
+| `getTransaction` | 40 |
+| `getSignaturesForAddress` | 40 |
+| `getTokenAccountsByOwner` | 10 |
+| `getProgramAccounts` | 20 |
+
+### DAS
+
+| Method | Compute Units |
+| --- | --- |
+| `getAsset` | 80 |
+| `getAssetsByOwner` | 480 |
+| `searchAssets` | 480 |
+
+The per-call USDC price is:
+
+```
+price_usd = ceil( (cu × 450_000) / 1_000_000 ) / 1_000_000
+```
+
+Where the numerator is in USDC micro-units (six decimal places).
+
+## Helius — per-credit pricing
+
+Helius routes are priced on their additional-credits schedule.
+
+- **Reference price:** `$5 per 1,000,000 credits`
+- **Pricing source checked:** official Helius docs on 2026-04-18.
+
+Per-method credits used by the gateway:
+
+### RPC
+
+| Method | Credits |
+| --- | --- |
+| `getBalance` | 1 |
+| `getAccountInfo` | 1 |
+| `getTransaction` | 1 |
+| `getSignaturesForAddress` | 1 |
+| `getTokenAccountsByOwner` | 1 |
+| `getProgramAccounts` | 10 |
+
+### DAS
+
+| Method | Credits |
+| --- | --- |
+| `getAsset` | 10 |
+| `getAssetsByOwner` | 10 |
+| `searchAssets` | 10 |
+
+Per-call USDC price:
+
+```
+price_usd = ceil( (credits × 5_000_000) / 1_000_000 ) / 1_000_000
+```
+
+## Tokens API — no per-call price
+
+Tokens API routes are **auth-only**. The gateway holds the Tokens API key server-side and exposes it to clients via a SIWX signature. There is no per-request USDC settlement.
+
+Tokens API routes still sit behind the x402 challenge/response flow — the client must present a valid wallet signature — but no transfer is created.
+
+See [Access modes](/gateway/access-modes) for the mechanics.
+
+## How prices are advertised
+
+Every paid route advertises its price in two places:
+
+1. In the route's `402 Payment Required` envelope as `maxAmountRequired`, expressed in micro-USDC.
+2. In the catalog entry as `priceUsd`, expressed as a decimal string.
+
+Clients that use `@x402/fetch` or any x402 library will pick up the price automatically from the challenge envelope — there is no need to hard-code prices.
+
+## See also
+
+- [Catalog](/gateway/catalog)
+- [Access modes](/gateway/access-modes)
+- [Solana RPC routes](/gateway/routes/solana-rpc)
+- [Solana DAS routes](/gateway/routes/solana-das)

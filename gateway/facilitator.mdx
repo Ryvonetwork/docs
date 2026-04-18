@@ -1,0 +1,100 @@
+---
+title: "Facilitator"
+description: "CDP facilitator for paid routes and the optional internal facilitator endpoints."
+---
+
+The gateway uses the **CDP facilitator** to verify and settle x402 `exact` payments on Solana mainnet. That is the canonical path and the only one clients interact with. It also ships a small **internal facilitator** for advanced operators who want to run their own verification and settlement without going through CDP.
+
+## CDP facilitator
+
+### Role
+
+- **Verification** — for every paid request, the gateway forwards the `PAYMENT-SIGNATURE` to CDP to confirm the signed exact transfer is valid for the advertised amount, network, and payee.
+- **Settlement** — after the upstream provider returns a successful response, the gateway asks CDP to submit the pre-signed transfer on-chain. CDP returns the Solana transaction hash, which is relayed to the client in the `X-PAYMENT-RESPONSE` header.
+
+### Ordering
+
+Settlement happens **after** a successful upstream response. If the upstream fails, the gateway skips settlement and the payment authorization is discarded. Clients are not charged for upstream errors.
+
+### Configuration
+
+Set these in `.env`:
+
+```ini
+CDP_API_KEY_ID=<cdp key id>
+CDP_API_KEY_SECRET=<cdp key secret>
+```
+
+No other CDP configuration is required. The gateway uses `createFacilitatorConfig` from `@coinbase/x402` under the hood.
+
+## Internal facilitator (optional)
+
+The gateway also exposes a thin self-hosted facilitator, mirroring the x402 facilitator HTTP surface:
+
+```
+GET  /api/internal/facilitator/supported
+POST /api/internal/facilitator/verify
+POST /api/internal/facilitator/settle
+```
+
+These routes are **server-to-server only**. They are not advertised in `GET /v1/catalog`, not part of the public gateway surface, and must not be linked in product documentation.
+
+### When to enable it
+
+Most deployments do not need this. Enable it only if you are:
+
+- Running an internal service that wants to fall back to your own facilitator signer when CDP is unavailable.
+- Testing an x402 resource server against a local facilitator without depending on CDP's rate limits.
+- Integrating a custom signer flow that needs a minimal, in-house facilitator.
+
+### Configuration
+
+Set both of these:
+
+```ini
+AGON_INTERNAL_SETTLEMENT_SECRET=<long random string>
+AGON_FACILITATOR_WALLET_BASE58=<base58-encoded 64-byte secret key>
+```
+
+Notes:
+
+- The wallet key **must** be base58-encoded raw 64 bytes. Do not paste a JSON array like `[12, 34, ...]` here.
+- The facilitator wallet funds Solana transaction fees when it settles. Keep it topped up with SOL.
+- Leaking `AGON_INTERNAL_SETTLEMENT_SECRET` allows anyone to verify or settle on behalf of this wallet. Rotate if exposed.
+
+### Authentication
+
+Every internal facilitator request must include the shared secret:
+
+```
+x-agon-internal-secret: <AGON_INTERNAL_SETTLEMENT_SECRET>
+```
+
+Requests without the secret return `401 Unauthorized` immediately, before any signature or body parsing.
+
+### Endpoints
+
+#### `GET /api/internal/facilitator/supported`
+
+Returns the list of settlement networks and schemes this facilitator signer supports. Always returns Solana mainnet + `exact` when `AGON_FACILITATOR_WALLET_BASE58` is set.
+
+#### `POST /api/internal/facilitator/verify`
+
+Takes an x402 verification request body (as defined by `@x402/core`) and returns a verification result. Does not submit anything on-chain.
+
+#### `POST /api/internal/facilitator/settle`
+
+Takes a previously-verified payment payload and submits it on-chain using the internal facilitator wallet. Returns the Solana transaction hash on success.
+
+### Security posture
+
+- Never expose these routes to the public internet without a firewall or WAF.
+- Keep the shared secret server-to-server only. Do not ship it to clients.
+- Do not advertise the routes in catalogs, sitemaps, or client SDKs.
+- If you do not need these endpoints, leave `AGON_INTERNAL_SETTLEMENT_SECRET` and `AGON_FACILITATOR_WALLET_BASE58` unset. The endpoints will still be mounted but every request returns `401`.
+
+## See also
+
+- [How it works](/gateway/how-it-works)
+- [Deploy](/gateway/deploy)
+- [Payment headers reference](/gateway/reference/payment-headers)

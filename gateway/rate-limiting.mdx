@@ -1,0 +1,102 @@
+---
+title: "Rate Limiting & Guardrails"
+description: "Limits, request guardrails, and replay protection applied by the gateway."
+---
+
+The gateway enforces three layers of protection on every request:
+
+1. **Rate limiting** — per-route or per-surface caps on how often a client can call.
+2. **Request guardrails** — strict input validation on every route before any upstream call or settlement.
+3. **Replay protection** — rejects reused payment authorizations and SIWX sessions.
+
+All three are backed by Upstash Redis so the service stays correct across Vercel regions.
+
+## Rate limits
+
+Limits applied on the live deployment:
+
+| Scope | Limit | Keyed by |
+| --- | --- | --- |
+| Unpaid `402` challenges | `120 / min` | Client IP |
+| Solana RPC routes | `50 rps` | Per `provider:cluster:surface` scope |
+| Solana DAS routes | `10 rps` | Per `provider:cluster:surface` scope |
+| Tokens API routes | `30 rpm` | Across the shared upstream API key (configurable) |
+
+Each limit is configurable via environment variables — see [Deploy](/gateway/deploy).
+
+Clients that hit a limit receive `429 Too Many Requests` with JSON:
+
+```json
+{
+  "ok": false,
+  "error": "rate_limited",
+  "retryAfterMs": 450
+}
+```
+
+## Request guardrails
+
+The gateway rejects overly broad or malformed requests **before** settlement or any upstream call. Key guardrails:
+
+### Solana RPC
+
+- `getBalance`, `getAccountInfo`, `getTransaction` — accept exactly 1 or 2 params. First param must be a non-empty string.
+- `getAccountInfo` — if `dataSlice` is provided, `length <= 1024`.
+- `getSignaturesForAddress` — `limit` (if provided) must be `1..100`.
+- `getTokenAccountsByOwner` — the filter must specify exactly one of `mint` or `programId`.
+- `getProgramAccounts` — requires at least one `dataSize` or `memcmp` filter (max 4), requires a `dataSlice` with `length <= 256`, and `memcmp.bytes <= 128` characters.
+
+### Solana DAS
+
+- `getAsset` — `params.id` required, non-empty string.
+- `getAssetsByOwner` — `ownerAddress` required, `limit <= 100`.
+- `searchAssets` — `limit <= 100`, `page <= 10 000`.
+
+### Tokens API
+
+- `search` — `q` required, `limit <= 50`.
+- `resolve` — exactly one of `ref` or `mint`.
+- `curated` — `list` must be one of the documented values; `groupBy` (if provided) must be `asset` or `mint`.
+- `market-snapshots` — `mints` + `addresses` combined must be `1..250` items.
+- `variant-markets` — `mints` + `addresses` combined must be `1..50`.
+- `variant-top-markets` — `limit <= 100`.
+- `tickers` / `markets` — `limit <= 50`, `offset <= 10 000`.
+- OHLCV routes — `interval` must be one of `1m, 5m, 15m, 1H, 4H, 1D, 1W`; `from <= to`.
+- Asset-level paths — `assetId` path param must be non-empty.
+
+Any violation returns `400 Bad Request` with a structured error body and **does not trigger settlement**.
+
+## Replay protection
+
+### x402 `exact` payments
+
+Every paid payment authorization is hashed and stored in Redis. Submitting the same `PAYMENT-SIGNATURE` twice returns `400` with an error — the second call cannot be settled again. This is enforced before the upstream call.
+
+### SIWX sessions
+
+Each SIWX signature is stored with a short TTL. A given signature cannot authorize two different requests. The TTL is tied to `expirationSeconds: 300` in the challenge envelope, so a SIWX signature is only valid within five minutes of being signed.
+
+## Bazaar discovery behavior
+
+The CDP Bazaar crawler probes routes with an empty request body to discover schemas. To keep paid routes discoverable, **body validation happens after** the initial challenge is issued for empty unpaid probes. Paid paths still return `402 Payment Required` on a bare probe — they never leak upstream data without payment.
+
+Once a paid request carries a `PAYMENT-SIGNATURE`, strict input validation runs before settlement.
+
+## Structured event logs
+
+Every incoming request emits a structured event to stdout (collected by Vercel logs). Event fields include:
+
+- `event` — e.g. `paid_request_ok`, `paid_request_upstream_error`, `siwx_request_ok`.
+- `requestId`
+- `routePath`, `cluster`, `provider`, `surface`, `method`
+- `wallet` (when authenticated)
+- `paymentNetwork`, `paymentAsset`, `priceUsd`
+- `httpStatus`, `upstreamLatencyMs`
+
+Operators can stream logs into their preferred observability stack without any additional instrumentation.
+
+## See also
+
+- [Deploy](/gateway/deploy)
+- [Access modes](/gateway/access-modes)
+- [Payment headers reference](/gateway/reference/payment-headers)

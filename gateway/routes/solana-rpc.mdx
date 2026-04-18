@@ -1,0 +1,95 @@
+---
+title: "Solana RPC Routes"
+description: "Paid Solana RPC routes across Alchemy and Helius upstreams."
+---
+
+Solana RPC routes are standard JSON-RPC methods proxied to Alchemy or Helius and gated with x402 `exact` payment.
+
+Every Solana RPC route follows the same path template:
+
+```
+POST /v1/x402/solana/{cluster}/{provider}/rpc/{method}
+```
+
+| Segment | Values |
+| --- | --- |
+| `cluster` | `mainnet`, `devnet` |
+| `provider` | `alchemy`, `helius` |
+| `method` | one of the methods below |
+
+All RPC routes:
+
+- **Access mode:** `exact` (paid per call)
+- **HTTP method:** `POST` (the gateway also accepts `GET` and `HEAD` for the `402` discovery probe)
+- **Input body:** `{ "params": [...] }` — positional JSON-RPC params forwarded directly to the upstream
+- **Response body:** `{ ok, provider, cluster, surface, method, priceUsd, result }`
+
+## Supported methods
+
+| Method | Alchemy CU | Helius credits | Notes |
+| --- | --- | --- | --- |
+| `getBalance` | 10 | 1 | Fetch lamport balance for an account |
+| `getAccountInfo` | 10 | 1 | Account metadata and raw account data |
+| `getTransaction` | 40 | 1 | Confirmed transaction by signature |
+| `getSignaturesForAddress` | 40 | 1 | Recent signatures for an address |
+| `getTokenAccountsByOwner` | 10 | 1 | Token accounts by owner |
+| `getProgramAccounts` | 20 | 10 | Accounts owned by a program |
+
+Prices are derived from [Pricing](/gateway/pricing). They appear in each route's `402` challenge envelope and in `GET /v1/catalog`.
+
+## Guardrails
+
+Every method validates its params before the upstream call. See [Rate limiting & guardrails](/gateway/rate-limiting) for the full list. Highlights:
+
+- `getBalance` / `getAccountInfo` / `getTransaction` — 1–2 params, first param is a non-empty string.
+- `getAccountInfo` — `dataSlice.length <= 1024`.
+- `getSignaturesForAddress` — `limit <= 100`.
+- `getTokenAccountsByOwner` — exactly one of `mint` or `programId`.
+- `getProgramAccounts` — requires filters (1–4), requires `dataSlice` with `length <= 256`, `memcmp.bytes <= 128` characters.
+
+## Example request
+
+```bash
+curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance
+# => 402 Payment Required (challenge envelope)
+
+curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance \
+  -H "Content-Type: application/json" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
+  -d '{"params":["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"]}'
+```
+
+Example successful response body:
+
+```json
+{
+  "ok": true,
+  "provider": "alchemy",
+  "cluster": "mainnet",
+  "surface": "rpc",
+  "method": "getBalance",
+  "priceUsd": "0.000005",
+  "result": {
+    "context": { "slot": 321_456_789 },
+    "value": 1_500_000
+  }
+}
+```
+
+The response also carries `X-PAYMENT-RESPONSE` with the settlement transaction hash.
+
+## Cluster / provider matrix
+
+| Cluster | Alchemy | Helius |
+| --- | --- | --- |
+| `mainnet` | Supported | Supported |
+| `devnet` | Supported | Supported |
+
+All six methods are supported on every cell of the matrix.
+
+## See also
+
+- [Solana DAS routes](/gateway/routes/solana-das)
+- [Pricing](/gateway/pricing)
+- [Access modes](/gateway/access-modes)
+- [Integration guide](/gateway/integration-guide)

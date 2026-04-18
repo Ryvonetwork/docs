@@ -1,0 +1,106 @@
+---
+title: "Access Modes"
+description: "Paid x402 exact routes vs. wallet-authenticated SIWX routes."
+---
+
+Every gateway route uses one of two x402 access modes. The catalog reports the mode on each route as `accessMode`.
+
+| Access mode | Header | Settles on-chain? | Used for |
+| --- | --- | --- | --- |
+| `exact` | `PAYMENT-SIGNATURE` (aka `X-PAYMENT`) | Yes — USDC on Solana mainnet | Paid Solana RPC and DAS routes |
+| `siwx` | `SIGN-IN-WITH-X` | No | Tokens API routes |
+
+Both modes use the same x402 request-challenge-retry pattern. The difference is what satisfies the challenge.
+
+## `exact` — pay-per-call with USDC
+
+Used by every Alchemy and Helius Solana RPC / DAS route.
+
+### Challenge
+
+The first unauthenticated request to a paid route returns `402 Payment Required` with an envelope like:
+
+```json
+{
+  "x402Version": 2,
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "maxAmountRequired": "<micro-USDC>",
+      "resource": "https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
+      "description": "Fetch the lamport balance for an account.",
+      "mimeType": "application/json",
+      "payTo": "<gateway payTo wallet>",
+      "asset": {
+        "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "symbol": "USDC",
+        "decimals": 6
+      },
+      "facilitator": { "url": "<cdp facilitator url>" },
+      "extensions": { "...": "discovery extension" }
+    }
+  ]
+}
+```
+
+### Response
+
+The client builds an SVM `exact` transfer for `maxAmountRequired` to `payTo` and includes it in `PAYMENT-SIGNATURE`. The gateway:
+
+1. Verifies the signed transfer via the CDP facilitator.
+2. Forwards the request to the upstream provider.
+3. Settles the transfer only after the upstream returns a successful response.
+4. Returns the upstream JSON along with an `X-PAYMENT-RESPONSE` header carrying the Solana settlement transaction.
+
+If the upstream fails, settlement is skipped. No funds move.
+
+## `siwx` — wallet authentication without payment
+
+Used by every `/v1/x402/tokens/...` route. The gateway holds the Tokens API key server-side; clients never see it. Instead, they prove ownership of a Solana wallet and the gateway calls the Tokens API on their behalf.
+
+### Challenge
+
+The first unauthenticated request returns `402 Payment Required` with a SIWX extension:
+
+```json
+{
+  "x402Version": 2,
+  "accepts": [
+    {
+      "scheme": "sign-in-with-x",
+      "network": ["solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"],
+      "statement": "Sign in with your wallet to access TokensAPI through Agon.",
+      "expirationSeconds": 300,
+      "resource": "https://gateway.agonx402.com/v1/x402/tokens/health"
+    }
+  ]
+}
+```
+
+### Response
+
+The client constructs a SIWX message, signs it with their Solana wallet, base64-encodes the payload, and retries the request with `SIGN-IN-WITH-X`. The gateway:
+
+1. Verifies the wallet signature.
+2. Enforces the 300-second expiration window.
+3. Caches a short-lived session key in Redis to reject replays.
+4. Calls the Tokens API with the server-side `x-api-key`.
+5. Returns the Tokens API JSON response.
+
+No USDC transfer is created. No `X-PAYMENT-RESPONSE` header is returned.
+
+## Why two modes
+
+The two modes solve different problems the gateway needs to bridge:
+
+- **Paid Solana RPC/DAS** comes from providers that already have a well-defined PAYG cost per request, and clients want per-call payment without managing a provider-specific API key. `exact` x402 is the natural match.
+- **Tokens API** is priced at the account level, not per request, and needs a trusted origin to hold the shared API key. Asking clients to pay per request would misrepresent the upstream cost. SIWX gives clients wallet-level identity without pretending each call has an independent on-chain price.
+
+Both flows use standard x402 extensions, so any x402-compatible client library (including `@x402/fetch`) supports them out of the box.
+
+## See also
+
+- [Pricing](/gateway/pricing)
+- [Catalog](/gateway/catalog)
+- [Payment headers reference](/gateway/reference/payment-headers)

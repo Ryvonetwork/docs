@@ -1,0 +1,188 @@
+---
+title: "Integration Guide"
+description: "Integrate the Agon Gateway into your own client or service."
+---
+
+The gateway is a standard x402 resource server. Any x402-compatible client library works against it. This page shows the most common integration path: TypeScript/Node, using the official `@x402` packages.
+
+## Install
+
+```bash
+npm install @x402/core @x402/fetch @x402/extensions @x402/svm @solana/kit
+```
+
+## Load a Solana wallet
+
+The wallet is used to sign both x402 `exact` payments and SIWX messages. It must be a funded Solana mainnet wallet (USDC + a small SOL balance for transaction fees) and **must not** equal the gateway's `payTo` wallet.
+
+```ts
+import { createKeyPairSignerFromBytes } from "@solana/kit";
+import bs58 from "bs58";
+
+const secret = bs58.decode(process.env.SOLANA_PRIVATE_KEY_BASE58!);
+if (secret.length !== 64) {
+  throw new Error("Private key must decode to 64 bytes");
+}
+
+const signer = await createKeyPairSignerFromBytes(secret);
+```
+
+## Wrap fetch with x402
+
+`@x402/fetch` transparently handles the `402` challenge/retry cycle, including `exact` payment and SIWX signing.
+
+```ts
+import { wrapFetchWithPayment } from "@x402/fetch";
+import { ExactSvmScheme, SOLANA_MAINNET_CAIP2 } from "@x402/svm";
+import { createSIWxPayload, encodeSIWxHeader } from "@x402/extensions/sign-in-with-x";
+
+const gatewayFetch = wrapFetchWithPayment(fetch, {
+  signer,
+  schemes: [
+    {
+      scheme: ExactSvmScheme,
+      network: SOLANA_MAINNET_CAIP2,
+    },
+  ],
+  extensions: {
+    "sign-in-with-x": async ({ challenge }) => {
+      const payload = await createSIWxPayload({
+        signer,
+        network: Array.isArray(challenge.network) ? challenge.network[0] : challenge.network,
+        statement: challenge.statement,
+        expirationSeconds: challenge.expirationSeconds,
+        resource: challenge.resource,
+      });
+      return encodeSIWxHeader(payload);
+    },
+  },
+});
+```
+
+`gatewayFetch` is now a drop-in replacement for `fetch` against any gateway route.
+
+## Call a paid RPC route
+
+```ts
+const response = await gatewayFetch(
+  "https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
+  {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      params: ["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"],
+    }),
+  },
+);
+
+const { result } = await response.json();
+console.log(result.value);
+
+const settlementTx = response.headers.get("x-payment-response");
+if (settlementTx) {
+  console.log("Settled in:", settlementTx);
+}
+```
+
+The first call inside `gatewayFetch` will:
+
+1. Hit the gateway and receive `402 Payment Required`.
+2. Build an SVM `exact` transfer for the price advertised in the challenge.
+3. Retry with `PAYMENT-SIGNATURE`.
+4. Return the upstream response to your code.
+
+You do not need to parse the challenge envelope yourself.
+
+## Call a Tokens API (SIWX) route
+
+```ts
+const tokensResponse = await gatewayFetch(
+  "https://gateway.agonx402.com/v1/x402/tokens/assets/search?q=solana&limit=5",
+);
+
+const { result } = await tokensResponse.json();
+console.log(result.items);
+```
+
+No USDC is transferred. Under the hood `gatewayFetch` constructed a SIWX payload, signed it with your wallet, and sent it in the `SIGN-IN-WITH-X` header.
+
+## Discover routes dynamically
+
+For agent-style clients that need to enumerate available routes:
+
+```ts
+const catalog = await fetch("https://gateway.agonx402.com/v1/catalog").then((r) => r.json());
+
+for (const route of catalog.routes) {
+  console.log(route.httpMethod, route.path, route.accessMode, route.priceUsd ?? "");
+}
+```
+
+Each entry's `inputSchema`, `outputSchema`, and (for templated paths) `pathParamsSchema` are valid JSON Schema documents. You can feed them to any validator.
+
+## Common integration patterns
+
+### Pay-per-call worker
+
+Best fit: background jobs that need Solana data but are cost-sensitive.
+
+```ts
+async function fetchBalance(account: string) {
+  const res = await gatewayFetch(
+    "https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getBalance",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ params: [account] }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`gateway error: ${res.status}`);
+  }
+  return (await res.json()).result.value as number;
+}
+```
+
+### SIWX-only Tokens client
+
+Best fit: dashboards and explorers that want Tokens API data without shipping an API key.
+
+```ts
+async function searchAsset(q: string) {
+  const url = new URL("https://gateway.agonx402.com/v1/x402/tokens/assets/search");
+  url.searchParams.set("q", q);
+  url.searchParams.set("limit", "5");
+  const res = await gatewayFetch(url);
+  return (await res.json()).result.items;
+}
+```
+
+### Agent wallet
+
+Best fit: autonomous agents that reason about which route to call and should pay directly.
+
+- Fetch `GET /v1/catalog` at startup.
+- Pass the route descriptors into the agent's tool schema.
+- Use `gatewayFetch` to invoke selected routes.
+
+Because every paid route advertises `priceUsd` and every SIWX route advertises `accessMode: "siwx"`, agents can budget and choose between paid and unpaid calls deterministically.
+
+## Error handling
+
+See [Payment headers reference](/gateway/reference/payment-headers) for the full list of headers and error shapes. In brief:
+
+- `400` — invalid input (guardrails violated, malformed body or query params). No settlement.
+- `402` — payment or SIWX challenge. Your x402 client library retries automatically.
+- `429` — rate limited. Back off; `retryAfterMs` is included in the body.
+- `5xx` — upstream or facilitator failure. No settlement on failed paid requests.
+
+## Base URL
+
+The default base URL is `https://gateway.agonx402.com`. Self-hosted deployments change this — see [Deploy](/gateway/deploy).
+
+## See also
+
+- [Quickstart](/gateway/quickstart)
+- [call-gateway CLI](/gateway/call-gateway)
+- [Access modes](/gateway/access-modes)
+- [Catalog](/gateway/catalog)

@@ -1,0 +1,85 @@
+---
+title: "Solana DAS Routes"
+description: "Paid Solana DAS (Digital Asset Standard) routes across Alchemy and Helius."
+---
+
+DAS routes expose the standard Solana Digital Asset Standard endpoints through x402 `exact` payment.
+
+Every DAS route follows the same path template:
+
+```
+POST /v1/x402/solana/{cluster}/{provider}/das/{method}
+```
+
+| Segment | Values |
+| --- | --- |
+| `cluster` | `mainnet`, `devnet` |
+| `provider` | `alchemy`, `helius` |
+| `method` | one of the methods below |
+
+All DAS routes:
+
+- **Access mode:** `exact` (paid per call)
+- **HTTP method:** `POST`
+- **Input body:** `{ "params": { ... } }` — named DAS params forwarded directly to the upstream
+- **Response body:** `{ ok, provider, cluster, surface, method, priceUsd, result }`
+
+## Supported methods
+
+| Method | Alchemy CU | Helius credits | Notes |
+| --- | --- | --- | --- |
+| `getAsset` | 80 | 10 | Fetch a single asset by id |
+| `getAssetsByOwner` | 480 | 10 | Digital assets owned by a wallet |
+| `searchAssets` | 480 | 10 | Search digital assets with DAS filters |
+
+Prices are derived from [Pricing](/gateway/pricing). They appear in each route's `402` challenge envelope and in `GET /v1/catalog`.
+
+## Guardrails
+
+- `getAsset` — `params.id` required, non-empty string.
+- `getAssetsByOwner` — `params.ownerAddress` required; `limit` (if provided) must be `1..100`.
+- `searchAssets` — `limit <= 100`, `page <= 10 000`.
+
+See [Rate limiting & guardrails](/gateway/rate-limiting) for full details.
+
+## Example request
+
+```bash
+curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/das/getAsset \
+  -H "Content-Type: application/json" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
+  -d '{"params":{"id":"<asset-id>"}}'
+```
+
+Example successful response body:
+
+```json
+{
+  "ok": true,
+  "provider": "helius",
+  "cluster": "mainnet",
+  "surface": "das",
+  "method": "getAsset",
+  "priceUsd": "0.000050",
+  "result": {
+    "id": "<asset-id>",
+    "content": { "...": "..." }
+  }
+}
+```
+
+## Cluster / provider matrix
+
+| Cluster | Alchemy | Helius |
+| --- | --- | --- |
+| `mainnet` | Supported | Supported |
+| `devnet` | **Not supported** | Supported |
+
+Alchemy does not expose DAS on devnet, so DAS routes are only available with Alchemy on mainnet.
+
+## See also
+
+- [Solana RPC routes](/gateway/routes/solana-rpc)
+- [Pricing](/gateway/pricing)
+- [Access modes](/gateway/access-modes)
+- [Integration guide](/gateway/integration-guide)
