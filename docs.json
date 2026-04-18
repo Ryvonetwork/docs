@@ -130,7 +130,6 @@
           {
             "group": "Clients & Operators",
             "pages": [
-              "gateway/call-gateway",
               "gateway/integration-guide",
               "gateway/deploy",
               "gateway/facilitator"

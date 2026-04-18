@@ -109,7 +109,7 @@ Typical client flow:
 4. If `paymentRequired: true`, let your x402 client library handle the `exact` flow using the price from the `402` challenge.
 5. If `paymentRequired: false` and `accessMode: "siwx"`, let your client handle SIWX using the `authNetworks` from the `402` challenge.
 
-The [call-gateway CLI](/gateway/call-gateway) does exactly this — its `seed` mode fetches the catalog and loops over every entry automatically.
+See the [Integration guide](/gateway/integration-guide) for a worked TypeScript example.
 
 ## See also
 

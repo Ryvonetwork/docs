@@ -3,94 +3,124 @@ title: "Quickstart"
 description: "Make your first paid call to the live Agon Gateway in minutes."
 ---
 
-This quickstart uses the `call-gateway` CLI — a ready-made client that pays the live gateway with a real Solana wallet. It is the fastest way to see the x402 and SIWX flows end-to-end.
+This quickstart walks through the two things every gateway integration needs:
+
+1. An unpaid probe to inspect the `402 Payment Required` challenge.
+2. A real call that completes the x402 flow — either paying with USDC (`exact`) or signing in with a wallet (`siwx`).
+
+You can follow along with plain `curl` to understand the wire format, then switch to `@x402/fetch` in TypeScript for a real integration.
 
 ## Prerequisites
 
-- Node.js 20+.
-- A Solana mainnet wallet with a small USDC balance (a few cents covers many paid calls).
-- The wallet must be **different** from the gateway's `payTo` wallet — x402 exact SVM will reject a self-transfer.
+- A Solana mainnet wallet with a small USDC balance and a little SOL for fees.
+- The wallet must be **different** from the gateway's `payTo` wallet — x402 `exact` SVM will reject a self-transfer.
+- Node.js 20+ if you use the TypeScript example below.
 
 <Warning>
-The gateway settles on **Solana mainnet**. Keep the buyer wallet funded with only as much USDC as you intend to spend while testing.
+The live gateway settles on **Solana mainnet**. Keep the wallet funded with only as much USDC as you intend to spend while testing.
 </Warning>
 
-## 1. Clone and install
+## 1. Confirm the gateway is live
 
 ```bash
-git clone https://github.com/Agonx402/call-gateway
-cd call-gateway
-npm install
+curl https://gateway.agonx402.com/healthz
+# {"ok":true,"service":"agon-gateway","status":"healthy"}
 ```
 
-## 2. Configure your wallet
+## 2. Discover routes
 
 ```bash
-cp .env.example .env
+curl https://gateway.agonx402.com/v1/catalog | jq '.routes | length'
 ```
 
-Then set one of these in `.env`:
+Every live route — including its price, access mode, input schema, and output schema — is listed in the catalog. See [Catalog](/gateway/catalog) for the full response shape.
 
-```ini
-SOLANA_PRIVATE_KEY_BASE58=<your base58-encoded 64-byte secret key>
-# or
-SOLANA_PRIVATE_KEY_JSON_PATH=/absolute/path/to/keypair.json
-```
+## 3. Inspect a `402` challenge
 
-Recommended to avoid public-RPC throttling:
-
-```ini
-SOLANA_MAINNET_RPC_URL=<your mainnet RPC URL>
-SOLANA_DEVNET_RPC_URL=<your devnet RPC URL>
-```
-
-## 3. Make your first paid call
-
-Call a single paid Solana RPC route against the live gateway:
+Hit a paid route with no payment to see the x402 envelope:
 
 ```bash
-npm run call -- --path /v1/x402/solana/mainnet/alchemy/rpc/getBalance
+curl -i -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance
 ```
 
-The CLI will:
+You should get back `402 Payment Required` with an `accepts[0]` entry describing:
 
-1. Resolve the route against `GET /v1/catalog`.
-2. Send an unpaid request and receive a `402 Payment Required` challenge.
-3. Build and sign an x402 exact payment on Solana mainnet.
-4. Retry the request with the `PAYMENT-SIGNATURE` header.
-5. Print the JSON response and the Solana settlement transaction hash.
+- `scheme: "exact"`
+- `network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"`
+- `maxAmountRequired`: the price in micro-USDC
+- `payTo`: the gateway's settlement wallet
+- `facilitator.url`: the CDP facilitator endpoint
 
-Try a SIWX (auth-only) route to hit the Tokens API without any payment:
+Do the same for a SIWX route to see the auth-only challenge:
 
 ```bash
-npm run call -- --path /v1/x402/tokens/health
+curl -i https://gateway.agonx402.com/v1/x402/tokens/health
 ```
 
-The CLI handles the sign-in-with-x challenge automatically and the response arrives with no on-chain transaction.
+Here `accepts[0]` describes a `sign-in-with-x` challenge with accepted Solana networks and a 300-second expiry.
 
-## 4. Seed all routes (optional)
+## 4. Make a paid call in TypeScript
 
-To verify every route in the catalog works from your wallet:
+Any x402-compatible client works. The example below uses `@x402/fetch`:
 
 ```bash
-npm run seed
+npm install @x402/core @x402/fetch @x402/extensions @x402/svm @solana/kit bs58
 ```
 
-Seed mode fetches the catalog, builds cheap requests for every route, handles SIWX and x402 payment flows automatically, and prints a success/failure summary. You can target a subset:
+```ts
+import bs58 from "bs58";
+import { createKeyPairSignerFromBytes } from "@solana/kit";
+import { wrapFetchWithPayment } from "@x402/fetch";
+import { ExactSvmScheme, SOLANA_MAINNET_CAIP2 } from "@x402/svm";
+import { createSIWxPayload, encodeSIWxHeader } from "@x402/extensions/sign-in-with-x";
 
-```bash
-npm run seed -- --provider alchemy --cluster mainnet --method getTransaction
-npm run seed -- --path /v1/x402/solana/mainnet/helius/das/getAsset
+const signer = await createKeyPairSignerFromBytes(
+  bs58.decode(process.env.SOLANA_PRIVATE_KEY_BASE58!),
+);
+
+const gatewayFetch = wrapFetchWithPayment(fetch, {
+  signer,
+  schemes: [{ scheme: ExactSvmScheme, network: SOLANA_MAINNET_CAIP2 }],
+  extensions: {
+    "sign-in-with-x": async ({ challenge }) => {
+      const network = Array.isArray(challenge.network) ? challenge.network[0] : challenge.network;
+      const payload = await createSIWxPayload({
+        signer,
+        network,
+        statement: challenge.statement,
+        expirationSeconds: challenge.expirationSeconds,
+        resource: challenge.resource,
+      });
+      return encodeSIWxHeader(payload);
+    },
+  },
+});
+
+// Paid route — pays in USDC on Solana mainnet
+const paid = await gatewayFetch(
+  "https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
+  {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      params: ["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"],
+    }),
+  },
+);
+console.log("result:", (await paid.json()).result);
+console.log("settlement tx:", paid.headers.get("x-payment-response"));
+
+// Auth-only Tokens route — no USDC is transferred
+const tokens = await gatewayFetch(
+  "https://gateway.agonx402.com/v1/x402/tokens/assets/search?q=solana&limit=5",
+);
+console.log("search:", (await tokens.json()).result);
 ```
 
-See the [call-gateway CLI reference](/gateway/call-gateway) for every flag.
+`wrapFetchWithPayment` transparently handles both flows:
 
-## What just happened
-
-- **Paid route:** your request was gated behind x402 `exact` on Solana mainnet. The gateway verified the USDC transfer via the CDP facilitator, forwarded the request to Alchemy, and returned the upstream JSON response.
-- **Auth-only route:** your wallet signed a one-shot sign-in message that the gateway verified server-side, and the Tokens API response was returned without a payment.
-
-Both flows use standard x402 headers. Any x402-compatible client can talk to the gateway — the CLI is just one reference implementation.
+- Paid routes: reads the `402` envelope, builds and signs an `exact` USDC transfer, retries with `PAYMENT-SIGNATURE`, and returns the upstream response plus settlement tx in `X-PAYMENT-RESPONSE`.
+- Tokens routes: reads the `sign-in-with-x` challenge, signs a SIWX message with your wallet, retries with `SIGN-IN-WITH-X`, and returns the upstream response.
 
 ## Next steps
 
@@ -98,11 +128,11 @@ Both flows use standard x402 headers. Any x402-compatible client can talk to the
   <Card title="Access modes" icon="shield-check" href="/gateway/access-modes">
     Understand when the gateway asks for payment vs. a SIWX signature.
   </Card>
-  <Card title="Routes" icon="route" href="/gateway/routes/solana-rpc">
-    Browse Solana RPC, DAS, and Tokens routes.
+  <Card title="All routes" icon="route" href="/gateway/routes/solana-rpc">
+    Browse every Solana RPC, DAS, and Tokens route with pricing and schemas.
   </Card>
   <Card title="Integrate in your app" icon="code" href="/gateway/integration-guide">
-    Call the gateway from TypeScript or any HTTP client.
+    Patterns for pay-per-call workers, SIWX clients, and agent wallets.
   </Card>
   <Card title="How it works" icon="diagram-project" href="/gateway/how-it-works">
     Inspect the x402 exact and SIWX flows in detail.
