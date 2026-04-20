@@ -1,0 +1,246 @@
+---
+title: "Messages & signatures"
+description: "Build signed commitment and clearing-round messages and turn them into Ed25519 pre-instructions."
+---
+
+Agon settlement consumes two signed message types — `agon-cmt-v5` (unilateral commitment) and `agon-clr-v4` (cooperative clearing round) — and verifies them on-chain through the Ed25519 native program and the `instructions` sysvar. The SDK gives you:
+
+- **Builders** that produce the exact byte layout the program expects.
+- **Pre-instruction helpers** that wrap one or more signatures into `Ed25519Program` instructions, ready to be attached to the same transaction as the settlement call.
+
+The wire format is documented in detail at [Reference → Messages](/reference/messages). This page is the SDK-level view.
+
+## `Amountish`
+
+Most builders accept `Amountish` for any unsigned integer (participant IDs, token amounts). Four types are supported:
+
+| Type | Example |
+| --- | --- |
+| `bigint` | `1_000_000n` |
+| `number` | `1_000_000` |
+| `string` | `"1000000"` |
+| `{ toString(): string }` | `new BN(1_000_000)` |
+
+Values are coerced through `toBigIntAmount()`; negative numbers throw. For Anchor instruction arguments, use `toAnchorBn()` (also exported) to convert to `anchor.BN`.
+
+## `createCommitmentMessage(params)`
+
+Builds a raw `agon-cmt-v5` message body. You then feed it to one of the Ed25519 helpers below.
+
+```ts
+import {
+  createCommitmentMessage,
+  deriveMessageDomain,
+  AGON_CHAIN_IDS,
+} from "@agonx402/sdk";
+
+const messageDomain = deriveMessageDomain(client.programId, AGON_CHAIN_IDS.devnet);
+
+const message = createCommitmentMessage({
+  messageDomain,
+  payerId: 1,
+  payeeId: 2,
+  tokenId: 2,
+  committedAmount: 1_250_000n,
+  // Optional: restrict who can submit this commitment.
+  // authorizedSettler: new PublicKey("..."),
+});
+```
+
+| Param | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `messageDomain` | `Buffer \| Uint8Array` (16 bytes) | yes | From `deriveMessageDomain`. |
+| `payerId` | `Amountish` | yes | Payer's `participant_id`. |
+| `payeeId` | `Amountish` | yes | Payee's `participant_id`. |
+| `tokenId` | `number` | yes | 0–65535, registered in `TokenRegistry`. |
+| `committedAmount` | `Amountish` | yes | **Cumulative** amount, not a delta. |
+| `authorizedSettler` | `PublicKey \| null` | no | If set, only this key (or the payee) can submit on-chain. |
+
+The resulting `Buffer` starts with `[0x01, 0x05]` (kind + version) so you can visually confirm a message is a v5 commitment. See [on-chain layout](/reference/messages#layout).
+
+<Tip>
+The SDK also exports `nextCommitmentAmount(channelData, delta)` (from [Account helpers](/sdk/client#nextcommitmentamountchanneldata-delta)) so you never have to hand-track the cumulative total yourself.
+</Tip>
+
+## `createClearingRoundMessage(params)`
+
+Builds a raw `agon-clr-v4` message body for clearing rounds. Each participant in the round signs this same message with their own key, and all signatures are submitted together via [`createMultiSigEd25519Instruction`](#createmultisiged25519instructionsigners-message).
+
+```ts
+import { createClearingRoundMessage } from "@agonx402/sdk";
+
+const message = createClearingRoundMessage({
+  messageDomain,
+  tokenId: 2,
+  blocks: [
+    {
+      participantId: 1,
+      entries: [{ payeeRef: 0, targetCumulative: 1_000_000n }],
+    },
+    {
+      participantId: 2,
+      entries: [{ payeeRef: 1, targetCumulative: 250_000n }],
+    },
+  ],
+});
+```
+
+| Param | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `messageDomain` | `Buffer \| Uint8Array` | yes | Same domain as commitments. |
+| `tokenId` | `number` | yes | The token the whole round settles. |
+| `blocks` | `ClearingRoundBlock[]` | yes | One block per signer, in canonical order. |
+
+Each `ClearingRoundBlock` is:
+
+```ts
+type ClearingRoundBlock = {
+  participantId: number;
+  entries: {
+    payeeRef: number;          // 0-based index into the round's participant list
+    targetCumulative: Amountish; // new cumulative obligation toward that payee
+  }[];
+};
+```
+
+The block layout and `payeeRef` semantics match [Reference → Messages → `agon-clr-v4`](/reference/messages#agon-round-v4).
+
+## Ed25519 helpers
+
+Agon's on-chain verification reads the Ed25519 native program's instruction data directly. The SDK ships four builders covering the common shapes.
+
+All four return a standard `TransactionInstruction` targeting `Ed25519Program.programId`, ready to drop into `.preInstructions([ix])` on any Anchor methods builder.
+
+### `createEd25519Instruction(signer, message)`
+
+Simple single-signer Ed25519 instruction. Use this for **direct settlement** of a single commitment.
+
+```ts
+import { createEd25519Instruction } from "@agonx402/sdk";
+
+const ed25519Ix = createEd25519Instruction(payerKeypair, message);
+
+await client
+  .settleIndividual({ payerAccount, payeeAccount, channelState, submitter })
+  .preInstructions([ed25519Ix])
+  .signers([submitterKeypair])
+  .rpc();
+```
+
+| Arg | Type | Notes |
+| --- | --- | --- |
+| `signer` | `Keypair` | The payer's keypair (or their `authorized_signer`). |
+| `message` | `Buffer` | Output of `createCommitmentMessage` or `createClearingRoundMessage`. |
+
+Under the hood this uses `Ed25519Program.createInstructionWithPrivateKey`, so it is compatible with any existing web3.js tooling.
+
+### `createMultiSigEd25519Instruction(signers, message)`
+
+One Ed25519 instruction that carries **multiple signatures over the same message**. Used by clearing rounds where every participant signs the identical `agon-clr-v4` body.
+
+```ts
+import { createMultiSigEd25519Instruction } from "@agonx402/sdk";
+
+const roundIx = createMultiSigEd25519Instruction(
+  [participantA, participantB, participantC],
+  clearingRoundMessage,
+);
+
+await client
+  .settleClearingRound({ submitter })
+  .preInstructions([roundIx])
+  .signers([submitterKeypair])
+  .rpc();
+```
+
+The SDK lays out the Ed25519 signature blocks in the order of the `signers` array. That order is observable on-chain and must match the order the program expects for that round.
+
+### `createMultiMessageEd25519Instruction(entries)`
+
+One Ed25519 instruction that carries **N signatures over N different messages**. Used by **bundle settlement**, where the payee is settling multiple commitments from the same (or different) payer(s) in one transaction.
+
+```ts
+import { createMultiMessageEd25519Instruction } from "@agonx402/sdk";
+
+const bundleIx = createMultiMessageEd25519Instruction([
+  { signer: payerA, message: commitmentA },
+  { signer: payerA, message: commitmentA2 },
+  { signer: payerB, message: commitmentB },
+]);
+
+await client
+  .settleCommitmentBundle({ count: 3, payeeAccount, submitter })
+  .preInstructions([bundleIx])
+  .signers([submitterKeypair])
+  .rpc();
+```
+
+`count` passed to `settleCommitmentBundle` must match the number of entries in the pre-instruction.
+
+### `createCrossInstructionMessageEd25519Instruction(signer, message, messageInstructionIndex)`
+
+Rare, advanced layout where the Ed25519 instruction references the message **bytes stored in another instruction within the same transaction** (instead of inlining them). `messageInstructionIndex` is the zero-based index of that other instruction.
+
+This is used when you want to deduplicate a large message across multiple verifications or place it in a CPI instruction. Most integrations don't need this.
+
+## Low-level encoding helpers
+
+Two functions are exported for rare cases where you want to hand-build a message:
+
+### `encodeCompactU64(value)`
+
+```ts
+import { encodeCompactU64 } from "@agonx402/sdk";
+
+encodeCompactU64(1_000_000); // => [192, 132, 61]
+```
+
+Seven data bits per byte, continuation bit in the MSB. Matches the encoding used inside `agon-cmt-v5` and `agon-clr-v4`. Returns a `number[]`.
+
+### `sha256Bytes(data)`
+
+```ts
+import { sha256Bytes } from "@agonx402/sdk";
+
+const digest = sha256Bytes(Buffer.from("hello"));
+```
+
+Returns a `number[]` of length 32. Uses Node's built-in `crypto.createHash`, so it works in any Node-compatible runtime (Node ≥ 18, Bun, Deno with the Node compat layer, or Next.js server components). Bundlers targeting the browser will need to shim `node:crypto`.
+
+## Putting it together
+
+```ts
+import {
+  AgonClient,
+  createCommitmentMessage,
+  createEd25519Instruction,
+  deriveMessageDomain,
+  AGON_CHAIN_IDS,
+} from "@agonx402/sdk";
+
+const client = new AgonClient({ provider });
+const messageDomain = deriveMessageDomain(client.programId, AGON_CHAIN_IDS.devnet);
+
+const message = createCommitmentMessage({
+  messageDomain,
+  payerId,
+  payeeId,
+  tokenId: 2,
+  committedAmount: 1_000_000n,
+});
+
+const ed25519Ix = createEd25519Instruction(payerKeypair, message);
+
+await client
+  .settleIndividual({
+    payerAccount: client.participantAddress(payerKeypair.publicKey),
+    payeeAccount: client.participantAddress(payeeKeypair.publicKey),
+    channelState: client.channelAddress(payerId, payeeId, 2),
+    submitter: payeeKeypair.publicKey,
+  })
+  .preInstructions([ed25519Ix])
+  .signers([payeeKeypair])
+  .rpc();
+```
+
+This is the minimum viable settlement transaction in `@agonx402/sdk`. See [Recipes](/sdk/recipes) for the full lifecycle including participant registration, channel creation, and withdrawals.

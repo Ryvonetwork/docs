@@ -1,0 +1,320 @@
+---
+title: "AgonClient"
+description: "Typed wrapper around the Agon Anchor program — one method per instruction."
+---
+
+`AgonClient` is the primary entry point in [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk). It wires the generated IDL to an `AnchorProvider` and exposes one typed method for every instruction in the [on-chain program](/reference/instructions). Under the hood, each method returns an Anchor `MethodsBuilder`, so you can extend the call with `.preInstructions()`, `.postInstructions()`, `.signers()`, `.rpc()`, `.transaction()`, or `.instruction()` as needed.
+
+## Construction
+
+```ts
+import * as anchor from "@coral-xyz/anchor";
+import { AgonClient } from "@agonx402/sdk";
+
+const client = new AgonClient({
+  provider: anchor.AnchorProvider.env(),
+  // optional — defaults to AGON_PROTOCOL_PROGRAM_ID from the IDL
+  // programId: new PublicKey("<override>"),
+});
+```
+
+### Options
+
+| Field | Type | Required | Default |
+| --- | --- | --- | --- |
+| `provider` | `anchor.AnchorProvider` | yes | — |
+| `programId` | `PublicKey` | no | `AGON_PROTOCOL_PROGRAM_ID` (from the packaged IDL) |
+
+The SDK also re-exports two lower-level helpers if you want to bring your own `Program`:
+
+```ts
+import { createAgonProgram, getAgonIdl } from "@agonx402/sdk";
+
+const program = createAgonProgram({ provider });
+const idl = getAgonIdl(); // clone of the IDL with its `address` field set to the program ID
+```
+
+## Address helpers
+
+`AgonClient` memoises nothing; these are pure deterministic derivations and safe to call as often as you need. See [PDAs & constants](/sdk/pdas) for the underlying formulas.
+
+| Method | Returns |
+| --- | --- |
+| `globalConfigAddress()` | PDA for `GlobalConfig`. |
+| `tokenRegistryAddress()` | PDA for `TokenRegistry`. |
+| `participantAddress(owner)` | PDA for a `ParticipantAccount`. |
+| `vaultTokenAccountAddress(tokenId)` | PDA for the token's vault SPL account. |
+| `channelAddress(payerId, payeeId, tokenId)` | PDA for a `channel-v2` channel state. |
+| `programDataAddress()` | `BPFLoaderUpgradeable` program-data PDA for this program. |
+
+## Account readers
+
+Convenience wrappers over `program.account.*.fetch` that accept public keys of owners rather than PDAs where useful.
+
+```ts
+const cfg = await client.fetchGlobalConfig();
+const registry = await client.fetchTokenRegistry();
+const participant = await client.fetchParticipant(owner);
+const participantId = await client.participantId(owner);
+
+const channel = await client.fetchChannel({
+  payerOwner,
+  payeeOwner,
+  tokenId: 2,
+});
+```
+
+### `fetchChannel(params)`
+
+Resolves a channel in two ways:
+
+| Mode | When to use |
+| --- | --- |
+| Direct address (`channelState`) | You already know the channel PDA. |
+| Owner-based (`payerOwner` + `payeeOwner` + `tokenId`) | You have wallet public keys; the SDK fetches both participants and derives the channel. |
+
+### `channelAddressForOwners(payerOwner, payeeOwner, tokenId)`
+
+Same owner-based resolution, but returns only the PDA (no RPC for the channel itself). Useful when you want to pre-compute a channel address before anyone has opened it.
+
+<Note>
+Every `fetch*` call hits the RPC configured on your `AnchorProvider`. For high-frequency reads, cache or batch them yourself.
+</Note>
+
+## Instruction builders
+
+Each of the methods below returns an Anchor `MethodsBuilder<AgonProtocol, ...>`. You must finish the chain with `.rpc()`, `.transaction()`, or `.instruction()` to actually do anything. All input amounts accept [`Amountish`](/sdk/messages#amountish) (`bigint`, `number`, `string`, or any `{ toString(): string }`).
+
+### `initializeProtocol(params)`
+
+Initialize `GlobalConfig` — only runnable once per deployment by the upgrade authority.
+
+```ts
+await client
+  .initializeProtocol({
+    chainId: AGON_CHAIN_IDS.devnet,
+    feeBps: 25,
+    registrationFeeLamports: 5_000_000n,
+    feeRecipient,
+    upgradeAuthority: provider.wallet.publicKey,
+    initialAuthority: null,
+  })
+  .rpc();
+```
+
+| Param | Type | Notes |
+| --- | --- | --- |
+| `chainId` | `number` | Use `AGON_CHAIN_IDS.*` constants. |
+| `feeBps` | `number` | Protocol fee in basis points. |
+| `registrationFeeLamports` | `Amountish` | Lamports charged per participant registration. |
+| `feeRecipient` | `PublicKey` | Where protocol fees accrue. |
+| `upgradeAuthority` | `PublicKey` | Must match the program's BPF upgrade authority. |
+| `initialAuthority` | `PublicKey \| null` | Optional admin authority recorded in `GlobalConfig`. |
+
+### `registerToken(params)`
+
+Register a settlement token in `TokenRegistry`. Restricted to the registry authority.
+
+```ts
+await client
+  .registerToken({
+    authority,
+    mint,
+    tokenId: 2,
+    symbol: "aUSDC",
+  })
+  .rpc();
+```
+
+`symbol` is validated against `/^[\x20-\x7E]{1,8}$/` (1–8 printable ASCII) and encoded as a 8-byte array via `encodeSymbol()` (also exported).
+
+### `initializeParticipant(params)`
+
+Create a `ParticipantAccount` for `owner`. Pays the registration fee to `feeRecipient` (typically the protocol fee recipient).
+
+```ts
+await client
+  .initializeParticipant({
+    owner: owner.publicKey,
+    feeRecipient,
+  })
+  .signers([owner])
+  .rpc();
+```
+
+### `createChannel(params)`
+
+Open a `channel-v2` state account for a `(payer, payee, token)` triple. Either `payeeOwner` or `payeeAccount` is required.
+
+```ts
+await client
+  .createChannel({
+    owner: payer.publicKey,
+    payeeOwner: payee.publicKey,
+    tokenId: 2,
+    authorizedSigner: null, // or a PublicKey to delegate commitment signing
+  })
+  .signers([payer])
+  .rpc();
+```
+
+| Param | Notes |
+| --- | --- |
+| `owner` | Payer's owner key; the fee payer for the CPI. |
+| `payeeOwner` / `payeeAccount` | Either one is required — one is used to derive the other when omitted. |
+| `tokenId` | The token the channel will settle. |
+| `authorizedSigner` | Optional delegated Ed25519 signer for commitments. See [Authorized settler](/core-concepts/authorized-settler). |
+
+### `deposit(params)`
+
+Move tokens from an owner's SPL account into the participant's protocol balance.
+
+```ts
+await client
+  .deposit({
+    owner: payer.publicKey,
+    ownerTokenAccount,
+    tokenId: 2,
+    amount: 10_000_000n, // 10 aUSDC
+  })
+  .signers([payer])
+  .rpc();
+```
+
+### `lockChannelFunds(params)`
+
+Allocate already-deposited balance to a specific channel. The SDK resolves the channel PDA automatically when `channelState` is omitted.
+
+```ts
+await client
+  .lockChannelFunds({
+    owner: payer.publicKey,
+    payeeOwner: payee.publicKey,
+    tokenId: 2,
+    amount: 5_000_000n,
+  })
+  .signers([payer])
+  .rpc();
+```
+
+### `requestUnlockChannelFunds(params)` / `executeUnlockChannelFunds(params)`
+
+Two-phase unlock with the protocol's unlock timelock in between. Same parameter shape as `lockChannelFunds`, except `execute` doesn't take an amount — the whole requested unlock is finalised at once.
+
+### `requestWithdrawal(params)` / `executeWithdrawalTimelocked(params)` / `cancelWithdrawal(params)`
+
+Withdraw balance out of the protocol to an SPL destination. Honour the timelock defined in `GlobalConfig`.
+
+```ts
+await client
+  .requestWithdrawal({
+    owner: payer.publicKey,
+    withdrawalDestination,
+    tokenId: 2,
+    amount: 2_000_000n,
+  })
+  .signers([payer])
+  .rpc();
+
+// … after the timelock expires …
+
+await client
+  .executeWithdrawalTimelocked({
+    tokenId: 2,
+    participantAccount: client.participantAddress(payer.publicKey),
+    withdrawalDestination,
+    feeRecipientTokenAccount,
+  })
+  .rpc();
+```
+
+`cancelWithdrawal` clears the pending request without touching balances.
+
+### `updateInboundChannelPolicy(params)`
+
+Change how other participants are allowed to open channels **to** this participant.
+
+```ts
+import { INBOUND_CHANNEL_POLICY } from "@agonx402/sdk";
+
+await client
+  .updateInboundChannelPolicy({
+    owner: payee.publicKey,
+    inboundChannelPolicy: INBOUND_CHANNEL_POLICY.ConsentRequired,
+  })
+  .signers([payee])
+  .rpc();
+```
+
+| Constant | Value | Meaning |
+| --- | --- | --- |
+| `INBOUND_CHANNEL_POLICY.Permissionless` | `0` | Anyone may open a channel to this participant. |
+| `INBOUND_CHANNEL_POLICY.ConsentRequired` | `1` | Channel creation requires the payee's signature. |
+| `INBOUND_CHANNEL_POLICY.Disabled` | `2` | No new inbound channels can be opened. |
+
+### Settlement
+
+All three settlement flows take a `submitter` — the key that pays for the transaction and submits the Ed25519 pre-instruction.
+
+```ts
+// Direct (one commitment)
+await client.settleIndividual({
+  payerAccount, payeeAccount, channelState, submitter,
+}).preInstructions([ed25519Ix]).signers([submitterKp]).rpc();
+
+// Bundle (N commitments for the same payee)
+await client.settleCommitmentBundle({
+  count: 4, payeeAccount, submitter,
+}).preInstructions([bundleEd25519Ix]).signers([submitterKp]).rpc();
+
+// Clearing round (multi-payer, multi-payee)
+await client.settleClearingRound({
+  submitter,
+}).preInstructions([clearingEd25519Ix]).signers([submitterKp]).rpc();
+```
+
+All three wire the `instructions` sysvar (`SYSVAR_INSTRUCTIONS_PUBKEY`) automatically so the program can read the Ed25519 verification output from the transaction. See [Settlement modes](/settlement-modes/overview) for when to use each one.
+
+## Account helpers
+
+Two pure helpers complement the readers above.
+
+### `getTokenBalance(participantData, tokenId)`
+
+Look up a specific token balance entry inside a fetched `ParticipantAccount`, with safe zero defaults when the entry does not exist yet:
+
+```ts
+import { getTokenBalance } from "@agonx402/sdk";
+
+const participant = await client.fetchParticipant(owner);
+const balance = getTokenBalance(participant, 2);
+
+console.log(balance.availableBalance.toString());
+console.log(balance.withdrawingBalance.toString());
+console.log(balance.withdrawalUnlockAt.toString());
+```
+
+### `nextCommitmentAmount(channelData, delta)`
+
+Compute the next `committed_amount` for a commitment, given an already-fetched channel state and an incremental delta:
+
+```ts
+import { nextCommitmentAmount } from "@agonx402/sdk";
+
+const channel = await client.fetchChannel({ channelState });
+const committedAmount = nextCommitmentAmount(channel, 100_000n);
+
+const message = createCommitmentMessage({
+  messageDomain,
+  payerId,
+  payeeId,
+  tokenId: 2,
+  committedAmount,
+});
+```
+
+Returns an Anchor `BN` so it composes with the other builders.
+
+## Error handling
+
+Anchor raises its own error types for RPC and program errors. `AgonClient` doesn't wrap them — let them bubble up and inspect `error.error?.errorCode` / `error.logs` as usual. The canonical list of protocol error codes is on [Reference → Errors](/reference/errors).

@@ -5,7 +5,11 @@ description: "An end-to-end walkthrough: register, fund, open a channel, sign a 
 
 This guide shows the smallest useful Agon integration: one payer, one payee, one token, one payment channel, and one settled `agon-cmt-v5` message.
 
-The examples mirror the current protocol tests. Until a dedicated SDK ships, this is the most direct way to integrate Agon today.
+The examples below mirror the current protocol tests. They use raw Anchor calls so you can see the exact accounts and signatures involved.
+
+<Tip>
+If you don't need that level of control, the official [`@agonx402/sdk`](/sdk) wraps every step on this page into one or two method calls. See the SDK [Recipes](/sdk/recipes) for the same flow in a dozen lines.
+</Tip>
 
 ## What you will build
 

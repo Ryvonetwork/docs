@@ -1,0 +1,313 @@
+---
+title: "Recipes"
+description: "End-to-end flows with @agonx402/sdk — register, fund, sign, settle, withdraw."
+---
+
+This page is the SDK-native version of [Your First Payment](/getting-started/first-payment). Everything is expressed in terms of [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk) helpers. If you want the low-level protocol walkthrough, start there.
+
+<Info>
+All examples target the live devnet deployment (program `Ba2puU8D2CLD1dYfRQ4YBXxirdyz3zVLLChvMf9AqJ1Y`, chain ID `1`). Replace the `programId` and `AGON_CHAIN_IDS.*` value for other environments.
+</Info>
+
+## Prerequisites
+
+```bash
+npm install @agonx402/sdk @coral-xyz/anchor @solana/web3.js
+```
+
+```ts
+import * as anchor from "@coral-xyz/anchor";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  AgonClient,
+  AGON_CHAIN_IDS,
+  createCommitmentMessage,
+  createEd25519Instruction,
+  createMultiMessageEd25519Instruction,
+  createClearingRoundMessage,
+  createMultiSigEd25519Instruction,
+  deriveMessageDomain,
+  getTokenBalance,
+  nextCommitmentAmount,
+} from "@agonx402/sdk";
+
+const provider = anchor.AnchorProvider.env();
+anchor.setProvider(provider);
+
+const client = new AgonClient({ provider });
+const messageDomain = deriveMessageDomain(
+  client.programId,
+  AGON_CHAIN_IDS.devnet,
+);
+```
+
+## 1. Register two participants
+
+Register both sides of the payment relationship. Each owner pays a one-time registration fee defined in `GlobalConfig`.
+
+```ts
+const alice = Keypair.generate(); // payer
+const bob = Keypair.generate();   // payee
+
+const feeRecipient = (await client.fetchGlobalConfig()).feeRecipient;
+
+for (const signer of [alice, bob]) {
+  await client
+    .initializeParticipant({
+      owner: signer.publicKey,
+      feeRecipient,
+    })
+    .signers([signer])
+    .rpc();
+}
+
+const aliceInfo = await client.fetchParticipant(alice.publicKey);
+const bobInfo = await client.fetchParticipant(bob.publicKey);
+
+console.log({
+  alice: aliceInfo.participantId,
+  bob: bobInfo.participantId,
+});
+```
+
+## 2. Deposit into the vault
+
+The payer moves tokens from their own SPL account into the protocol vault.
+
+```ts
+const tokenId = 2; // aUSDC on devnet
+
+await client
+  .deposit({
+    owner: alice.publicKey,
+    ownerTokenAccount: aliceAUsdcAta,
+    tokenId,
+    amount: 10_000_000n, // 10 aUSDC
+  })
+  .signers([alice])
+  .rpc();
+
+const aliceParticipant = await client.fetchParticipant(alice.publicKey);
+const balance = getTokenBalance(aliceParticipant, tokenId);
+console.log("Alice available:", balance.availableBalance.toString());
+```
+
+## 3. Open a channel
+
+Channels are one-way and per-token. One channel per `(payer, payee, token)` tuple.
+
+```ts
+await client
+  .createChannel({
+    owner: alice.publicKey,
+    payeeOwner: bob.publicKey,
+    tokenId,
+    authorizedSigner: null, // or a delegated signer
+  })
+  .signers([alice]) // bob also needs to sign if his inbound policy is ConsentRequired
+  .rpc();
+
+const channelState = client.channelAddress(
+  aliceInfo.participantId,
+  bobInfo.participantId,
+  tokenId,
+);
+```
+
+Optionally lock funds for the payee:
+
+```ts
+await client
+  .lockChannelFunds({
+    owner: alice.publicKey,
+    payeeOwner: bob.publicKey,
+    tokenId,
+    amount: 1_000_000n,
+  })
+  .signers([alice])
+  .rpc();
+```
+
+## 4. Direct settlement of one commitment
+
+Alice signs a new cumulative total off-chain; Bob submits it.
+
+```ts
+const channel = await client.fetchChannel({ channelState });
+
+const committedAmount = nextCommitmentAmount(channel, 250_000n);
+
+const message = createCommitmentMessage({
+  messageDomain,
+  payerId: aliceInfo.participantId,
+  payeeId: bobInfo.participantId,
+  tokenId,
+  committedAmount,
+});
+
+const ed25519Ix = createEd25519Instruction(alice, message);
+
+await client
+  .settleIndividual({
+    payerAccount: client.participantAddress(alice.publicKey),
+    payeeAccount: client.participantAddress(bob.publicKey),
+    channelState,
+    submitter: bob.publicKey,
+  })
+  .preInstructions([ed25519Ix])
+  .signers([bob])
+  .rpc();
+```
+
+<Tip>
+Hold on to Alice's signed `message`. Bob doesn't have to submit every one — he can keep stacking fresher messages and only submit the latest, since cumulative commitments supersede earlier ones.
+</Tip>
+
+## 5. Bundle settlement
+
+Bob settles **multiple commitments** at once — typically many signed messages from Alice, or a mix of payers who have open channels with Bob.
+
+```ts
+const messages = [
+  { signer: alice, message: createCommitmentMessage({ ...a1 }) },
+  { signer: alice, message: createCommitmentMessage({ ...a2 }) },
+  { signer: carol, message: createCommitmentMessage({ ...c1 }) },
+];
+
+const bundleIx = createMultiMessageEd25519Instruction(messages);
+
+await client
+  .settleCommitmentBundle({
+    count: messages.length,
+    payeeAccount: client.participantAddress(bob.publicKey),
+    submitter: bob.publicKey,
+  })
+  .preInstructions([bundleIx])
+  .signers([bob])
+  .rpc();
+```
+
+The on-chain program walks each Ed25519 signature in order, finds the corresponding channel, and applies the new cumulative. The number passed as `count` must match the number of entries in the pre-instruction.
+
+## 6. Clearing round (multi-party netting)
+
+Clearing rounds compress a graph of obligations between N participants into a single transaction that every participant signs.
+
+```ts
+const roundMessage = createClearingRoundMessage({
+  messageDomain,
+  tokenId,
+  blocks: [
+    { participantId: aliceInfo.participantId, entries: [{ payeeRef: 1, targetCumulative: 800_000n }] },
+    { participantId: bobInfo.participantId,   entries: [{ payeeRef: 2, targetCumulative: 200_000n }] },
+    { participantId: carolInfo.participantId, entries: [{ payeeRef: 0, targetCumulative: 300_000n }] },
+  ],
+});
+
+const roundIx = createMultiSigEd25519Instruction(
+  [alice, bob, carol],
+  roundMessage,
+);
+
+await client
+  .settleClearingRound({ submitter: submitterKp.publicKey })
+  .preInstructions([roundIx])
+  .signers([submitterKp])
+  .rpc();
+```
+
+`payeeRef` is a 0-based index into the participant list in the order the round is signed. See [Settlement → Clearing rounds](/settlement-modes/clearing-rounds) for the full protocol behaviour.
+
+## 7. Withdraw
+
+Requests and executes the timelocked withdrawal flow. Fees are routed to `feeRecipientTokenAccount`.
+
+```ts
+await client
+  .requestWithdrawal({
+    owner: alice.publicKey,
+    withdrawalDestination: aliceAUsdcAta,
+    tokenId,
+    amount: 2_000_000n,
+  })
+  .signers([alice])
+  .rpc();
+
+// …wait out the unlock timelock defined in GlobalConfig…
+
+await client
+  .executeWithdrawalTimelocked({
+    tokenId,
+    participantAccount: client.participantAddress(alice.publicKey),
+    withdrawalDestination: aliceAUsdcAta,
+    feeRecipientTokenAccount,
+  })
+  .rpc();
+```
+
+To abort a pending request before the timelock fires:
+
+```ts
+await client
+  .cancelWithdrawal({ owner: alice.publicKey, tokenId })
+  .signers([alice])
+  .rpc();
+```
+
+## 8. Authorized signer delegation
+
+If Alice wants a service key to sign commitments on her behalf (without giving it custody of funds), pass the delegate when creating the channel:
+
+```ts
+const signerKp = Keypair.generate();
+
+await client
+  .createChannel({
+    owner: alice.publicKey,
+    payeeOwner: bob.publicKey,
+    tokenId,
+    authorizedSigner: signerKp.publicKey,
+  })
+  .signers([alice])
+  .rpc();
+
+// From now on, commitments are signed by signerKp, not alice:
+const ed25519Ix = createEd25519Instruction(signerKp, message);
+```
+
+See [Authorized settler](/core-concepts/authorized-settler) for the full trust model, including the difference between `authorized_signer` and `authorized_settler` (a per-message optional field emitted by `createCommitmentMessage`).
+
+## 9. Inbound channel policy
+
+Payees can gate who is allowed to open channels to them:
+
+```ts
+import { INBOUND_CHANNEL_POLICY } from "@agonx402/sdk";
+
+await client
+  .updateInboundChannelPolicy({
+    owner: bob.publicKey,
+    inboundChannelPolicy: INBOUND_CHANNEL_POLICY.ConsentRequired,
+  })
+  .signers([bob])
+  .rpc();
+```
+
+Under `ConsentRequired`, `createChannel` now requires Bob's signature as well.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Messages" icon="signature" href="/sdk/messages">
+    Full details on the message layout and each Ed25519 helper.
+  </Card>
+  <Card title="Instructions reference" icon="list" href="/reference/instructions">
+    Every on-chain instruction, its accounts, and its semantics.
+  </Card>
+  <Card title="Settlement modes" icon="layer-group" href="/settlement-modes/overview">
+    When to pick direct, bundle, or clearing-round settlement.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/reference/errors">
+    The full protocol error code table.
+  </Card>
+</CardGroup>

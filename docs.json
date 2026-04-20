@@ -86,6 +86,16 @@
             ]
           },
           {
+            "group": "SDK",
+            "pages": [
+              "sdk/index",
+              "sdk/client",
+              "sdk/pdas",
+              "sdk/messages",
+              "sdk/recipes"
+            ]
+          },
+          {
             "group": "Reference",
             "pages": [
               "reference/deployment",

@@ -1,0 +1,132 @@
+---
+title: "TypeScript SDK"
+description: "@agonx402/sdk — install, quick start, and what is inside."
+---
+
+[`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk) is the official TypeScript SDK for the Agon Protocol. It wraps the live Anchor program into a small set of typed helpers so you can integrate the protocol without hand-rolling IDLs, PDAs, or message encoders.
+
+The SDK is developed in the open at [Agonx402/agon-protocol-sdk](https://github.com/Agonx402/agon-protocol-sdk).
+
+## What is inside
+
+The package exposes five composable layers:
+
+| Layer | What it gives you |
+| --- | --- |
+| [`AgonClient`](/sdk/client) | A thin, typed wrapper around the Anchor program with one method per instruction. |
+| [PDA helpers](/sdk/pdas) | Deterministic derivations for every account the program uses (`global-config`, `token-registry`, `participant`, `vault-token-account`, `channel-v2`). |
+| [Message builders](/sdk/messages) | `agon-cmt-v5` commitment and `agon-clr-v4` clearing round message encoders, plus Ed25519 pre-instruction helpers. |
+| [Account helpers](/sdk/client#account-helpers) | Convenience readers for participant token balances and for computing the next commitment amount from a channel. |
+| Constants & IDL | `AGON_PROTOCOL_PROGRAM_ID`, `AGON_CHAIN_IDS`, seed strings, and the generated Anchor IDL. |
+
+The SDK depends on `@coral-xyz/anchor`, `@solana/web3.js`, and `@noble/curves` — all standard in the Solana TypeScript ecosystem. It has no hidden RPC behaviour: every call you make goes through the `AnchorProvider` you construct it with.
+
+## Install
+
+```bash
+npm install @agonx402/sdk @coral-xyz/anchor @solana/web3.js
+```
+
+Requirements:
+
+- Node.js `>= 18`
+- An Anchor-compatible `AnchorProvider` (browser wallet adapter, backend keypair, test ledger, etc.)
+
+The package is ESM-only (`"type": "module"`). In CommonJS codebases, use a dynamic `import()` or switch to ESM.
+
+## Quick start
+
+```ts
+import * as anchor from "@coral-xyz/anchor";
+import { AgonClient } from "@agonx402/sdk";
+
+const provider = anchor.AnchorProvider.env();
+anchor.setProvider(provider);
+
+const client = new AgonClient({ provider });
+
+const owner = provider.wallet.publicKey;
+const participantPda = client.participantAddress(owner);
+const participant = await client.fetchParticipant(owner);
+
+console.log("Participant ID:", participant.participantId);
+```
+
+By default, `AgonClient` uses the live program ID baked into the IDL (`Ba2puU8D2CLD1dYfRQ4YBXxirdyz3zVLLChvMf9AqJ1Y` on devnet). To target a different deployment, pass a `programId` override:
+
+```ts
+import { PublicKey } from "@solana/web3.js";
+
+const client = new AgonClient({
+  provider,
+  programId: new PublicKey("<your program id>"),
+});
+```
+
+## Sign a commitment and settle
+
+The following snippet is the full direct-settlement flow, compressed. See [Recipes](/sdk/recipes) for the expanded version with participant setup, deposits, and channel creation.
+
+```ts
+import {
+  AgonClient,
+  createCommitmentMessage,
+  createEd25519Instruction,
+  deriveMessageDomain,
+  AGON_CHAIN_IDS,
+} from "@agonx402/sdk";
+
+const client = new AgonClient({ provider });
+const messageDomain = deriveMessageDomain(client.programId, AGON_CHAIN_IDS.devnet);
+
+const message = createCommitmentMessage({
+  messageDomain,
+  payerId: payer.participantId,
+  payeeId: payee.participantId,
+  tokenId: 2,
+  committedAmount: 1_000_000n, // micro-USDC
+});
+
+const ed25519Ix = createEd25519Instruction(payerKeypair, message);
+
+await client
+  .settleIndividual({
+    payerAccount: client.participantAddress(payerKeypair.publicKey),
+    payeeAccount: client.participantAddress(payeeKeypair.publicKey),
+    channelState: client.channelAddress(
+      payer.participantId,
+      payee.participantId,
+      2,
+    ),
+    submitter: payeeKeypair.publicKey,
+  })
+  .preInstructions([ed25519Ix])
+  .signers([payeeKeypair])
+  .rpc();
+```
+
+Two things are worth noting:
+
+1. The commitment is signed off-chain by the payer. The payee is the one who submits it on-chain.
+2. `createEd25519Instruction` **must** be added to the same transaction as `settleIndividual`; Agon verifies it through the `instructions` sysvar.
+
+## Versioning
+
+The SDK is on the `0.1.x` line while the protocol surface stabilises. Breaking changes are signalled in the npm [changelog](https://github.com/Agonx402/agon-protocol-sdk/releases) and tracked against the program's IDL. The package ships the generated IDL and TypeScript program type, so upgrading the SDK is always aligned with a protocol upgrade.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="AgonClient" icon="code" href="/sdk/client">
+    Every instruction the SDK can build — initialize, deposit, lock, settle, withdraw.
+  </Card>
+  <Card title="PDAs & constants" icon="key" href="/sdk/pdas">
+    Derive every account the program uses, deterministically and off-chain.
+  </Card>
+  <Card title="Messages" icon="signature" href="/sdk/messages">
+    Build `agon-cmt-v5` and `agon-clr-v4` messages and sign them with Ed25519.
+  </Card>
+  <Card title="Recipes" icon="book-open" href="/sdk/recipes">
+    End-to-end flows: register, fund, sign, settle, withdraw.
+  </Card>
+</CardGroup>

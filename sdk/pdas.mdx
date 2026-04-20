@@ -1,0 +1,181 @@
+---
+title: "PDAs & constants"
+description: "Deterministic address derivations and the constants that feed them."
+---
+
+Every account the Agon Protocol uses is a program-derived address (PDA). The SDK exports pure helpers for each of them, plus the seeds and program-wide constants they depend on. Nothing here hits an RPC; everything is local, deterministic, and cheap to call.
+
+## Constants
+
+```ts
+import {
+  AGON_PROTOCOL_PROGRAM_ID,
+  AGON_CHAIN_IDS,
+  MESSAGE_DOMAIN_TAG,
+  GLOBAL_CONFIG_SEED,
+  TOKEN_REGISTRY_SEED,
+  PARTICIPANT_SEED,
+  VAULT_TOKEN_ACCOUNT_SEED,
+  CHANNEL_V2_SEED,
+  BPF_LOADER_UPGRADEABLE_PROGRAM_ID,
+  SPL_TOKEN_PROGRAM_ID,
+  INBOUND_CHANNEL_POLICY,
+  AGON_PROTOCOL_IDL,
+} from "@agonx402/sdk";
+```
+
+### Program ID
+
+| Constant | Value | Notes |
+| --- | --- | --- |
+| `AGON_PROTOCOL_PROGRAM_ID` | `PublicKey` from the packaged IDL | Matches the [live devnet deployment](/reference/deployment) by default. |
+| `AGON_PROTOCOL_IDL` | The generated Anchor IDL JSON | Useful if you want to build your own `Program` from scratch. |
+
+### Chain IDs
+
+`AGON_CHAIN_IDS` is a `const` map used everywhere a `chainId` is required, including [`deriveMessageDomain`](#derivemessagedomain).
+
+| Key | Value | Network |
+| --- | --- | --- |
+| `mainnet` | `0` | Mainnet |
+| `devnet` | `1` | Devnet |
+| `testnet` | `2` | Testnet |
+| `localnet` | `3` | Localnet |
+
+### Seeds
+
+All PDA helpers use these seeds internally. They are exported for advanced callers who want to derive addresses in a different language or verify an on-chain account against its expected derivation.
+
+| Constant | Value |
+| --- | --- |
+| `GLOBAL_CONFIG_SEED` | `"global-config"` |
+| `TOKEN_REGISTRY_SEED` | `"token-registry"` |
+| `PARTICIPANT_SEED` | `"participant"` |
+| `VAULT_TOKEN_ACCOUNT_SEED` | `"vault-token-account"` |
+| `CHANNEL_V2_SEED` | `"channel-v2"` |
+| `MESSAGE_DOMAIN_TAG` | `Buffer.from("agon-message-domain-v1", "utf8")` |
+
+### System program IDs
+
+| Constant | Value |
+| --- | --- |
+| `BPF_LOADER_UPGRADEABLE_PROGRAM_ID` | `BPFLoaderUpgradeab1e11111111111111111111111` |
+| `SPL_TOKEN_PROGRAM_ID` | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` |
+
+### Inbound channel policy
+
+Numeric enum mirroring the on-chain variant used by `updateInboundChannelPolicy`.
+
+| Key | Value |
+| --- | --- |
+| `INBOUND_CHANNEL_POLICY.Permissionless` | `0` |
+| `INBOUND_CHANNEL_POLICY.ConsentRequired` | `1` |
+| `INBOUND_CHANNEL_POLICY.Disabled` | `2` |
+
+## PDA helpers
+
+All PDA helpers return a `PublicKey` and are available both as free functions and as methods on [`AgonClient`](/sdk/client#address-helpers) (which simply curries the `programId`).
+
+```ts
+import {
+  findGlobalConfigPda,
+  findTokenRegistryPda,
+  findParticipantPda,
+  findVaultTokenAccountPda,
+  findChannelPda,
+  findProgramDataPda,
+} from "@agonx402/sdk";
+```
+
+### `findGlobalConfigPda(programId)`
+
+| Seed | Bytes |
+| --- | --- |
+| `GLOBAL_CONFIG_SEED` | `"global-config"` |
+
+There is exactly one `GlobalConfig` per deployment.
+
+### `findTokenRegistryPda(programId)`
+
+| Seed | Bytes |
+| --- | --- |
+| `TOKEN_REGISTRY_SEED` | `"token-registry"` |
+
+There is exactly one `TokenRegistry` per deployment.
+
+### `findParticipantPda(programId, owner)`
+
+| Seed | Bytes |
+| --- | --- |
+| `PARTICIPANT_SEED` | `"participant"` |
+| `owner.toBytes()` | 32 bytes |
+
+One `ParticipantAccount` per owner key.
+
+### `findVaultTokenAccountPda(programId, tokenId)`
+
+| Seed | Bytes |
+| --- | --- |
+| `VAULT_TOKEN_ACCOUNT_SEED` | `"vault-token-account"` |
+| `tokenId` | 2 bytes, little-endian |
+
+One SPL token account PDA per registered `tokenId`. All deposits and withdrawals for that token flow through this vault.
+
+### `findChannelPda(programId, payerId, payeeId, tokenId)`
+
+| Seed | Bytes |
+| --- | --- |
+| `CHANNEL_V2_SEED` | `"channel-v2"` |
+| `payerId` | 4 bytes, little-endian |
+| `payeeId` | 4 bytes, little-endian |
+| `tokenId` | 2 bytes, little-endian |
+
+Channel IDs are derived from **participant IDs**, not wallet keys. Fetch a participant via [`AgonClient.fetchParticipant`](/sdk/client#account-readers) or `participantId()` to obtain one.
+
+<Note>
+Channels are directional. `(payerId=1, payeeId=2)` is **not** the same PDA as `(payerId=2, payeeId=1)`. To support bidirectional traffic, open two channels.
+</Note>
+
+### `findProgramDataPda(programId)`
+
+| Seed | Bytes |
+| --- | --- |
+| `programId.toBuffer()` | 32 bytes |
+
+PDA on `BPFLoaderUpgradeable` that stores the program's data account. Used by `initializeProtocol`.
+
+## `deriveMessageDomain`
+
+The message domain is a 16-byte tag folded into every signed protocol message. It binds signatures to a specific `(programId, chainId)` pair, making cross-chain or cross-deployment replay impossible.
+
+```ts
+import { deriveMessageDomain, AGON_CHAIN_IDS } from "@agonx402/sdk";
+
+const messageDomain = deriveMessageDomain(
+  client.programId,
+  AGON_CHAIN_IDS.devnet,
+);
+```
+
+The derivation is:
+
+```
+messageDomain = SHA256(
+  "agon-message-domain-v1" ||
+  programId (32 bytes) ||
+  chainId (u16, little-endian)
+).slice(0, 16)
+```
+
+This matches the domain the on-chain program recomputes when verifying Ed25519 signatures via the `instructions` sysvar.
+
+### Common chain IDs at a glance
+
+```ts
+deriveMessageDomain(programId, 0); // mainnet
+deriveMessageDomain(programId, 1); // devnet
+deriveMessageDomain(programId, 2); // testnet
+deriveMessageDomain(programId, 3); // localnet
+```
+
+See [Reference → Messages](/reference/messages#message-domain) for the on-chain spec.
