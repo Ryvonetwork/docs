@@ -134,6 +134,7 @@
             "pages": [
               "gateway/routes/solana-rpc",
               "gateway/routes/solana-das",
+              "gateway/routes/helius-wallet",
               "gateway/routes/tokens-api"
             ]
           },

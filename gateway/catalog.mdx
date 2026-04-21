@@ -73,7 +73,7 @@ Each item in `routes[]` is a `CatalogRouteEntry`:
 | `httpMethod` | `"GET" \| "POST" \| "HEAD"` | Canonical HTTP method for the route. |
 | `cluster` | `"mainnet" \| "devnet"` (optional) | Only present for Solana routes. |
 | `provider` | `"alchemy" \| "helius" \| "tokens"` | Upstream provider identifier. |
-| `surface` | `"rpc" \| "das" \| "tokens"` | Logical surface. |
+| `surface` | `"rpc" \| "das" \| "wallet" \| "tokens"` | Logical surface. `wallet` is the Helius Wallet API. |
 | `method` | `string` | Canonical method name (`getBalance`, `search`, …). |
 | `description` | `string` | Human-readable route description. |
 | `accessMode` | `"exact" \| "siwx"` | Payment vs. auth-only. See [Access modes](/gateway/access-modes). |

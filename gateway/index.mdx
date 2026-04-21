@@ -9,7 +9,7 @@ What you get:
 
 - **Pay per call with a wallet.** Paid Solana RPC and DAS endpoints that you call with USDC on Solana mainnet. No subscriptions, no API keys, no vendor lock-in.
 - **Sign in with your wallet for free metadata.** The Tokens API is exposed over wallet sign-in (SIWX). You prove ownership of a wallet; the gateway calls the Tokens API for you.
-- **Transparent pricing.** Every paid route advertises its exact USDC price up front — pulled directly from each upstream's public pay-as-you-go schedule, with no added spread.
+- **Transparent pricing.** Every paid route advertises its exact USDC price up front — upstream PAYG price plus a fixed `$0.0006` settlement surcharge per paid call.
 - **Pay only on success.** If the upstream provider fails, the gateway does not settle the payment. You are never charged for an upstream error.
 - **Two providers, one surface.** Alchemy and Helius sit behind a common route shape, so you can switch providers or compare latency without changing client code.
 - **Non-custodial.** The gateway never holds your funds. Payments settle directly on Solana through a standard x402 facilitator.

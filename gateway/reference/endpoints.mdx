@@ -22,13 +22,27 @@ This page documents every route exposed by the deployed gateway. Paid Solana rou
 ### Solana RPC
 
 <ResponseField name="POST /v1/x402/solana/{cluster}/{provider}/rpc/{method}" type="route">
-  Paid Solana RPC proxy. `cluster` ∈ `mainnet, devnet`. `provider` ∈ `alchemy, helius`. `method` ∈ `getBalance, getAccountInfo, getTransaction, getSignaturesForAddress, getTokenAccountsByOwner, getProgramAccounts`. Access mode `exact`. See [Solana RPC routes](/gateway/routes/solana-rpc).
+  Paid Solana RPC proxy. `cluster` ∈ `mainnet, devnet`. `provider` ∈ `alchemy, helius`. `method` ∈ `getBalance, getAccountInfo, getTransaction, getSignaturesForAddress, getTokenAccountsByOwner, getProgramAccounts` (all providers) plus `getTransactionsForAddress` (Helius-only enhanced history). Access mode `exact`. See [Solana RPC routes](/gateway/routes/solana-rpc).
 </ResponseField>
 
 ### Solana DAS
 
 <ResponseField name="POST /v1/x402/solana/{cluster}/{provider}/das/{method}" type="route">
   Paid Solana DAS proxy. `cluster` ∈ `mainnet, devnet` (Alchemy DAS is mainnet-only). `provider` ∈ `alchemy, helius`. `method` ∈ `getAsset, getAssetsByOwner, searchAssets`. Access mode `exact`. See [Solana DAS routes](/gateway/routes/solana-das).
+</ResponseField>
+
+### Helius Wallet API
+
+<ResponseField name="GET /v1/x402/helius/wallet/identity/:wallet" type="route">
+  Paid Helius Wallet API identity lookup (mainnet-only). Accepts a base58 address, SNS `.sol` domain, or ANS custom TLD. Access mode `exact`, 100 credits per call. See [Helius Wallet API routes](/gateway/routes/helius-wallet).
+</ResponseField>
+
+<ResponseField name="POST /v1/x402/helius/wallet/batch-identity" type="route">
+  Paid Helius Wallet API batch identity lookup. Body: `{ "wallets": string[] }` with 1–100 entries. Access mode `exact`, 100 credits per call.
+</ResponseField>
+
+<ResponseField name="GET /v1/x402/helius/wallet/{balances|history|transfers|funded-by}/:wallet" type="route">
+  Paid Helius Wallet API data routes (mainnet-only). Query params vary per method. Access mode `exact`, 100 credits per call. See [Helius Wallet API routes](/gateway/routes/helius-wallet).
 </ResponseField>
 
 ### Tokens API

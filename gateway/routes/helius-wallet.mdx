@@ -1,0 +1,202 @@
+---
+title: "Helius Wallet API Routes"
+description: "Every paid Helius Wallet API route — method, path, price, params, and example."
+---
+
+Helius Wallet API routes proxy the Helius Wallet API (`api.helius.xyz/v1/wallet/*`) and are gated with x402 `exact` payment on Solana mainnet. They are a Helius-only REST surface, distinct from Solana RPC and DAS.
+
+## Conventions
+
+All Helius Wallet routes share the same shape:
+
+- **Path template:** `GET /v1/x402/helius/wallet/{method}/:wallet` (or `POST /v1/x402/helius/wallet/batch-identity`)
+- **Access mode:** `exact` (paid per call)
+- **Alternate methods accepted on the path:** `HEAD` (used for the `402` discovery probe)
+- **Request shape:**
+  - `GET` routes forward URL query params directly to the upstream.
+  - `POST /batch-identity` forwards a JSON object body.
+- **Success body:** `{ ok: true, provider: "helius", cluster: "mainnet", surface: "wallet", method, priceUsd, result }`
+- **Payment network:** `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` (mainnet)
+- **Payment asset:** USDC mainnet mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` (6 decimals)
+- **Rate limit:** `10 rps` per `helius:mainnet:wallet` scope
+
+<Note>
+The Helius Wallet API is **mainnet-only**. There is no devnet counterpart — domain resolution (SNS `.sol`, ANS custom TLDs) and identity data only exist on Solana mainnet.
+</Note>
+
+Pricing comes from the Helius per-credit PAYG schedule:
+
+- **Helius Wallet API** — `100 credits` per call → `$0.000500` at `$5 / 1 000 000 credits`.
+
+Authoritative values are always reported by `GET /v1/catalog` and by the `402` challenge envelope.
+
+### Wallet input
+
+Every per-wallet route accepts a single `:wallet` path parameter. Accepted formats:
+
+- Base58 Solana address (e.g. `GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz`)
+- SNS `.sol` domain (e.g. `toly.sol`)
+- ANS custom TLD (e.g. `miester.bonk`, `bob.wen`)
+
+The gateway accepts any non-empty `:wallet` value and relies on Helius to return `4xx` if the input cannot be resolved.
+
+---
+
+## `identity`
+
+Resolve on-chain identity for a single Solana address or domain.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `GET /v1/x402/helius/wallet/identity/:wallet` | helius | mainnet | `$0.000500` | 100 credits |
+
+**Query params**
+
+None.
+
+**Example**
+
+```bash
+curl -G "https://gateway.agonx402.com/v1/x402/helius/wallet/identity/toly.sol" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
+```
+
+---
+
+## `batchIdentity`
+
+Batch lookup of identity information for up to 100 Solana addresses and/or domains.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `POST /v1/x402/helius/wallet/batch-identity` | helius | mainnet | `$0.000500` | 100 credits |
+
+**Body**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `wallets` | `string[]` | yes | 1..100 entries, each a base58 address or SNS/ANS domain. |
+
+**Example**
+
+```bash
+curl -X POST https://gateway.agonx402.com/v1/x402/helius/wallet/batch-identity \
+  -H "Content-Type: application/json" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
+  -d '{"wallets":["GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz","toly.sol"]}'
+```
+
+---
+
+## `balances`
+
+Retrieve SPL token and NFT balances for a Solana wallet, sorted by USD value.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `GET /v1/x402/helius/wallet/balances/:wallet` | helius | mainnet | `$0.000500` | 100 credits |
+
+**Query params**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `page` | `integer` | no | `1..1000`. |
+| `limit` | `integer` | no | `1..100`. |
+| `showZeroBalance` | `boolean` | no | `"true"` or `"false"`. |
+| `showNative` | `boolean` | no | Include native SOL balance. |
+| `showNfts` | `boolean` | no | Include NFT holdings. |
+
+**Example**
+
+```bash
+curl -G "https://gateway.agonx402.com/v1/x402/helius/wallet/balances/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+  --data-urlencode "limit=25" \
+  --data-urlencode "showNative=true" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
+```
+
+---
+
+## `history`
+
+Retrieve parsed transaction history with balance changes for a Solana wallet, newest first.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `GET /v1/x402/helius/wallet/history/:wallet` | helius | mainnet | `$0.000500` | 100 credits |
+
+**Query params**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `limit` | `integer` | no | `1..100`. |
+| `before` | `string` | no | Signature to paginate before. |
+| `after` | `string` | no | Signature to paginate after. |
+| `type` | `string` | no | One of the Helius parsed transaction types (e.g. `SWAP`, `TRANSFER`, `NFT_SALE`, `NFT_BID`, `NFT_LISTING`, `NFT_MINT`, `TOKEN_MINT`, `BURN`, `COMPRESSED_NFT_MINT`, etc.). |
+| `tokenAccounts` | `string` | no | `none`, `balanceChanged`, or `all`. |
+
+**Example**
+
+```bash
+curl -G "https://gateway.agonx402.com/v1/x402/helius/wallet/history/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+  --data-urlencode "limit=25" \
+  --data-urlencode "tokenAccounts=balanceChanged" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
+```
+
+---
+
+## `transfers`
+
+Retrieve all token and SOL transfer activity for a Solana wallet with cursor pagination.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `GET /v1/x402/helius/wallet/transfers/:wallet` | helius | mainnet | `$0.000500` | 100 credits |
+
+**Query params**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `limit` | `integer` | no | `1..100`. |
+| `cursor` | `string` | no | Opaque cursor returned by the previous response. |
+
+**Example**
+
+```bash
+curl -G "https://gateway.agonx402.com/v1/x402/helius/wallet/transfers/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+  --data-urlencode "limit=25" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
+```
+
+---
+
+## `fundedBy`
+
+Discover the original funding source of a Solana wallet (first incoming SOL transfer). Useful for attribution and sybil analysis.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `GET /v1/x402/helius/wallet/funded-by/:wallet` | helius | mainnet | `$0.000500` | 100 credits |
+
+**Query params**
+
+None.
+
+**Example**
+
+```bash
+curl -G "https://gateway.agonx402.com/v1/x402/helius/wallet/funded-by/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
+```
+
+---
+
+## See also
+
+- [Solana RPC routes](/gateway/routes/solana-rpc) (including the Helius-only enhanced `getTransactionsForAddress`)
+- [Solana DAS routes](/gateway/routes/solana-das)
+- [Tokens API routes](/gateway/routes/tokens-api)
+- [Pricing](/gateway/pricing)
+- [Access modes](/gateway/access-modes)
+- [Integration guide](/gateway/integration-guide)

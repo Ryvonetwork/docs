@@ -3,7 +3,7 @@ title: "Pricing"
 description: "How paid routes are priced and how Tokens API auth-only routes fit in."
 ---
 
-Paid routes are priced directly from each upstream provider's public PAYG schedule. The gateway does not add a spread — the price you see is the price the upstream charges for one call, rounded up to the nearest USDC micro when necessary.
+Paid routes are priced from each upstream provider's public PAYG schedule **plus a flat gateway settlement surcharge of `$0.0006` per paid call**. This surcharge covers the Solana transaction cost required to settle each exact-payment request.
 
 All paid routes settle in **USDC on Solana mainnet**.
 
@@ -38,10 +38,10 @@ Per-method Compute Units used by the gateway:
 The per-call USDC price is:
 
 ```
-price_usd = ceil( (cu × 450_000) / 1_000_000 ) / 1_000_000
+price_usd = ( ceil( (cu × 450_000) / 1_000_000 ) + 600 ) / 1_000_000
 ```
 
-Where the numerator is in USDC micro-units (six decimal places).
+Where the numerator is in USDC micro-units (six decimal places), and `600` micro-USDC is the flat transaction-fee surcharge.
 
 ## Helius — per-credit pricing
 
@@ -62,6 +62,7 @@ Per-method credits used by the gateway:
 | `getSignaturesForAddress` | 1 |
 | `getTokenAccountsByOwner` | 1 |
 | `getProgramAccounts` | 10 |
+| `getTransactionsForAddress` | 50 |
 
 ### DAS
 
@@ -71,11 +72,26 @@ Per-method credits used by the gateway:
 | `getAssetsByOwner` | 10 |
 | `searchAssets` | 10 |
 
+### Helius Wallet API
+
+Helius Wallet API routes are available on mainnet and devnet path families. Every route costs the same flat amount.
+
+| Method | Credits |
+| --- | --- |
+| `identity` | 100 |
+| `batchIdentity` | 100 |
+| `balances` | 100 |
+| `history` | 100 |
+| `transfers` | 100 |
+| `fundedBy` | 100 |
+
 Per-call USDC price:
 
 ```
-price_usd = ceil( (credits × 5_000_000) / 1_000_000 ) / 1_000_000
+price_usd = ( ceil( (credits × 5_000_000) / 1_000_000 ) + 600 ) / 1_000_000
 ```
+
+Again, `600` micro-USDC is the fixed surcharge applied to every paid route.
 
 ## Tokens API — no per-call price
 
@@ -100,3 +116,4 @@ Clients that use `@x402/fetch` or any x402 library will pick up the price automa
 - [Access modes](/gateway/access-modes)
 - [Solana RPC routes](/gateway/routes/solana-rpc)
 - [Solana DAS routes](/gateway/routes/solana-das)
+- [Helius Wallet API routes](/gateway/routes/helius-wallet)

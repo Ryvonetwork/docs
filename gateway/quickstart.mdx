@@ -20,6 +20,10 @@ You can follow along with plain `curl` to understand the wire format, then switc
 The live gateway settles on **Solana mainnet**. Keep the wallet funded with only as much USDC as you intend to spend while testing.
 </Warning>
 
+<Info>
+For every paid route, the advertised price includes the upstream PAYG cost **plus a fixed `$0.0006` gateway settlement surcharge** (to cover the on-chain settlement transaction fee).
+</Info>
+
 ## 1. Confirm the gateway is live
 
 ```bash

@@ -21,7 +21,7 @@ All Solana RPC routes share the same shape:
 - **Payment asset:** USDC mainnet mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` (6 decimals)
 - **Rate limit:** `50 rps` per `provider:cluster:rpc` scope
 
-All six RPC methods are supported on every `cluster × provider` cell.
+The first six RPC methods (`getBalance`, `getAccountInfo`, `getTransaction`, `getSignaturesForAddress`, `getTokenAccountsByOwner`, `getProgramAccounts`) are supported on every `cluster × provider` cell. `getTransactionsForAddress` is an enhanced Helius-only RPC method, so it only exists on the `helius` provider cells.
 
 Prices come from the upstream PAYG schedules:
 
@@ -221,9 +221,59 @@ curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getP
 
 ---
 
+## `getTransactionsForAddress`
+
+Helius-only enhanced transaction history with filtering, sorting, and keyset pagination for any address. Unlike `getSignaturesForAddress`, this method returns either full parsed transactions or signature metadata, and supports server-side filters (`slot`, `blockTime`, `signature`, `status`, `tokenAccounts`) plus a `paginationToken` for deterministic cursoring in either `asc` or `desc` direction.
+
+| Path | Provider | Cluster | Price (USD) | Cost unit |
+| --- | --- | --- | --- | --- |
+| `POST /v1/x402/solana/mainnet/helius/rpc/getTransactionsForAddress` | helius | mainnet | `$0.000250` | 50 credits |
+| `POST /v1/x402/solana/devnet/helius/rpc/getTransactionsForAddress` | helius | devnet | `$0.000250` | 50 credits |
+
+**Params**
+
+| Index | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `params[0]` | `string` | yes | Address (base58). |
+| `params[1]` | `object` | no | Config object (see below). |
+
+`params[1]` config fields (all optional):
+
+- `transactionDetails` — `"signatures"` (default) or `"full"`.
+- `sortOrder` — `"desc"` (default) or `"asc"`.
+- `commitment` — `"confirmed"` or `"finalized"`.
+- `minContextSlot` — non-negative integer.
+- `limit` — 1..1000 when `transactionDetails="signatures"`, 1..100 when `transactionDetails="full"`.
+- `paginationToken` — opaque cursor returned from the previous response.
+- `encoding` — `"json"`, `"jsonParsed"`, `"base58"`, `"base64"` (applies when `transactionDetails="full"`).
+- `maxSupportedTransactionVersion` — non-negative integer.
+- `filters` — object supporting `slot` (`gte`/`gt`/`lte`/`lt`), `blockTime` (same plus `eq`), `signature` (lexicographic ranges), `status` (`succeeded`/`failed`/`any`), and `tokenAccounts` (`none`/`balanceChanged`/`all`).
+
+**Example**
+
+```bash
+curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getTransactionsForAddress \
+  -H "Content-Type: application/json" \
+  -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
+  -d '{
+    "params":[
+      "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY",
+      {
+        "transactionDetails":"signatures",
+        "sortOrder":"desc",
+        "limit":100,
+        "filters":{"status":"succeeded"}
+      }
+    ]
+  }'
+```
+
+---
+
 ## See also
 
 - [Solana DAS routes](/gateway/routes/solana-das)
+- [Helius Wallet API routes](/gateway/routes/helius-wallet)
 - [Tokens API routes](/gateway/routes/tokens-api)
 - [Pricing](/gateway/pricing)
 - [Access modes](/gateway/access-modes)
