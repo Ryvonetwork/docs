@@ -6,7 +6,7 @@ description: "Make your first paid call to the live Agon Gateway in minutes."
 This quickstart walks through the two things every x402 gateway integration needs:
 
 1. An unpaid probe to inspect the `402 Payment Required` challenge.
-2. A real call that completes the x402 flow — either paying with USDC (`exact`) or signing in with a wallet (`siwx`).
+2. A real call that completes the x402 flow, either paying with USDC (`exact`) or signing in with a wallet (`siwx`).
 
 You can follow along with plain `curl` to understand the wire format, then switch to `@x402/fetch` in TypeScript for a real integration.
 
@@ -15,7 +15,7 @@ For Agon payment-channel routes under `/v1/agon-channel/...`, use the channel fl
 ## Prerequisites
 
 - A Solana mainnet wallet with a small USDC balance and a little SOL for fees.
-- The wallet must be **different** from the gateway's `payTo` wallet — x402 `exact` SVM will reject a self-transfer.
+- The wallet must be **different** from the gateway's `payTo` wallet, x402 `exact` SVM will reject a self-transfer.
 - Node.js 20+ if you use the TypeScript example below.
 
 <Warning>
@@ -39,7 +39,7 @@ curl https://gateway.agonx402.com/healthz
 curl https://gateway.agonx402.com/v1/catalog | jq '.routes | length'
 ```
 
-Every live route — including its price, access mode, input schema, and output schema — is listed in the catalog. See [Catalog](/gateway/catalog) for the full response shape.
+Every live route, including its price, access mode, input schema, and output schema, is listed in the catalog. See [Catalog](/gateway/catalog) for the full response shape.
 
 ## 3. Inspect a `402` challenge
 
@@ -102,7 +102,7 @@ const gatewayFetch = wrapFetchWithPayment(fetch, {
   },
 });
 
-// Paid route — pays in USDC on Solana mainnet
+// Paid route - pays in USDC on Solana mainnet
 const paid = await gatewayFetch(
   "https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
   {
@@ -116,7 +116,7 @@ const paid = await gatewayFetch(
 console.log("result:", (await paid.json()).result);
 console.log("settlement tx:", paid.headers.get("x-payment-response"));
 
-// Auth-only Tokens route — no USDC is transferred
+// Auth-only Tokens route - no USDC is transferred
 const tokens = await gatewayFetch(
   "https://gateway.agonx402.com/v1/x402/tokens/assets/search?q=solana&limit=5",
 );

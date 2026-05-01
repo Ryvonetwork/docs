@@ -1,15 +1,15 @@
 ---
 title: "Security Properties"
-description: "The concrete on-chain checks that make V4's settlement paths safe to integrate."
+description: "The concrete on-chain checks that make settlement paths safe to integrate."
 ---
 
-Agon V4 tightened the parts of the protocol that matter most for permanent identities, permanent channels, and off-chain signed settlement. This page covers the checks builders care about most.
+Agon enforces strict checks around permanent identities, bucketed channels, and off-chain signed settlement. This page covers the checks builders care about most.
 
 ## Deployment-scoped signing domain
 
 Every signed message includes a 16-byte `message_domain`.
 
-In V4, `message_domain` is derived **inside the program** from:
+`message_domain` is derived **inside the program** from:
 
 1. a fixed Agon domain tag
 2. the program ID
@@ -19,7 +19,7 @@ This means the signing domain is bound to the exact deployment. It cannot be set
 
 ## Distinct chain IDs per environment
 
-Mainnet, devnet, testnet, and localnet use distinct chain IDs in V4. Because `message_domain` depends on `chain_id`, the derived domain differs across environments by construction.
+Mainnet, devnet, testnet, and localnet use distinct chain IDs. Because `message_domain` depends on `chain_id`, the derived domain differs across environments by construction.
 
 The practical consequence: a commitment signed for devnet cannot be replayed on mainnet, and vice versa, even if the program ID were otherwise identical.
 
@@ -27,7 +27,7 @@ See [Deployment](/reference/deployment) for the specific chain IDs and message d
 
 ## Permanent participants and permanent channels
 
-V4 removed participant recycling and channel close-and-reopen flows. This eliminates a whole class of replay complexity:
+The protocol removed participant recycling and channel close-and-reopen flows. This eliminates a whole class of replay complexity:
 
 - `participant_id` values do not get reused.
 - There is no reopened payment channel for an old signed message to target.
@@ -37,12 +37,12 @@ V4 removed participant recycling and channel close-and-reopen flows. This elimin
 
 Settlement paths do not trust arbitrary program-owned accounts just because they deserialize correctly.
 
-V4 re-derives and verifies the canonical PDA for every participant and channel account passed in — including accounts that arrive through `remaining_accounts`. This matters most in `settle_commitment_bundle` and `settle_clearing_round`, where many accounts are passed dynamically.
+The program re-derives and verifies canonical bucket PDAs for every participant and channel account passed in, including accounts that arrive through `remaining_accounts`. This matters most in `settle_commitment_bundle` and `settle_clearing_round`, where many accounts are passed dynamically.
 
 Concretely, the program checks:
 
-- `ParticipantAccount` PDAs against `["participant", owner]`
-- `ChannelState` PDAs against `["channel-v2", payer_id (u32 LE), payee_id (u32 LE), token_id (u16 LE)]`
+- participant bucket / owner-index bucket addresses against their seed rules
+- channel bucket addresses against `["channel-bucket-v2", token_id, bucket_id]` and canonical lane mapping
 
 A passed account that is not the canonical PDA is rejected with `ChannelNotInitialized` or `ParticipantNotFound`.
 
@@ -50,30 +50,26 @@ A passed account that is not the canonical PDA is rejected with `ChannelNotIniti
 
 Both unilateral commitments and cooperative rounds must move channel state strictly forward.
 
-If a signed message tries to settle to a cumulative amount that is less than or equal to the current `settled_cumulative`, the program rejects it with `CommitmentAmountMustIncrease`. This is both the replay-protection mechanism for the hot path and the rule that makes "keep only the newest commitment" a safe strategy off-chain.
-
-## Front-run resistance on settlement submission
-
-Only the payee or an explicitly-named `authorized_settler` may submit a unilateral commitment. This prevents a payer from front-running settlement of its own commitment to manipulate balance ordering. A violation returns `UnauthorizedSettler`.
+If a signed message tries to settle to a cumulative amount that is less than or equal to the current `settled_cumulative`, the program rejects it with `CommitmentAmountMustIncrease`. This is both the replay-protection mechanism for off-chain commitments and the rule that makes "keep only the newest commitment" a safe strategy off-chain.
 
 ## Balanced clearing rounds
 
 `settle_clearing_round` requires that the net flow sums across the included participants balance correctly. Rounds with inconsistent deltas are rejected with `NetFlowImbalance`. Participants whose final net position is negative must hold enough total balance to cover it; the program uses saturating checks and returns `InsufficientBalance` or `NetPositionOverflow` on failure.
 
-## Ed25519 verification integrity
+## Signature verification integrity
 
-Every settlement instruction re-reads the Ed25519 instruction data and verifies:
+Settlement instructions verify signatures and message structure before state writes:
 
-1. The Ed25519 program instruction is present and self-contained.
-2. The signature count matches the expected number of signers.
-3. Each signed message parses as a valid `agon-cmt-v5` or `agon-round-v4` body.
-4. The Ed25519 instruction is not being called from a CPI that could mask its provenance (`CpiNotAllowed`).
+1. Commitment signatures are validated against the exact `agon-cmt-v5` body.
+2. Clearing-round aggregate signatures are validated against the exact round body.
+3. Each signed message parses as a structurally valid protocol message.
+4. Settlement instructions are not called via CPI (`CpiNotAllowed`).
 
 This prevents transaction-composition attacks that rely on passing pre-verified but unrelated signatures.
 
 ## Timelocked channel maintenance
 
-V4 places a timelock in front of actions that would otherwise surprise the other side of the relationship:
+The protocol places a timelock in front of actions that would otherwise surprise the other side of the relationship:
 
 1. unlocking channel-specific locked funds
 2. rotating the channel signing key
@@ -83,7 +79,7 @@ Each of these requires a request step and an execution step separated by the con
 
 ## Self-channel rejection
 
-V4 explicitly rejects self-channels. This prevents a payer from creating a channel to itself and using settlement to bypass the unlock timing model. A violation returns `SelfChannelNotAllowed`.
+The protocol explicitly rejects self-channels. This prevents a payer from creating a channel to itself and using settlement to bypass the unlock timing model. A violation returns `SelfChannelNotAllowed`.
 
 ## Token-registration safety
 

@@ -9,9 +9,9 @@ Agon is not a replacement for every payment rail it resembles. It overlaps with 
 
 Agon's design is aimed at a specific shape of payment: repeated, high-frequency, machine-to-machine commerce where settling every interaction as its own on-chain transfer is too expensive. Several systems target pieces of that problem:
 
-- **Exact per-payment settlement (x402)** — moves authorization to HTTP but still settles each payment on-chain. Works well for occasional, high-value payments. Breaks on high-frequency machine commerce.
-- **Lightning** — moves authorization off-chain using bilateral payment channels and routes value across a network. Strong fit for trust-minimized internet money; different shape than "this payer and this payee transact constantly."
-- **Managed micropayment rails** — offer cheap per-call settlement by concentrating custody and coordination with a single operator.
+- **Exact per-payment settlement (x402)** - moves authorization to HTTP but still settles each payment on-chain. Works well for occasional, high-value payments. Breaks on high-frequency machine commerce.
+- **Lightning** - moves authorization off-chain using bilateral payment channels and routes value across a network. Strong fit for trust-minimized internet money; different shape than "this payer and this payee transact constantly."
+- **Managed micropayment rails** - offer cheap per-call settlement by concentrating custody and coordination with a single operator.
 
 ## Where Agon fits
 
@@ -20,7 +20,7 @@ Agon assumes:
 - The same parties will pay each other many times.
 - Every interaction is a direct relationship between a known payer and a known payee (not a multi-hop route).
 - Settlement density should compress as relationships scale.
-- The protocol itself should stay neutral — operators can be built on top, but the clearing substrate shouldn't require one.
+- The protocol itself should stay neutral, operators can be built on top, but the clearing substrate should not require one.
 
 This combination isn't better than every alternative; it's a specific tradeoff. The comparisons in this section describe those tradeoffs concretely.
 
@@ -30,4 +30,3 @@ This combination isn't better than every alternative; it's a specific tradeoff. 
 - [Lightning](/comparisons/lightning)
 - [Managed rails](/comparisons/managed-rails)
 - [Motivation](/thesis/motivation)
-- [Why not fee-per-payment](/thesis/why-not-fee-per-payment)

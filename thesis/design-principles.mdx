@@ -13,13 +13,13 @@ Funds live inside program-owned accounts. Operators, facilitators, and submitter
 - Settlement can only move balances according to verified signed messages.
 - No operator, authority, or upgrade path can drain user balances outside these rules.
 
-This is the property that separates Agon from managed payment rails. The convenience features layered above it — delegated submission, operator hubs, compliance — never require surrendering custody to use the settlement layer.
+This is the property that separates Agon from managed payment rails. The convenience features layered above it, operator hubs and compliance tooling, never require surrendering custody to use the settlement layer.
 
 ## Execution off-chain, settlement on-chain
 
-The hot path is a signed cumulative commitment. The cold path is an on-chain settlement transaction.
+The execution path is a signed cumulative commitment. The settlement path is an on-chain transaction.
 
-- A commitment says *"this lane is authorized up to cumulative amount X"* — not *"charge Y now."*
+- A commitment says *"this lane is authorized up to cumulative amount X"*, not *"charge Y now."*
 - The payee holds the newest valid commitment and decides when to settle.
 - The program enforces `committed_amount > settled_cumulative` on settlement so only monotonic forward movement is accepted.
 
@@ -27,7 +27,7 @@ This split is what allows one settlement to discharge many underlying payments.
 
 ## Permanent identities, permanent channels
 
-V4 intentionally avoids participant recycling and channel close-and-reopen:
+The protocol intentionally avoids participant recycling and channel close-and-reopen:
 
 - A wallet registers once as a participant and keeps its `participant_id` for the life of the deployment.
 - One payment channel exists per `payer_id + payee_id + token_id` triple. Once created, it stays.
@@ -68,9 +68,8 @@ Agon treats these as policy choices on top of a common settlement base rather th
 
 ## Operators are useful but not controlling
 
-`authorized_settler`, bundle submission, and operator hubs all make the protocol more practical to operate at scale. None of them are required to keep balances safe.
+Bundle submission and operator hubs make the protocol more practical to operate at scale. None of them are required to keep balances safe.
 
-- An operator can submit on behalf of a payee, but cannot change the amount, the payer, or the lane identified in the signed message.
 - An operator can propose a clearing round, but every participant must sign the shared round message.
 - An operator can coordinate routing, but balances continue to move only through protocol instructions.
 
@@ -78,17 +77,17 @@ This keeps the operator layer open and competitive. Any team can run a hub on to
 
 ## Small, auditable surface
 
-V4 keeps the on-chain program deliberately compact:
+The on-chain program stays deliberately compact:
 
-- Four primary account types: `GlobalConfig`, `TokenRegistry`, `ParticipantAccount`, `ChannelState`.
-- Two signed message types: `agon-cmt-v5` and `agon-round-v4`.
+- Global singletons plus bucketed participant and channel state.
+- Two signed message types: `agon-cmt-v5` and `agon-round`.
 - Three settlement instructions: `settle_individual`, `settle_commitment_bundle`, `settle_clearing_round`.
 
 Everything else is either administrative (registration, config, tokens) or lifecycle (deposits, withdrawals, lane locks, signer rotation). A smaller surface is easier to reason about, easier to audit, and easier to integrate correctly.
 
 ## Where to read next
 
-- [Motivation](/thesis/motivation) — why this model exists
-- [Trust model](/security/trust-model) — what the protocol guarantees
-- [Security properties](/security/properties) — the specific on-chain checks
-- [Protocol overview](/getting-started/protocol-overview) — how the pieces connect in V4
+- [Motivation](/thesis/motivation) - why this model exists
+- [Trust model](/security/trust-model) - what the protocol guarantees
+- [Security properties](/security/properties) - the specific on-chain checks
+- [Protocol overview](/getting-started/protocol-overview) - how the pieces connect

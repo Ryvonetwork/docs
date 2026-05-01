@@ -43,7 +43,7 @@ const program = anchor.workspace.agonProtocol as Program<AgonProtocol>;
 
 ## 2. Derive the PDAs
 
-You will use the same PDA scheme throughout V4, so define these helpers once:
+You will use deterministic PDA helpers throughout the protocol flow, so define these helpers once:
 
 ```ts
 const findParticipantPda = (owner: PublicKey) =>
@@ -215,9 +215,9 @@ function createCommitmentMessage(params: {
   tokenId: number;
   committedAmount: anchor.BN;
   messageDomain: Buffer;
-  authorizedSettler?: PublicKey;
+  // no delegated submitter field
 }): Buffer {
-  const flags = params.authorizedSettler ? 1 : 0;
+  const flags = 0;
 
   const bodyParts = [
     Buffer.from(encodeCompactU64(BigInt(params.payerId))),
@@ -225,10 +225,6 @@ function createCommitmentMessage(params: {
     new anchor.BN(params.tokenId).toArrayLike(Buffer, "le", 2),
     Buffer.from(encodeCompactU64(BigInt(params.committedAmount.toString()))),
   ];
-
-  if (params.authorizedSettler) {
-    bodyParts.push(params.authorizedSettler.toBuffer());
-  }
 
   return Buffer.concat([
     Buffer.from([0x01, 0x05]),
@@ -270,12 +266,12 @@ const ed25519Ix = Ed25519Program.createInstructionWithPrivateKey({
 The signer above must match the channel's current `authorized_signer`. This key signs new cumulative payment amounts for that channel. By default it is the payer wallet that created the channel; if the channel uses a different signing key, that key must sign here instead.
 
 <Tip>
-  `authorized_signer` signs the payment update. `authorized_settler` may submit the signed update on-chain. They are separate roles — see [Authorized settler](/core-concepts/authorized-settler).
+  `authorized_signer` signs the payment update. Settlement submitter logic stays outside the signed commitment body.
 </Tip>
 
 ## 9. Submit `settle_individual`
 
-The payee, or an `authorized_settler` named inside the signed message, submits the settlement transaction:
+The payee submits the settlement transaction:
 
 ```ts
 await program.methods
@@ -302,7 +298,7 @@ After settlement:
 3. The payee balance has increased by the same amount.
 4. Any locked funds used by the settlement have been consumed first.
 
-If an operator also needs to be paid, model that as a separate channel payment rather than as a fee field inside this message — see [Operator payment](/core-concepts/operator-hubs#operator-payment-is-separate).
+If an operator also needs to be paid, model that as a separate channel payment rather than as a fee field inside this message. See [Operator payment](/core-concepts/operator-hubs#operator-payment-is-separate).
 
 That is the full direct settlement flow.
 
@@ -312,13 +308,10 @@ That is the full direct settlement flow.
   <Card title="Bundle settlement" icon="layer-group" href="/settlement-modes/bundle-settlement">
     Settle many payers' commitments for one payee in a single transaction.
   </Card>
-  <Card title="Authorized settler" icon="user-shield" href="/core-concepts/authorized-settler">
-    Let an operator submit on behalf of the payee without changing the signed message.
-  </Card>
   <Card title="Cooperative clearing" icon="circle-nodes" href="/settlement-modes/clearing-rounds">
     Compress many payments across many participants into one round.
   </Card>
   <Card title="Message formats" icon="code" href="/reference/messages">
-    The exact byte layout of `agon-cmt-v5` and `agon-round-v4`.
+    The exact byte layout of `agon-cmt-v5` and cooperative round messages.
   </Card>
 </CardGroup>

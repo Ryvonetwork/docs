@@ -1,6 +1,6 @@
 ---
 title: "Tokens API Routes"
-description: "Every wallet-authenticated Tokens API v1 route — path, params, constraints, and example."
+description: "Every wallet-authenticated Tokens API v1 route - path, params, constraints, and example."
 ---
 
 Tokens API routes proxy [Tokens API](https://tokens.xyz) v1 with a server-side API key held by the gateway. Clients authenticate per request with a Solana wallet signature using the x402 **sign-in-with-x** (SIWX) extension.
@@ -9,7 +9,7 @@ Tokens API routes proxy [Tokens API](https://tokens.xyz) v1 with a server-side A
 
 All Tokens routes share the same shape:
 
-- **Access mode:** `siwx` (auth-only — **no USDC is transferred**)
+- **Access mode:** `siwx` (auth-only - **no USDC is transferred**)
 - **Price:** `$0.00` per request
 - **Auth networks:** `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` (mainnet), `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` (devnet)
 - **Auth header:** `SIGN-IN-WITH-X`

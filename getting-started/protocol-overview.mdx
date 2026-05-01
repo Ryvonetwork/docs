@@ -1,31 +1,31 @@
 ---
 title: "Protocol Overview"
-description: "A builder-first tour of the V4 protocol: accounts, messages, and settlement paths."
+description: "A builder-first tour of protocol accounts, messages, and settlement paths."
 ---
 
-Agon V4 decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
+Agon decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
 
 Each wallet registers once as a participant and keeps the same `participant_id` for the life of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer may optionally lock funds to that channel if the relationship needs guaranteed payment capacity.
 
 ## On-chain objects
 
-V4 exposes four primary account types:
+The current architecture uses global singletons plus bucketed participant and channel state:
 
 | Account | What it stores | Why it exists |
 | --- | --- | --- |
 | `GlobalConfig` | Authority, fee settings, chain ID, derived `message_domain`, timelock policy | Defines the deployment and the signing domain |
 | `TokenRegistry` | Allowlisted settlement tokens | Makes token support explicit rather than implicit |
-| `ParticipantAccount` | Stable `participant_id`, token balances, withdrawal state, inbound-channel policy | Gives every wallet one durable protocol identity |
-| `ChannelState` | One directed channel's token, payer, payee, settled cumulative, locked funds, signer state | Tracks the durable relationship between one payer and one payee |
+| `ParticipantBucket` + `OwnerIndexBucket` | Participant slots, balances, policy, BLS key metadata, owner->participant mapping | Scales participant state while preserving deterministic lookup |
+| `ChannelBucket` | Directional lane state for participant pairs per token | Tracks cumulative settlement, locks, and signer state per lane |
 
 Full field-level layouts are on the [Account layouts](/reference/accounts) reference.
 
 ## Signed messages
 
-V4 uses exactly two signed message formats:
+Agon uses two signed message formats:
 
-- **`agon-cmt-v5`** — the unilateral cumulative commitment for one channel
-- **`agon-round-v4`** — the cooperative clearing-round message for several participants
+- **`agon-cmt-v5`** - the unilateral cumulative commitment for one channel
+- **`agon-round`** - the cooperative clearing-round body for several participants
 
 Both messages embed the deployment-scoped `message_domain`, so a signature for one environment does not verify on another. Full byte-level layouts are on the [Message formats](/reference/messages) reference.
 
@@ -35,9 +35,9 @@ Those two messages feed three settlement instructions:
 
 | Mode | Instruction | When to use |
 | --- | --- | --- |
-| Direct | `settle_individual` | One payer, one payee — the simplest path |
+| Direct | `settle_individual` | One payer, one payee - the simplest path |
 | Bundle | `settle_commitment_bundle` | One payee aggregating many payers' commitments in one token |
-| Cooperative clearing | `settle_clearing_round` | Several participants co-signing one shared round so payments net before balance changes are applied |
+| Cooperative clearing | `settle_clearing_round` | Several participants co-signing one shared round so many lanes advance together |
 
 All three settle into the same shared vault and the same participant balances.
 
@@ -65,7 +65,7 @@ Agon keeps signed payment updates off-chain until settlement. Most integrations 
 
 Only the newest valid state needs to reach the chain.
 
-## Why V4 uses permanent identities and permanent channels
+## Why Agon uses permanent identities and persistent lanes
 
 Agon intentionally uses stable identities and permanent channels. The tradeoff is more long-lived on-chain state, but the protocol becomes much easier to work with:
 
@@ -81,7 +81,7 @@ For the rationale, see [Design principles](/thesis/design-principles).
 
 - Use **direct settlement** when one payer and one payee need the smallest possible surface and each lane can settle on its own.
 - Use **bundle settlement** when one payee collects signed commitments from many payers in the same token and wants one transaction instead of many.
-- Use **cooperative clearing** when several parties are willing to co-sign one shared round so payments inside the group can cancel out before balances are updated.
+- Use **cooperative clearing** when several parties are willing to co-sign one shared round so many lanes can be advanced in one transaction.
 
 See [Settlement modes](/settlement-modes/overview) for the tradeoffs side by side.
 

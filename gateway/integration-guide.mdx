@@ -172,10 +172,10 @@ Because x402 paid routes advertise `priceUsd`, channel routes advertise `priceTo
 
 See [Payment headers reference](/gateway/reference/payment-headers) for the full list of headers and error shapes. In brief:
 
-- `400` — invalid input (guardrails violated, malformed body or query params). No settlement.
-- `402` — payment or SIWX challenge. Your x402 client library retries automatically.
-- `429` — rate limited. Back off; `retryAfterMs` is included in the body.
-- `5xx` — upstream or facilitator failure. No settlement on failed paid requests.
+- `400` - invalid input (guardrails violated, malformed body or query params). No settlement.
+- `402` - payment or SIWX challenge. Your x402 client library retries automatically.
+- `429` - rate limited. Back off; `retryAfterMs` is included in the body.
+- `5xx` - upstream or facilitator failure. No settlement on failed paid requests.
 
 ## Base URL
 

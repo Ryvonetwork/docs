@@ -13,7 +13,7 @@ On-chain, Agon guarantees:
 2. **Only allowlisted tokens can be used** for settlement.
 3. **Signed settlement messages are checked against the deployment `message_domain`**, which is derived in-program from a fixed Agon tag, the program ID, and the chain ID.
 4. **Channels and participants are checked against canonical PDAs**, even when they arrive through `remaining_accounts`.
-5. **Settlement only moves cumulative state forward** — any message that does not increase `settled_cumulative` is rejected.
+5. **Settlement only moves cumulative state forward** - any message that does not increase `settled_cumulative` is rejected.
 6. **Withdrawals, channel unlocks, and signer rotations follow configured timelocks.**
 7. **Self-channels are explicitly rejected** to prevent using settlement to bypass unlock timing.
 
@@ -25,7 +25,7 @@ Agon does not try to remove every real-world tradeoff between participants. For 
 
 - One payee may require enough locked funds to make signed value effectively guaranteed; another may accept partial lockup or periodic settlement.
 - One integration may settle every few seconds; another may settle in larger batches.
-- One team may run settlement directly; another may use an operator through `authorized_settler`.
+- One team may run settlement directly; another may use an operator for relay and coordination.
 
 These are product and relationship choices on top of the same protocol. See [Trust and collateral](/core-concepts/trust-and-collateral) for the three levers each integration picks from.
 
@@ -39,9 +39,9 @@ In most Agon integrations, trust means one or more of:
 
 It does **not** mean the user has handed custody of protocol balances to a centralized ledger.
 
-## Operators and delegated submission
+## Operators and coordination
 
-Agon supports optional operator layers through `authorized_settler`. A delegated operator can:
+Agon supports optional operator layers. An operator can:
 
 - relay settlements
 - batch and schedule submissions
@@ -49,11 +49,9 @@ Agon supports optional operator layers through `authorized_settler`. A delegated
 - handle invoicing
 - apply compliance checks
 
-V4 keeps the payee's direct settlement path alongside delegated submission. `authorized_settler` is **additive**, not exclusive — the payee can always bypass the operator and settle directly. See [Authorized settler](/core-concepts/authorized-settler) for the full semantics.
-
 ## Authorities and upgrades
 
-Two administrative roles exist in V4, each with a two-step handoff:
+Two administrative roles exist, each with a two-step handoff:
 
 | Role | Controls | Handoff |
 | --- | --- | --- |
@@ -76,7 +74,6 @@ Agon is a public settlement and clearing protocol for repeated machine-payment r
 
 ## See also
 
-- [Security properties](/security/properties) — the specific on-chain checks
+- [Security properties](/security/properties) - the specific on-chain checks
 - [Design principles](/thesis/design-principles)
 - [Trust and collateral](/core-concepts/trust-and-collateral)
-- [Authorized settler](/core-concepts/authorized-settler)

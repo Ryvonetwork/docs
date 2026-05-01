@@ -3,19 +3,19 @@ title: "Agon Protocol"
 description: "A non-custodial clearing and settlement protocol for machine payments on Solana."
 ---
 
-Agon is a non-custodial clearing and settlement protocol for machine payments on Solana. It is designed for repeated, high-frequency relationships — agents paying APIs, services paying services, and operators routing payments between both — where settling every interaction as its own on-chain transfer is too expensive.
+Agon is a non-custodial clearing and settlement protocol for machine payments on Solana. It is designed for repeated, high-frequency relationships, agents paying APIs, services paying services, and operators routing payments between both, where settling every interaction as its own on-chain transfer is too expensive.
 
-Agon decouples **payment execution** from **settlement**. Participants exchange signed cumulative commitments off-chain in the hot path, then settle only the latest valid state on-chain. The same protocol supports direct settlement for one channel, bundled settlement for one payee, and cooperative clearing rounds across many participants.
+Agon decouples **payment execution** from **settlement**. Participants exchange signed cumulative commitments off-chain, then settle only the latest valid state on-chain. The same protocol supports direct settlement for one channel, bundled settlement for one payee, and cooperative clearing rounds across many participants and channels.
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
     Run your first payment flow against the live devnet deployment in minutes.
   </Card>
   <Card title="Protocol overview" icon="diagram-project" href="/getting-started/protocol-overview">
-    Understand the on-chain objects, signed messages, and settlement paths in V4.
+    Understand the on-chain objects, signed messages, and settlement paths.
   </Card>
   <Card title="TypeScript SDK" icon="code" href="/sdk">
-    Integrate Agon with [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk) — typed client, PDA helpers, and message builders.
+    Integrate Agon with [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk), typed client, PDA helpers, and message builders.
   </Card>
   <Card title="Live benchmarks" icon="chart-line" href="/benchmarks/live-devnet">
     See compression ratios, transaction sizes, and explorer links from devnet runs.
@@ -31,10 +31,15 @@ Agon decouples **payment execution** from **settlement**. Participants exchange 
 ## What Agon provides
 
 - **Permanent participant identities.** Every wallet registers once and keeps a stable `participant_id` for the life of the deployment.
-- **Permanent payment channels.** One one-way channel per `payer → payee → token` triple. No close-and-reopen lifecycle.
-- **Signed cumulative commitments.** `agon-cmt-v5` is the unilateral hot-path message. The payer signs the new cumulative target; the payee settles the delta later.
-- **Three settlement modes.** Direct settlement, bundle settlement, and cooperative clearing rounds — all settling into the same shared vault.
+- **Persistent payment lanes.** Each participant pair and token maps into a deterministic lane in channel buckets.
+- **Signed cumulative commitments.** `agon-cmt-v5` is the unilateral message. The payer signs the new cumulative target and the payee settles the delta later.
+- **Three settlement modes.** Direct settlement, bundle settlement, and cooperative clearing rounds, all settling into the same shared vault.
 - **Non-custodial by construction.** Balances live in program-owned accounts. Operators and facilitators can help submit settlements without holding funds.
+
+Agon compression works in two layers:
+
+- **Micropayments are compressed by payment channels.**
+- **Settlement is compressed by cooperative clearing rounds.**
 
 ## Who Agon is for
 
@@ -54,7 +59,7 @@ It is not intended to replace Solana's native transfer for one-off, high-value p
     Why machine payments benefit from a clearing layer, not more transactions.
   </Card>
   <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
-    The smallest useful integration — register, deposit, open a channel, sign, settle.
+    The smallest useful integration, register, deposit, open a channel, sign, settle.
   </Card>
   <Card title="Settlement modes" icon="layer-group" href="/settlement-modes/overview">
     Choose between direct, bundle, and cooperative clearing paths.

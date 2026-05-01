@@ -1,6 +1,6 @@
 ---
 title: "AgonClient"
-description: "Typed wrapper around the Agon Anchor program — one method per instruction."
+description: "Typed wrapper around the Agon Anchor program, one method per instruction."
 ---
 
 `AgonClient` is the primary entry point in [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk). It wires the generated IDL to an `AnchorProvider` and exposes one typed method for every instruction in the [on-chain program](/reference/instructions). Under the hood, each method returns an Anchor `MethodsBuilder`, so you can extend the call with `.preInstructions()`, `.postInstructions()`, `.signers()`, `.rpc()`, `.transaction()`, or `.instruction()` as needed.
@@ -13,7 +13,7 @@ import { AgonClient } from "@agonx402/sdk";
 
 const client = new AgonClient({
   provider: anchor.AnchorProvider.env(),
-  // optional — defaults to AGON_PROTOCOL_PROGRAM_ID from the IDL
+  // optional, defaults to AGON_PROTOCOL_PROGRAM_ID from the IDL
   // programId: new PublicKey("<override>"),
 });
 ```
@@ -22,7 +22,7 @@ const client = new AgonClient({
 
 | Field | Type | Required | Default |
 | --- | --- | --- | --- |
-| `provider` | `anchor.AnchorProvider` | yes | — |
+| `provider` | `anchor.AnchorProvider` | yes | N/A |
 | `programId` | `PublicKey` | no | `AGON_PROTOCOL_PROGRAM_ID` (from the packaged IDL) |
 
 The SDK also re-exports two lower-level helpers if you want to bring your own `Program`:
@@ -87,7 +87,7 @@ Each of the methods below returns an Anchor `MethodsBuilder<AgonProtocol, ...>`.
 
 ### `initializeProtocol(params)`
 
-Initialize `GlobalConfig` — only runnable once per deployment by the upgrade authority.
+Initialize `GlobalConfig`, only runnable once per deployment by the upgrade authority.
 
 ```ts
 await client
@@ -162,9 +162,9 @@ await client
 | Param | Notes |
 | --- | --- |
 | `owner` | Payer's owner key; the fee payer for the CPI. |
-| `payeeOwner` / `payeeAccount` | Either one is required — one is used to derive the other when omitted. |
+| `payeeOwner` / `payeeAccount` | Either one is required, one is used to derive the other when omitted. |
 | `tokenId` | The token the channel will settle. |
-| `authorizedSigner` | Optional delegated Ed25519 signer for commitments. See [Authorized settler](/core-concepts/authorized-settler). |
+| `authorizedSigner` | Optional delegated Ed25519 signer for commitments. |
 
 ### `deposit(params)`
 
@@ -200,7 +200,7 @@ await client
 
 ### `requestUnlockChannelFunds(params)` / `executeUnlockChannelFunds(params)`
 
-Two-phase unlock with the protocol's unlock timelock in between. Same parameter shape as `lockChannelFunds`, except `execute` doesn't take an amount — the whole requested unlock is finalised at once.
+Two-phase unlock with the protocol's unlock timelock in between. Same parameter shape as `lockChannelFunds`, except `execute` does not take an amount, the whole requested unlock is finalized at once.
 
 ### `requestWithdrawal(params)` / `executeWithdrawalTimelocked(params)` / `cancelWithdrawal(params)`
 
@@ -255,7 +255,7 @@ await client
 
 ### Settlement
 
-All three settlement flows take a `submitter` — the key that pays for the transaction and submits the Ed25519 pre-instruction.
+All three settlement flows take a `submitter`, the key that pays for the transaction and submits the signature pre-instruction.
 
 ```ts
 // Direct (one commitment)
@@ -318,4 +318,4 @@ Returns an Anchor `BN` so it composes with the other builders.
 
 ## Error handling
 
-Anchor raises its own error types for RPC and program errors. `AgonClient` doesn't wrap them — let them bubble up and inspect `error.error?.errorCode` / `error.logs` as usual. The canonical list of protocol error codes is on [Reference → Errors](/reference/errors).
+Anchor raises its own error types for RPC and program errors. `AgonClient` does not wrap them, let them bubble up and inspect `error.error?.errorCode` / `error.logs` as usual. The canonical list of protocol error codes is on [Reference -> Errors](/reference/errors).

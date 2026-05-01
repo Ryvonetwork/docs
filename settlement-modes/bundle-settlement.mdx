@@ -11,7 +11,7 @@ Each payer still signs its own `agon-cmt-v5` message for its own channel. The pa
 
 Without bundling, a provider receiving payments from many clients would submit one settlement transaction per payer. Bundle settlement lets the provider move several channels forward in a single transaction while keeping payer-side signing independent.
 
-It is **not** multilateral netting. Each channel still settles independently — the bundle only compresses transaction count and per-transaction overhead.
+It is **not** multilateral netting. Each channel still settles independently, the bundle only compresses transaction count and per-transaction overhead.
 
 ## Bundle requirements
 
@@ -79,7 +79,7 @@ The single Ed25519 pre-instruction contains all the payer signatures at once. So
 
 ## Operator payment inside a bundle
 
-If an operator also needs to be paid, model that payment as its own channel and settle it separately, or include it in a cooperative clearing round. Do **not** try to embed operator fees inside a bundle entry — `agon-cmt-v5` does not carry that field for good reasons. See [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
+If an operator also needs to be paid, model that payment as its own channel and settle it separately, or include it in a cooperative clearing round. Do **not** try to embed operator fees inside a bundle entry, `agon-cmt-v5` does not carry that field for good reasons. See [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
 
 ## When to use this path
 

@@ -1,6 +1,6 @@
 ---
 title: "Recipes"
-description: "End-to-end flows with @agonx402/sdk — register, fund, sign, settle, withdraw."
+description: "End-to-end flows with @agonx402/sdk, register, fund, sign, settle, withdraw."
 ---
 
 This page is the SDK-native version of [Your First Payment](/getting-started/first-payment). Everything is expressed in terms of [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk) helpers. If you want the low-level protocol walkthrough, start there.
@@ -161,12 +161,12 @@ await client
 ```
 
 <Tip>
-Hold on to Alice's signed `message`. Bob doesn't have to submit every one — he can keep stacking fresher messages and only submit the latest, since cumulative commitments supersede earlier ones.
+Hold on to Alice's signed `message`. Bob does not have to submit every one, he can keep stacking fresher messages and only submit the latest, since cumulative commitments supersede earlier ones.
 </Tip>
 
 ## 5. Bundle settlement
 
-Bob settles **multiple commitments** at once — typically many signed messages from Alice, or a mix of payers who have open channels with Bob.
+Bob settles **multiple commitments** at once, typically many signed messages from Alice, or a mix of payers who have open channels with Bob.
 
 ```ts
 const messages = [
@@ -190,9 +190,9 @@ await client
 
 The on-chain program walks each Ed25519 signature in order, finds the corresponding channel, and applies the new cumulative. The number passed as `count` must match the number of entries in the pre-instruction.
 
-## 6. Clearing round (multi-party netting)
+## 6. Clearing round (multi-party channel advancement)
 
-Clearing rounds compress a graph of obligations between N participants into a single transaction that every participant signs.
+Clearing rounds compress many channel settlements between N participants into a single transaction that every participant signs.
 
 ```ts
 const roundMessage = createClearingRoundMessage({
@@ -276,7 +276,7 @@ await client
 const ed25519Ix = createEd25519Instruction(signerKp, message);
 ```
 
-See [Authorized settler](/core-concepts/authorized-settler) for the full trust model, including the difference between `authorized_signer` and `authorized_settler` (a per-message optional field emitted by `createCommitmentMessage`).
+This delegation changes who signs commitments. It does not change custody or settlement guarantees.
 
 ## 9. Inbound channel policy
 

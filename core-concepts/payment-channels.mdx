@@ -1,11 +1,11 @@
 ---
 title: "Payment Channels"
-description: "How Agon V4 models one long-lived, one-way payment relationship."
+description: "How Agon models long-lived, directional payment lanes."
 ---
 
-In Agon V4, a payment channel is one one-way payment relationship from a payer to a payee for a specific token.
+In Agon, a payment channel is one directional payment relationship from a payer to a payee for a specific token.
 
-One permanent channel exists for each `payer_id + payee_id + token_id` triple. Each channel is stored in one `ChannelState` PDA under the `channel-v2` seed scheme.
+In V5, channel state is stored in channel buckets. Each participant pair and token maps to a canonical lane inside a deterministic bucket.
 
 ## Why one-way
 
@@ -15,15 +15,12 @@ Agon channels are intentionally unidirectional because the common case is unidir
 - one agent paying one tool
 - one service paying one provider
 
-The payer signs a unilateral cumulative message; the payee does not need to co-sign every off-chain update. When a relationship needs to send value in both directions, the two parties open two channels — one in each direction — and can later settle both together in a cooperative round.
+The payer signs a unilateral cumulative message; the payee does not need to co-sign every off-chain update. When a relationship needs to send value in both directions, the two parties open two channels, one in each direction, and can later settle both together in a cooperative round.
 
-## What `ChannelState` stores
+## What a lane stores
 
 | Field | Meaning |
 | --- | --- |
-| `token_id` | Settlement token for this channel |
-| `payer_id` | Participant that owes value on this channel |
-| `payee_id` | Participant that receives value on this channel |
 | `settled_cumulative` | Highest cumulative amount already settled |
 | `locked_balance` | Funds reserved for this channel |
 | `authorized_signer` | Key allowed to sign unilateral payment updates |
@@ -73,9 +70,7 @@ The timelock gives the payee time to settle recent commitments before the locked
 Each channel has one signing key for unilateral commitments. By default that is the payer wallet, but the payer can choose a different key at creation time or rotate it later.
 
 <Note>
-  The signing key is distinct from `authorized_settler`:
-  - `authorized_signer` signs new cumulative payment amounts.
-  - `authorized_settler` may submit a signed commitment on-chain.
+  `authorized_signer` signs new cumulative payment amounts. It is the only signing key role on unilateral commitments.
 </Note>
 
 Rotations are timelocked:
@@ -88,7 +83,7 @@ Until the rotation executes, the old signing key stays active. After it executes
 
 ## Why channels are permanent
 
-Older designs allowed channels to close and reopen. V4 removed that behavior.
+Older designs allowed channels to close and reopen. The current protocol removed that behavior.
 
 Permanent channels make the protocol easier to work with:
 
@@ -96,11 +91,11 @@ Permanent channels make the protocol easier to work with:
 2. Payment channels stay stable for off-chain services.
 3. The protocol has fewer lifecycle rules to handle.
 
-The tradeoff is more long-lived on-chain state. V4 accepts that tradeoff because the simpler semantics are worth it for machine-payment integrations.
+The tradeoff is more long-lived on-chain state. The protocol accepts that tradeoff because the simpler semantics are worth it for machine-payment integrations.
 
 ## See also
 
-- [Commitments](/core-concepts/commitments) — the signed messages that flow over channels
+- [Commitments](/core-concepts/commitments) - the signed messages that flow over channels
 - [Balances and withdrawals](/core-concepts/balances-and-withdrawals)
 - [Trust and collateral](/core-concepts/trust-and-collateral)
 - [Direct settlement](/settlement-modes/direct-settlement)

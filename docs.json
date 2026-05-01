@@ -19,7 +19,6 @@
               "index",
               "thesis/motivation",
               "thesis/design-principles",
-              "thesis/why-not-fee-per-payment",
               "thesis/roadmap"
             ]
           },
@@ -40,7 +39,6 @@
               "core-concepts/payment-channels",
               "core-concepts/commitments",
               "core-concepts/trust-and-collateral",
-              "core-concepts/authorized-settler",
               "core-concepts/operator-hubs",
               "core-concepts/yield-bearing-assets"
             ]
@@ -81,8 +79,7 @@
           {
             "group": "Examples",
             "pages": [
-              "demos/protocol-demo",
-              "demos/ows-gateway"
+              "demos/protocol-demo"
             ]
           },
           {
@@ -96,10 +93,15 @@
             ]
           },
           {
+            "group": "Agentic",
+            "pages": [
+              "reference/agentic-tools"
+            ]
+          },
+          {
             "group": "Reference",
             "pages": [
               "reference/deployment",
-              "reference/agentic-tools",
               "reference/instructions",
               "reference/messages",
               "reference/accounts",

@@ -9,7 +9,7 @@ This matters because Agon uses deferred settlement. Balances sit inside the prot
 
 ## The preferred token shape
 
-The best fit for V4 is a token whose balance stays fixed while its redemption value rises over time.
+The best fit for the current protocol is a token whose balance stays fixed while its redemption value rises over time.
 
 - You keep the same number of tokens.
 - Each token is worth more of the underlying asset later.
@@ -19,12 +19,12 @@ Assets like Maple's `syrupUSDC` point in that direction. This fits Agon's accoun
 
 ## Token design constraints
 
-V4 keeps participant balances and channel locks in fixed token amounts inside protocol state.
+The protocol keeps participant balances and channel locks in fixed token amounts inside protocol state.
 
 If the token itself rebases and changes balances underneath the protocol, the vault's token balance can drift away from the protocol's internal ledger unless the program adds explicit support for that behavior. That is why the right target for Agon is **not** *"any yield stablecoin"* but **fixed-balance yield assets**.
 
 <Note>
-  Token-2022 interest-bearing mints are conceptually close to this fixed-balance model because the stored balance stays unchanged and accrued value is calculated separately. V4 currently uses the original SPL Token program, so Token-2022 support is a roadmap item — see [Roadmap](/thesis/roadmap#token-2022-and-fixed-balance-yield-assets).
+  Token-2022 interest-bearing mints are conceptually close to this fixed-balance model because the stored balance stays unchanged and accrued value is calculated separately. The current deployment uses the original SPL Token program, so Token-2022 support remains a roadmap item. See [Roadmap](/thesis/roadmap#token-2022-and-fixed-balance-yield-assets).
 </Note>
 
 ## Why it matters for Agon
@@ -39,7 +39,7 @@ Yield-bearing stablecoins are useful in many settings, but they are particularly
 
 This depends on the trust model.
 
-Agon commitments are denominated in the **token itself**, not in the underlying base asset. If Alice signs a commitment for `0.01 yUSDG`, she is promising `0.01` shares — not a fixed amount of USDG.
+Agon commitments are denominated in the **token itself**, not in the underlying base asset. If Alice signs a commitment for `0.01 yUSDG`, she is promising `0.01` shares, not a fixed amount of USDG.
 
 - **In a fully collateralized channel**, the payee has an enforceable claim to those shares as soon as it receives a valid commitment (assuming it settles before the payer can release locked funds). It is fair to treat the future yield on those shares as the payee's from that point.
 - **In a trust-minimized relationship**, the payee still has a signed claim, but not the same enforceable position. If settlement happens later, the payee still receives the same number of shares, which still carry whatever value they have at that time. The difference is that the payee took timing and counterparty risk between signature and settlement.
@@ -56,7 +56,7 @@ const exchangeRate = 1.0245; // 1 yUSDG currently redeems for 1.0245 USDG
 const shareAmount = quoteInUsd / exchangeRate; // 0.00976086 yUSDG
 ```
 
-This is not a protocol concern — it is the ordinary pricing rule for any appreciating share token.
+This is not a protocol concern, it is the ordinary pricing rule for any appreciating share token.
 
 ## Yield math, honestly
 
@@ -92,12 +92,12 @@ That turns yield-bearing balances into part of the payment rail itself, rather t
 | Pricing | If your product is priced in dollars, you need a share-to-dollar conversion at quote time |
 | Issuer rules | Some products carry KYC, geographic limits, cooldowns, or redemption fees |
 | Token design | Rebasing assets are a poor fit for Agon's current accounting; fixed-balance assets fit better |
-| Token program support | V4 currently uses the original SPL Token program, not Token-2022 |
+| Token program support | Current deployment uses the original SPL Token program, not Token-2022 |
 | Trust model | Yield does not remove counterparty risk; it makes deferred settlement more useful when the relationship already works |
 
 ## Summary
 
-Think of a yield-bearing settlement asset as a way to make payment float productive. Agon does not create the yield — the token design does. Agon makes it practical to keep that asset inside a machine-payment system without forcing every interaction to settle immediately.
+Think of a yield-bearing settlement asset as a way to make payment float productive. Agon does not create the yield, the token design does. Agon makes it practical to keep that asset inside a machine-payment system without forcing every interaction to settle immediately.
 
 ## See also
 

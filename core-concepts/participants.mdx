@@ -1,9 +1,9 @@
 ---
 title: "Participants"
-description: "How permanent, wallet-bound protocol identities work in Agon V4."
+description: "How permanent, wallet-bound protocol identities work in Agon."
 ---
 
-Every wallet that uses Agon registers once as a participant. That registration binds one wallet to one stable `participant_id`. The mapping does not recycle, so off-chain systems can treat `wallet → participant_id` as stable for the life of the deployment.
+Every wallet that uses Agon registers once as a participant. That registration binds one wallet to one stable `participant_id`. The mapping does not recycle, so off-chain systems can treat `wallet -> participant_id` as stable for the life of the deployment.
 
 ## What a participant stores
 
@@ -21,7 +21,7 @@ The `token_balances` vector stores available balance, pending-withdrawal state, 
 
 ## Why participants are permanent
 
-V4 does not let participants close and recreate their accounts. This preserves three simple invariants:
+The protocol does not let participants close and recreate their accounts. This preserves three simple invariants:
 
 1. `participant_id` stays stable for the life of the deployment.
 2. Off-chain services can index users without worrying about ID reuse.

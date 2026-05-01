@@ -57,8 +57,8 @@ The fee recipient is a wallet configured in `GlobalConfig` and can be updated by
 
 Agon uses two administrative roles, both of which use a two-step pending/accept handoff:
 
-- **Config authority** — can update `fee_recipient`, `fee_bps`, `registration_fee_lamports`, and nominate a successor.
-- **Registry authority** — can register new settlement tokens in `TokenRegistry`.
+- **Config authority** - can update `fee_recipient`, `fee_bps`, `registration_fee_lamports`, and nominate a successor.
+- **Registry authority** - can register new settlement tokens in `TokenRegistry`.
 
 Neither authority can:
 
@@ -93,7 +93,7 @@ message_domain = SHA256(
 )[..16]
 ```
 
-Every signed `agon-cmt-v5` and `agon-round-v4` message carries this 16-byte domain, and the program rejects any message whose domain does not match `GlobalConfig.message_domain` for the executing deployment. See [Message formats](/reference/messages#message-domain).
+Every signed `agon-cmt-v5` and cooperative-round message carries this 16-byte domain, and the program rejects any message whose domain does not match `GlobalConfig.message_domain` for the executing deployment. See [Message formats](/reference/messages#message-domain).
 
 ## See also
 

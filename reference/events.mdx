@@ -160,7 +160,7 @@ Emitted by `settle_clearing_round`.
 | `total_gross` | `u64` |
 | `total_net_adjusted` | `u64` |
 
-`total_gross` is the sum of all cumulative deltas implied by the round. `total_net_adjusted` is the magnitude of the net residual flow actually applied on-chain — often dramatically smaller, especially in bilateral or near-balanced rounds.
+`total_gross` is the sum of all cumulative deltas implied by the round. `total_net_adjusted` is the participant-balance adjustment total recorded alongside full channel advancement in the round.
 
 ## Authority events
 

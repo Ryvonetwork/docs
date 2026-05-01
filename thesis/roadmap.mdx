@@ -1,19 +1,17 @@
 ---
 title: "Roadmap"
-description: "How the Agon protocol evolves beyond V4 without changing the core model."
+description: "How the Agon protocol evolves beyond V5 without changing the core model."
 ---
 
-V4 is the current production protocol. It already supports permanent identities, permanent channels, signed cumulative commitments, bundle settlement, and cooperative clearing rounds under Ed25519.
+V5 is the current production protocol. It supports permanent identities, bucketed participant and channel state, signed cumulative commitments, bundle settlement, and cooperative clearing rounds under BLS aggregation.
 
-The roadmap below describes directions that extend V4's reach without altering the separation of execution and settlement that makes the protocol work.
+The roadmap below describes directions that extend protocol reach without altering the separation of execution and settlement that makes the protocol work.
 
 ## BLS signature aggregation
 
-Today, cooperative rounds carry one Ed25519 signature per participant. The practical effect is that transaction size grows linearly with the number of co-signers, which caps the largest round that fits in one Solana transaction.
+BLS aggregation is now live in cooperative clearing. It changes **density**, not settlement semantics:
 
-BLS aggregation would change **density**, not semantics:
-
-- Many participant signatures collapse into a single aggregate signature.
+- Many participant signatures collapse into one aggregate signature.
 - The signed round body stays the same.
 - More participants and channels fit in a single cooperative transaction.
 
@@ -24,15 +22,20 @@ What BLS does **not** change:
 - Bundle settlement still works without cooperation.
 - Cooperation remains optional for any relationship.
 
-BLS is a future signature compression feature for denser cooperative rounds. It is not what makes the protocol work today.
+Observed dense rounds include:
+
+- 20 unique participants advancing 84 unique payment channels
+- 32 unique participants advancing 32 unique payment channels
+
+BLS increases cooperative settlement density while preserving cumulative channel advancement invariants.
 
 ## Token-2022 and fixed-balance yield assets
 
-V4 currently uses the original SPL Token program. Fixed-balance yield-bearing assets — Maple's `syrupUSDC` and similar products — fit the protocol's accounting model today because stored balances stay constant while redemption value rises over time.
+The current deployment uses the original SPL Token program. Fixed-balance yield-bearing assets, Maple's `syrupUSDC` and similar products, fit the protocol's accounting model because stored balances stay constant while redemption value rises over time.
 
 Token-2022 interest-bearing mints are conceptually close to this model on-chain. First-class Token-2022 support would require token-interface work across the vault accounts, deposit flow, and withdrawal flow, but does not change the signed-message or settlement surface.
 
-See [Yield-bearing assets](/core-concepts/yield-bearing-assets) for the current guidance on which token designs fit V4 cleanly.
+See [Yield-bearing assets](/core-concepts/yield-bearing-assets) for the current guidance on which token designs fit cleanly.
 
 ## Additional settlement tokens
 
@@ -47,7 +50,7 @@ Agon's base layer is intentionally minimal. Most of the usability improvements f
 - Bundle-collection and relay services.
 - Clearing-round proposers.
 - Monitoring, alerting, and invoicing.
-- Compliance and KYT integrations built above `authorized_settler`.
+- Compliance and KYT integrations built in operator tooling.
 
 These are natural places for independent teams to build on top of the protocol without changing how settlement works.
 
@@ -56,9 +59,9 @@ These are natural places for independent teams to build on top of the protocol w
 Across these directions, the core protocol model does not change:
 
 - Balances live in program-owned accounts.
-- Signed cumulative commitments remain the hot-path primitive.
+- Signed cumulative commitments remain the unilateral settlement primitive.
 - Direct settlement is always available as a fallback.
 - Cooperation is signalled by shared signed messages, not by operator custody.
 - `message_domain` remains deployment-scoped and derived in-program.
 
-Extensions should extend reach — more participants per round, more assets, better tooling — without relaxing those properties.
+Extensions should extend reach, more participants per round, more assets, better tooling, without relaxing those properties.

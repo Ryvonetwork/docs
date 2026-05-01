@@ -3,16 +3,14 @@ title: "Managed Rails"
 description: "How Agon differs from a managed micropayment rail built around a single operator."
 ---
 
-Managed micropayment rails — Circle Nanopayments is the most visible example — validate the core market thesis: machine commerce wants cheap, deferred settlement. Agon agrees with that thesis and differs on where trust and control live.
+Managed micropayment rails, Circle Nanopayments is the most visible example, validate the core market thesis: machine commerce wants cheap, deferred settlement. Agon agrees with that thesis and differs on where trust and control live.
 
 ## What a managed rail gives up
 
 A managed rail makes micropayments cheap by concentrating authorization and settlement inside a single operator. In exchange for that operational efficiency:
 
-- Balances typically sit inside the operator's accounts rather than in protocol state.
-- Participants authorize payments against the operator's ledger, not against a shared on-chain substrate.
 - Access to the rail depends on the operator's continued availability, pricing, and policy.
-- The operator chooses who can settle, when, and under what terms.
+- The operator decides whether your payment or payout is processed right now.
 
 For many commercial use cases this is an entirely reasonable trade. Users accept counterparty and policy risk in exchange for lower fees and smoother UX.
 
@@ -22,7 +20,6 @@ Agon is deliberately a **public clearing substrate** rather than a managed rail.
 
 Concretely:
 
-- Funds live in Agon's on-chain state, not inside an operator's ledger.
 - Any wallet can register as a participant. There is no central admission.
 - Multiple operators can exist simultaneously and compete.
 - No operator can unilaterally prevent a user from settling or withdrawing.
@@ -33,25 +30,26 @@ These are protocol-level guarantees. See [Trust model](/security/trust-model) an
 
 Agon does not reject operator-centric business models. It moves them up the stack.
 
-You can build a hub-style operator on top of Agon that looks very similar to a managed micropayment product:
+You can build a Circle-style nanopayment product on top of Agon:
 
 - A single brand, one UX, one SLA.
 - A coordinated matching layer that aggregates demand and provides "guaranteed capacity" experience for users.
 - A pricing and routing layer between users and providers.
+- A policy layer that chooses how and when to serve requests.
 
 The difference is that the **substrate under that operator stays open**:
 
 1. Many hubs can coexist.
-2. Balances remain in protocol state, not in the hub's ledger.
-3. Users and providers are not bound to one global operator just to access settlement.
+2. Users and providers are not bound to one global operator just to access settlement.
+3. Managed products can sit on top, but they are no longer the base settlement layer.
 
-See [Operator hubs](/core-concepts/operator-hubs) for the hub construction in detail, and [Authorized settler](/core-concepts/authorized-settler) for the specific delegation primitive that hubs typically use.
+For Circle specifically, the main contention is service-denial risk at the operator layer, not "funds are trapped forever." Permissionless withdrawal can still exist at the contract layer while service access remains policy-controlled.
 
 ## Summary
 
 - A managed rail optimizes for operational simplicity at the cost of operator neutrality.
 - Agon optimizes for operator neutrality and composability, and lets operators be built on top.
-- Both answers can be right — for different product constraints.
+- Both answers can be right, for different product constraints.
 
 ## See also
 

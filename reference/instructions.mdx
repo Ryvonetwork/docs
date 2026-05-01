@@ -3,7 +3,7 @@ title: "Instructions"
 description: "The full on-chain instruction surface of the current Agon protocol."
 ---
 
-This page lists every instruction the deployed Agon program exposes. Most integrations only need a small subset — see [Minimum useful subset](#minimum-useful-subset) at the bottom.
+This page lists every instruction the deployed Agon program exposes. Most integrations only need a small subset, see [Minimum useful subset](#minimum-useful-subset) at the bottom.
 
 ## Bootstrap and admin
 
@@ -96,7 +96,7 @@ This page lists every instruction the deployed Agon program exposes. Most integr
 ## Settlement
 
 <ResponseField name="settle_individual" type="instruction">
-  Settles one `agon-cmt-v5` message against one channel. The caller must be the payee or the `authorized_settler` named in the message. See [Direct settlement](/settlement-modes/direct-settlement).
+  Settles one `agon-cmt-v5` message against one channel. See [Direct settlement](/settlement-modes/direct-settlement).
 </ResponseField>
 
 <ResponseField name="settle_commitment_bundle" type="instruction">
@@ -104,7 +104,7 @@ This page lists every instruction the deployed Agon program exposes. Most integr
 </ResponseField>
 
 <ResponseField name="settle_clearing_round" type="instruction">
-  Settles one `agon-round-v4` message signed by the roster of participants, advancing many channels in one transaction and applying only the net residual balance changes. See [Clearing rounds](/settlement-modes/clearing-rounds).
+  Settles one cooperative clearing-round message signed by the roster of participants, advancing many channels in one transaction under BLS aggregate signature verification. See [Clearing rounds](/settlement-modes/clearing-rounds).
 </ResponseField>
 
 ## Minimum useful subset

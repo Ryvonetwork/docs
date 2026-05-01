@@ -3,7 +3,7 @@ title: "Accounts"
 description: "The on-chain account layouts used by the Agon protocol."
 ---
 
-Agon stores all protocol state in four account types, each held at a canonical PDA. This page describes their layouts, seeds, and roles.
+Agon stores protocol state in global singletons plus bucketed state accounts. This page describes the live bucket architecture and canonical PDA seeds.
 
 ## GlobalConfig
 
@@ -35,7 +35,7 @@ Singleton account holding the allowlist of supported settlement tokens.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `authority` | `Pubkey` | Registry authority — can register new tokens |
+| `authority` | `Pubkey` | Registry authority - can register new tokens |
 | `tokens` | `Vec<TokenEntry>` | Up to 198 entries |
 | `bump` | `u8` | PDA bump |
 | `pending_authority` | `Pubkey` | Nominated successor (two-step handoff) |
@@ -52,58 +52,73 @@ Each `TokenEntry` (51 bytes):
 
 A registered `(id, mint)` mapping is immutable. The registry authority cannot swap which mint a `token_id` refers to.
 
-## ParticipantAccount
+## Participant buckets
 
-One account per registered wallet. Holds all per-token balances and the inbound channel policy.
+Participant state is bucketed. A participant ID maps to one slot inside one `ParticipantBucket`.
 
-**Seeds:** `["participant", owner_pubkey]`
+**Seeds:** `["participant-bucket-v2", bucket_id (LE u32)]`
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `owner` | `Pubkey` | Wallet that owns this participant |
-| `participant_id` | `u32` | Permanent protocol identity |
-| `token_balances` | `Vec<TokenBalance>` | Up to 16 entries |
-| `bump` | `u8` | PDA bump |
-| `inbound_channel_policy` | `u8` | Permissionless / ConsentRequired / Disabled |
-| `_reserved` | `[u8; 7]` | Future expansion |
+Live sizing constants:
 
-Each `TokenBalance`:
+- `PARTICIPANT_BUCKET_SLOT_COUNT = 9`
+- `MAX_BUCKET_TOKEN_BALANCES = 16`
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `token_id` | `u16` | Registered token |
-| `available_balance` | `u64` | Spendable balance |
-| `withdrawing_balance` | `u64` | Amount queued for withdrawal |
-| `withdrawal_unlock_at` | `i64` | Timelock unlock timestamp |
-| `withdrawal_destination` | `Pubkey` | Fixed destination token account |
+Routing from `participant_id`:
 
-Participant identities are permanent: the `participant_id` never changes, and the PDA is bound to `owner`. See [Participants](/core-concepts/participants).
+- `bucket_id = participant_id / 9`
+- `slot_index = participant_id % 9`
 
-## ChannelState
+Each participant slot stores:
 
-One account per one-way channel `(payer, payee, token)`.
+- `owner`
+- `participant_id`
+- `inbound_channel_policy`
+- BLS registration fields (`bls_scheme_version`, `bls_pubkey_compressed`)
+- up to 16 token-balance entries (`available_balance`, `withdrawing_balance`, `withdrawal_unlock_at`, `withdrawal_destination`)
 
-**Seeds:** `["channel-v2", payer_id (LE u32), payee_id (LE u32), token_id (LE u16)]`
+## Owner index buckets
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `token_id` | `u16` | Settlement token |
-| `payer_id` | `u32` | Payer participant ID |
-| `payee_id` | `u32` | Payee participant ID |
-| `settled_cumulative` | `u64` | Highest cumulative amount ever settled |
-| `locked_balance` | `u64` | Funds earmarked for this channel |
-| `authorized_signer` | `Pubkey` | Key that signs `agon-cmt-v5` for this channel |
-| `pending_unlock_amount` | `u64` | Amount in a pending unlock request |
-| `unlock_requested_at` | `i64` | Timestamp of pending unlock |
-| `pending_authorized_signer` | `Pubkey` | Nominated new signer |
-| `authorized_signer_update_requested_at` | `i64` | Timestamp of pending rotation |
-| `bump` | `u8` | PDA bump |
+Owner lookup is bucketed separately so `owner -> participant_id` resolution stays deterministic.
 
-Channels are permanent. Both `settled_cumulative` and the PDA persist for the life of the deployment, so replays of older commitments always lose against the highest cumulative already seen.
+**Seeds:** `["owner-index-bucket-v2", bucket_id (LE u32)]`
+
+Live sizing constants:
+
+- `OWNER_INDEX_BUCKET_COUNT = 1024`
+- `OWNER_INDEX_BUCKET_SLOT_COUNT = 32`
+
+Routing from `owner`:
+
+- `bucket_id = sha256(owner)[0..4] % 1024`
+
+## Channel buckets
+
+Channel state is also bucketed by token and participant pair ordinal.
+
+**Seeds:** `["channel-bucket-v2", token_id (LE u16), bucket_id (LE u32)]`
+
+Live sizing constants:
+
+- `CHANNEL_BUCKET_SLOT_COUNT = 46`
+
+Each slot stores one canonical participant pair (`lower_participant_id`, `higher_participant_id`) and two directional lanes:
+
+- `lower_to_higher`
+- `higher_to_lower`
+
+Each directional lane stores:
+
+- `settled_cumulative`
+- `locked_balance`
+- `authorized_signer`
+- pending unlock fields
+- pending signer-rotation fields
+
+Canonical lane selection is derived from `(payer_id, payee_id)` ordering, so settlement always writes one deterministic lane per direction.
 
 ## Protocol vault
 
-Tokens deposited into Agon live in per-token vault token accounts derived from the program. They are SPL Token accounts owned by the program, not participant balances. Participant `available_balance` and channel `locked_balance` are ledger positions against this vault — the vault is the single source of truth for tokens actually held by the program.
+Tokens deposited into Agon live in per-token vault token accounts derived from the program. They are SPL Token accounts owned by the program, not participant balances. Participant `available_balance` and channel `locked_balance` are ledger positions against this vault, the vault is the single source of truth for tokens actually held by the program.
 
 See [Balances and withdrawals](/core-concepts/balances-and-withdrawals) for how the vault relates to participant state.
 

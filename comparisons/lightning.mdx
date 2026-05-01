@@ -9,10 +9,10 @@ Lightning and Agon both move payment authorization off-chain, but they scale in 
 
 Lightning is designed to move value across an arbitrary network of participants who don't have a pre-existing relationship. Its core problems are:
 
-- **Routing** — finding a path of channels that can carry a payment from sender to receiver.
-- **Liquidity** — maintaining enough inbound and outbound capacity along that path.
-- **Path-dependent fees** — each hop prices its share of the forwarding cost.
-- **HTLCs** — atomic multi-hop updates with time-locked resolution.
+- **Routing** - finding a path of channels that can carry a payment from sender to receiver.
+- **Liquidity** - maintaining enough inbound and outbound capacity along that path.
+- **Path-dependent fees** - each hop prices its share of the forwarding cost.
+- **HTLCs** - atomic multi-hop updates with time-locked resolution.
 
 This is the right design when the goal is open, trust-minimized internet money across a graph of peers who may never transact with each other again.
 
@@ -41,7 +41,7 @@ Density comes from a different place:
 
 Lightning is a strong fit when the goal is permissionless, privacy-preserving, network-wide payments where any pair of nodes might transact once.
 
-Agon is a stronger fit when the goal is **repeated machine-payment relationships** — agents paying APIs, services paying services, operators routing value between the two — that want settlement density to scale with the relationship, not with the number of participants in the network.
+Agon is a stronger fit when the goal is **repeated machine-payment relationships**, agents paying APIs, services paying services, operators routing value between the two, that want settlement density to scale with the relationship, not with the number of participants in the network.
 
 ## See also
 

@@ -3,7 +3,7 @@ title: "Devnet Demo"
 description: "The protocol-only devnet demo: what it covers and what it produces."
 ---
 
-The protocol demo is devnet-native and self-contained. It exercises every V4 settlement primitive directly against the live deployment and writes a machine-readable manifest used by this docs site's live benchmark pages.
+The protocol demo is devnet-native and self-contained. It exercises every settlement primitive directly against the live deployment and writes a machine-readable manifest used by this docs site's live benchmark pages.
 
 ## Live deployment under test
 
@@ -27,14 +27,14 @@ npm run benchmarks:generate
 
 ## What the demo covers
 
-The demo walks through every V4 settlement path:
+The demo walks through every settlement path:
 
-1. **Latest-commitment settlement** — one channel, one signed message, one transaction.
-2. **Bundle settlement** — one payee, many payers, one transaction.
-3. **Single-payer cooperative clearing** — several channels co-signed by one payer.
-4. **Bilateral cooperative clearing** — two parties netting outgoing channels.
-5. **Largest executable multilateral round** — the densest cooperative round that fits in a v0 transaction with Address Lookup Tables on the current devnet deployment.
-6. **Capacity summary and artifact output** — compressed results ready for publication.
+1. **Latest-commitment settlement** - one channel, one signed message, one transaction.
+2. **Bundle settlement** - one payee, many payers, one transaction.
+3. **Single-payer cooperative clearing** - several channels co-signed by one payer.
+4. **Bilateral cooperative clearing** - two parties advancing outgoing channels together.
+5. **Largest executable multilateral round** - the densest cooperative round that fits in a v0 transaction with Address Lookup Tables on the current devnet deployment.
+6. **Capacity summary and artifact output** - compressed results ready for publication.
 
 ## Output
 

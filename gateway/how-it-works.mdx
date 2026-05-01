@@ -1,6 +1,6 @@
 ---
 title: "How it works"
-description: "What happens when you call the Agon Gateway — from the client's point of view."
+description: "What happens when you call the Agon Gateway from the client's point of view."
 ---
 
 The gateway sits between your client and two kinds of upstreams:
@@ -34,7 +34,7 @@ On every request the gateway:
 5. Settles the payment **only after** the upstream responds successfully.
 6. Returns the upstream JSON to you, along with a proof of settlement where applicable.
 
-## Paid routes — pay per call in USDC
+## Paid routes - pay per call in USDC
 
 Paid Solana RPC and DAS routes use the standard x402 `exact` payment flow:
 
@@ -43,8 +43,8 @@ Paid Solana RPC and DAS routes use the standard x402 `exact` payment flow:
    - `scheme: "exact"`
    - `network: solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`
    - `asset: USDC`
-   - `maxAmountRequired` — the price in micro-USDC
-   - `payTo` — the gateway's settlement wallet
+   - `maxAmountRequired` - the price in micro-USDC
+   - `payTo` - the gateway's settlement wallet
 3. **Client** signs a Solana USDC transfer for that amount, encodes it into `PAYMENT-SIGNATURE`, and retries the request.
 4. **Gateway** verifies the signed transfer.
 5. **Gateway** calls the upstream provider with the real request payload.
@@ -53,7 +53,7 @@ Paid Solana RPC and DAS routes use the standard x402 `exact` payment flow:
 
 This "verify first, settle on success" ordering is deliberate: clients are never charged for upstream errors.
 
-## Tokens API — sign in with your wallet
+## Tokens API - sign in with your wallet
 
 Tokens API routes use the **sign-in-with-x** extension of x402. No USDC is transferred; you prove ownership of a wallet and the gateway calls the Tokens API on your behalf.
 
@@ -81,7 +81,7 @@ See [Access modes](/gateway/access-modes) for a side-by-side comparison.
 ## Discovery
 
 - Every route advertises its price, access mode, and input/output schemas in its `402` challenge.
-- `GET /v1/catalog` returns the full route list in a single response — ideal for agents and tooling that need to enumerate what is available without probing each endpoint.
+- `GET /v1/catalog` returns the full route list in a single response, ideal for agents and tooling that need to enumerate what is available without probing each endpoint.
 - Paid routes are crawlable by x402 discovery services because they always return `402` on an unpaid probe, never leaking upstream data.
 
 See [Route catalog](/gateway/catalog) for the exact shape of the discovery response.

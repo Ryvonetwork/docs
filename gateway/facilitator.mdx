@@ -13,11 +13,11 @@ This page describes what settlement means for you as a client. If you want the m
 
 For every paid request, the gateway performs the following sequence:
 
-1. **Verify** — the `PAYMENT-SIGNATURE` you attach is checked against the advertised price, network, and recipient.
-2. **Call upstream** — the gateway forwards your validated request to the underlying provider (Alchemy, Helius).
-3. **Settle on success** — only if the upstream returned a successful response, the gateway submits your pre-signed transfer on-chain.
+1. **Verify** - the `PAYMENT-SIGNATURE` you attach is checked against the advertised price, network, and recipient.
+2. **Call upstream** - the gateway forwards your validated request to the underlying provider (Alchemy, Helius).
+3. **Settle on success** - only if the upstream returned a successful response, the gateway submits your pre-signed transfer on-chain.
 
-If anything in steps 1 or 2 fails — verification error, provider outage, malformed upstream reply — the gateway discards the payment authorization and no USDC moves. You can retry safely; each attempt produces a new single-use payment.
+If anything in steps 1 or 2 fails, verification error, provider outage, malformed upstream reply, the gateway discards the payment authorization and no USDC moves. You can retry safely; each attempt produces a new single-use payment.
 
 ## What you see back
 
@@ -45,7 +45,7 @@ SIWX (Tokens API) responses never include this header because nothing is settled
 
 ## Replay protection
 
-Each `PAYMENT-SIGNATURE` authorizes exactly one call. Submitting the same payment twice returns `400 Bad Request` — the second call is not settled. This is enforced before the upstream call, so there is no way a paid request can be charged twice.
+Each `PAYMENT-SIGNATURE` authorizes exactly one call. Submitting the same payment twice returns `400 Bad Request`, the second call is not settled. This is enforced before the upstream call, so there is no way a paid request can be charged twice.
 
 ## See also
 

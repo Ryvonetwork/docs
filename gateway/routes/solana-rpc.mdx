@@ -1,6 +1,6 @@
 ---
 title: "Solana RPC Routes"
-description: "Every paid Solana RPC route — method, path, price, params, and example."
+description: "Every paid Solana RPC route - method, path, price, params, and example."
 ---
 
 Solana RPC routes proxy standard JSON-RPC methods to Alchemy or Helius and are gated with x402 `exact` payment on Solana mainnet.
@@ -15,7 +15,7 @@ All Solana RPC routes share the same shape:
 - **Access mode:** `exact` (paid per call)
 - **Alternate methods accepted on the path:** `GET`, `HEAD` (used for the `402` discovery probe)
 - **Content-Type:** `application/json`
-- **Request body:** `{ "params": [...] }` — positional JSON-RPC params forwarded directly to the upstream provider
+- **Request body:** `{ "params": [...] }` - positional JSON-RPC params forwarded directly to the upstream provider
 - **Success body:** `{ ok: true, provider, cluster, surface: "rpc", method, priceUsd, result }`
 - **Payment network:** `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` (mainnet)
 - **Payment asset:** USDC mainnet mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` (6 decimals)
@@ -25,8 +25,8 @@ The first six RPC methods (`getBalance`, `getAccountInfo`, `getTransaction`, `ge
 
 Prices come from the upstream PAYG schedules:
 
-- **Alchemy** — `$0.45 / 1 000 000 CU`
-- **Helius** — `$5 / 1 000 000 credits`
+- **Alchemy** - `$0.45 / 1 000 000 CU`
+- **Helius** - `$5 / 1 000 000 credits`
 
 Both are rounded up to the nearest micro-USDC. Authoritative values are always reported by `GET /v1/catalog` and by the `402` challenge envelope.
 
@@ -164,7 +164,7 @@ List token accounts owned by an address.
 | Index | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `params[0]` | `string` | yes | Owner public key (base58). |
-| `params[1]` | `object` | yes | Filter object — must specify **exactly one** of `mint` or `programId`. |
+| `params[1]` | `object` | yes | Filter object - must specify **exactly one** of `mint` or `programId`. |
 | `params[2]` | `object` | no | Standard JSON-RPC config object. |
 
 **Example**
@@ -198,9 +198,9 @@ Query accounts owned by a program.
 
 `params[1]` constraints:
 
-- `filters` — 1 to 4 entries, each either `{ dataSize: number }` or `{ memcmp: { offset, bytes } }`.
-- `memcmp.bytes` — non-empty string, max 128 characters.
-- `dataSlice` — required. `dataSlice.offset >= 0`, `dataSlice.length <= 256`.
+- `filters` - 1 to 4 entries, each either `{ dataSize: number }` or `{ memcmp: { offset, bytes } }`.
+- `memcmp.bytes` - non-empty string, max 128 characters.
+- `dataSlice` - required. `dataSlice.offset >= 0`, `dataSlice.length <= 256`.
 
 **Example**
 
@@ -239,15 +239,15 @@ Helius-only enhanced transaction history with filtering, sorting, and keyset pag
 
 `params[1]` config fields (all optional):
 
-- `transactionDetails` — `"signatures"` (default) or `"full"`.
-- `sortOrder` — `"desc"` (default) or `"asc"`.
-- `commitment` — `"confirmed"` or `"finalized"`.
-- `minContextSlot` — non-negative integer.
-- `limit` — 1..1000 when `transactionDetails="signatures"`, 1..100 when `transactionDetails="full"`.
-- `paginationToken` — opaque cursor returned from the previous response.
-- `encoding` — `"json"`, `"jsonParsed"`, `"base58"`, `"base64"` (applies when `transactionDetails="full"`).
-- `maxSupportedTransactionVersion` — non-negative integer.
-- `filters` — object supporting `slot` (`gte`/`gt`/`lte`/`lt`), `blockTime` (same plus `eq`), `signature` (lexicographic ranges), `status` (`succeeded`/`failed`/`any`), and `tokenAccounts` (`none`/`balanceChanged`/`all`).
+- `transactionDetails` - `"signatures"` (default) or `"full"`.
+- `sortOrder` - `"desc"` (default) or `"asc"`.
+- `commitment` - `"confirmed"` or `"finalized"`.
+- `minContextSlot` - non-negative integer.
+- `limit` - 1..1000 when `transactionDetails="signatures"`, 1..100 when `transactionDetails="full"`.
+- `paginationToken` - opaque cursor returned from the previous response.
+- `encoding` - `"json"`, `"jsonParsed"`, `"base58"`, `"base64"` (applies when `transactionDetails="full"`).
+- `maxSupportedTransactionVersion` - non-negative integer.
+- `filters` - object supporting `slot` (`gte`/`gt`/`lte`/`lt`), `blockTime` (same plus `eq`), `signature` (lexicographic ranges), `status` (`succeeded`/`failed`/`any`), and `tokenAccounts` (`none`/`balanceChanged`/`all`).
 
 **Example**
 

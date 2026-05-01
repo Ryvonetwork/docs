@@ -7,7 +7,7 @@ Paid x402 routes are priced from each upstream provider's public PAYG schedule *
 
 x402 paid routes settle in **USDC on Solana mainnet**. Agon channel routes are denominated in official **devnet USDC token amounts** and settle later through Agon Protocol bundle settlement.
 
-## Alchemy — Compute Unit pricing
+## Alchemy - Compute Unit pricing
 
 Alchemy routes are priced on their Solana PAYG compute-unit schedule.
 
@@ -43,7 +43,7 @@ price_usd = ( ceil( (cu × 450_000) / 1_000_000 ) + 600 ) / 1_000_000
 
 Where the numerator is in USDC micro-units (six decimal places), and `600` micro-USDC is the flat transaction-fee surcharge.
 
-## Helius — per-credit pricing
+## Helius - per-credit pricing
 
 Helius routes are priced on their additional-credits schedule.
 
@@ -93,11 +93,11 @@ price_usd = ( ceil( (credits × 5_000_000) / 1_000_000 ) + 600 ) / 1_000_000
 
 Again, `600` micro-USDC is the fixed surcharge applied to every x402 paid route.
 
-## Tokens API — no per-call price
+## Tokens API - no per-call price
 
 Tokens API routes are **auth-only**. The gateway holds the Tokens API key server-side and exposes it to clients via a SIWX signature. There is no per-request USDC settlement.
 
-Tokens API routes still sit behind the x402 challenge/response flow — the client must present a valid wallet signature — but no transfer is created.
+Tokens API routes still sit behind the x402 challenge/response flow, the client must present a valid wallet signature, but no transfer is created.
 
 See [Access modes](/gateway/access-modes) for the mechanics.
 
@@ -124,7 +124,7 @@ Every x402 paid route advertises its price in two places:
 1. In the route's `402 Payment Required` envelope as `maxAmountRequired`, expressed in micro-USDC.
 2. In the catalog entry as `priceUsd`, expressed as a decimal string.
 
-Clients that use `@x402/fetch` or any x402 library will pick up the price automatically from the challenge envelope — there is no need to hard-code prices.
+Clients that use `@x402/fetch` or any x402 library will pick up the price automatically from the challenge envelope, there is no need to hard-code prices.
 
 Channel-backed routes advertise `priceTokenAmount` in the catalog and require the client to increment its signed cumulative commitment by exactly that amount.
 

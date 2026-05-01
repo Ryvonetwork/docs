@@ -5,9 +5,9 @@ description: "What the gateway accepts, what it rejects, and how it tells you."
 
 The gateway is designed so clients never waste money on a call that was going to be rejected anyway. Three layers of protection run on every request:
 
-1. **Rate limits** — per-route caps on how often a given client can call.
-2. **Input guardrails** — strict validation on request bodies and query parameters before any upstream call or settlement.
-3. **Replay protection** — each payment authorization and each wallet sign-in can only be used once.
+1. **Rate limits** - per-route caps on how often a given client can call.
+2. **Input guardrails** - strict validation on request bodies and query parameters before any upstream call or settlement.
+3. **Replay protection** - each payment authorization and each wallet sign-in can only be used once.
 
 Everything here is client-observable. You never hit a 402 for payment and then discover afterwards that the request was malformed.
 
@@ -40,35 +40,35 @@ The gateway rejects overly broad or malformed requests **before** settlement or 
 
 ### Solana RPC
 
-- `getBalance`, `getAccountInfo`, `getTransaction` — accept exactly 1 or 2 params. First param must be a non-empty string.
-- `getAccountInfo` — if `dataSlice` is provided, `length <= 1024`.
-- `getSignaturesForAddress` — `limit` (if provided) must be `1..100`.
-- `getTokenAccountsByOwner` — the filter must specify exactly one of `mint` or `programId`.
-- `getProgramAccounts` — requires at least one `dataSize` or `memcmp` filter (max 4), requires a `dataSlice` with `length <= 256`, and `memcmp.bytes <= 128` characters.
+- `getBalance`, `getAccountInfo`, `getTransaction` - accept exactly 1 or 2 params. First param must be a non-empty string.
+- `getAccountInfo` - if `dataSlice` is provided, `length <= 1024`.
+- `getSignaturesForAddress` - `limit` (if provided) must be `1..100`.
+- `getTokenAccountsByOwner` - the filter must specify exactly one of `mint` or `programId`.
+- `getProgramAccounts` - requires at least one `dataSize` or `memcmp` filter (max 4), requires a `dataSlice` with `length <= 256`, and `memcmp.bytes <= 128` characters.
 
 ### Solana DAS
 
-- `getAsset` — `params.id` required, non-empty string.
-- `getAssetsByOwner` — `ownerAddress` required, `limit <= 100`.
-- `searchAssets` — `limit <= 100`, `page <= 10 000`.
+- `getAsset` - `params.id` required, non-empty string.
+- `getAssetsByOwner` - `ownerAddress` required, `limit <= 100`.
+- `searchAssets` - `limit <= 100`, `page <= 10 000`.
 
 ### Tokens API
 
-- `search` — `q` required, `limit <= 50`.
-- `resolve` — exactly one of `ref` or `mint`.
-- `curated` — `list` must be one of the documented values; `groupBy` (if provided) must be `asset` or `mint`.
-- `market-snapshots` — `mints` + `addresses` combined must be `1..250` items.
-- `variant-markets` — `mints` + `addresses` combined must be `1..50`.
-- `variant-top-markets` — `limit <= 100`.
-- `tickers` / `markets` — `limit <= 50`, `offset <= 10 000`.
-- OHLCV routes — `interval` must be one of `1m, 5m, 15m, 1H, 4H, 1D, 1W`; `from <= to`.
-- Asset-level paths — `assetId` path param must be non-empty.
+- `search` - `q` required, `limit <= 50`.
+- `resolve` - exactly one of `ref` or `mint`.
+- `curated` - `list` must be one of the documented values; `groupBy` (if provided) must be `asset` or `mint`.
+- `market-snapshots` - `mints` + `addresses` combined must be `1..250` items.
+- `variant-markets` - `mints` + `addresses` combined must be `1..50`.
+- `variant-top-markets` - `limit <= 100`.
+- `tickers` / `markets` - `limit <= 50`, `offset <= 10 000`.
+- OHLCV routes - `interval` must be one of `1m, 5m, 15m, 1H, 4H, 1D, 1W`; `from <= to`.
+- Asset-level paths - `assetId` path param must be non-empty.
 
 ## Replay protection
 
 ### Paid payments
 
-Every `PAYMENT-SIGNATURE` can only be used once. Submitting the same payment header twice returns `400` — the second call is not settled. This check runs before the upstream call, so no duplicate charge can ever occur.
+Every `PAYMENT-SIGNATURE` can only be used once. Submitting the same payment header twice returns `400`, the second call is not settled. This check runs before the upstream call, so no duplicate charge can ever occur.
 
 ### SIWX sessions
 
@@ -76,7 +76,7 @@ Each SIWX signature can authorize exactly one request, and only within the 300-s
 
 ## Discovery-friendly `402`
 
-x402 discovery crawlers probe routes with an empty body to read the route's schema and price. The gateway returns `402 Payment Required` on those probes — **not** `400` — so discovery works without sending any payment or wallet signature. Paid routes never leak upstream data on an unpaid probe. Full body validation runs once your request carries a payment or sign-in header.
+x402 discovery crawlers probe routes with an empty body to read the route's schema and price. The gateway returns `402 Payment Required` on those probes, **not** `400`, so discovery works without sending any payment or wallet signature. Paid routes never leak upstream data on an unpaid probe. Full body validation runs once your request carries a payment or sign-in header.
 
 ## See also
 

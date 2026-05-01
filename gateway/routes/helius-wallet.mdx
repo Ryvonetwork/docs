@@ -1,6 +1,6 @@
 ---
 title: "Helius Wallet API Routes"
-description: "Every paid Helius Wallet API route — method, path, price, params, and example."
+description: "Every paid Helius Wallet API route - method, path, price, params, and example."
 ---
 
 Helius Wallet API routes proxy the Helius Wallet API (`api.helius.xyz/v1/wallet/*`) and are gated with x402 `exact` payment on Solana mainnet. They are a Helius-only REST surface, distinct from Solana RPC and DAS.
@@ -21,12 +21,12 @@ All Helius Wallet routes share the same shape:
 - **Rate limit:** `10 rps` per `helius:mainnet:wallet` scope
 
 <Note>
-The Helius Wallet API is **mainnet-only**. There is no devnet counterpart — domain resolution (SNS `.sol`, ANS custom TLDs) and identity data only exist on Solana mainnet.
+The Helius Wallet API is **mainnet-only**. There is no devnet counterpart, domain resolution (SNS `.sol`, ANS custom TLDs) and identity data only exist on Solana mainnet.
 </Note>
 
 Pricing comes from the Helius per-credit PAYG schedule:
 
-- **Helius Wallet API** — `100 credits` per call → `$0.000500` at `$5 / 1 000 000 credits`.
+- **Helius Wallet API** - `100 credits` per call -> `$0.000500` at `$5 / 1 000 000 credits`.
 
 Authoritative values are always reported by `GET /v1/catalog` and by the `402` challenge envelope.
 

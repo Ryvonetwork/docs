@@ -7,13 +7,13 @@ Every gateway route reports its authorization mode as `accessMode` in the catalo
 
 | Access mode | Header | Settles on-chain? | Used for |
 | --- | --- | --- | --- |
-| `exact` | `PAYMENT-SIGNATURE` (aka `X-PAYMENT`) | Yes — USDC on Solana mainnet | Paid Solana RPC and DAS routes |
+| `exact` | `PAYMENT-SIGNATURE` (aka `X-PAYMENT`) | Yes - USDC on Solana mainnet | Paid Solana RPC and DAS routes |
 | `siwx` | `SIGN-IN-WITH-X` | No | Tokens API routes |
 | `agon-channel` | `X-Agon-Request-Id` + `AGON-COMMITMENT` | Settled later through Agon Protocol | Channel-backed Solana RPC, DAS, and Helius Wallet routes |
 
 The `exact` and `siwx` modes use the x402 request-challenge-retry pattern. The `agon-channel` mode uses an already-open Agon payment channel and a signed cumulative commitment per request.
 
-## `exact` — pay-per-call with USDC
+## `exact` - pay-per-call with USDC
 
 Used by every Alchemy and Helius Solana RPC / DAS route.
 
@@ -75,7 +75,7 @@ remainingHeadroom = max(0, maxAuthorized - latestAcceptedCommitted)
 
 The gateway settles accepted commitments with `settleCommitmentBundle`, not BLS. Tokens SIWX routes remain free/auth-only and do not enter channel authorization.
 
-## `siwx` — wallet authentication without payment
+## `siwx` - wallet authentication without payment
 
 Used by every `/v1/x402/tokens/...` route. The gateway holds the Tokens API key server-side; clients never see it. Instead, they prove ownership of a Solana wallet and the gateway calls the Tokens API on their behalf.
 

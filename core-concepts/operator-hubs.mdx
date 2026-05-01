@@ -40,7 +40,7 @@ Agon does not do Lightning-style multi-hop routing. It does have the primitives 
 4. payee-side bundle settlement
 5. cooperative clearing when several participants want to co-sign one shared update
 
-A hub can be built entirely on top of these primitives — no protocol changes required.
+A hub can be built entirely on top of these primitives, no protocol changes required.
 
 ## Worked example
 
@@ -62,7 +62,7 @@ If the spending side locks enough funds to the channel, the receiving side has g
 
 ### Trust-minimized
 
-If only partial expected usage is locked — or if balances are mostly shared rather than locked per channel — the model becomes trust-minimized. The payee takes more timing and credit risk between settlements, but the protocol is still non-custodial.
+If only partial expected usage is locked, or if balances are mostly shared rather than locked per channel, the model becomes trust-minimized. The payee takes more timing and credit risk between settlements, but the protocol is still non-custodial.
 
 ### Credit
 
@@ -77,29 +77,18 @@ A hub can still control **service access**. It can:
 3. require additional lockup
 4. choose which providers it will work with
 
-That is not a protocol bug — it is the service-layer business model of the hub.
+That is not a protocol bug, it is the service-layer business model of the hub.
 
 The important distinction is that service control and settlement control are no longer the same thing. A hub can be picky about who it serves without becoming the only path to settle. Users and providers can choose different hubs, use direct channels, or mix both.
 
 ## Operator payment is separate
 
-A hub is an economic participant like any other. If a hub should be paid, that payment should be modeled as its own ordinary channel commitment — typically:
+A hub is an economic participant like any other. If a hub should be paid, that payment should be modeled as its own ordinary channel commitment, typically:
 
 - `payer → hub` for access
 - `hub → provider` for fulfillment
 
 This keeps hub compensation cumulative and durable instead of stuffing a fee into a unilateral commitment meant for a different relationship. It also lets the hub's inbound balance participate in bundle or cooperative settlement.
-
-## Relationship to `authorized_settler`
-
-`authorized_settler` helps a hub with relaying and payment operations, but it is not the main reason the hub model works.
-
-The main reason is simpler:
-
-1. Users owe the hub on one set of channels.
-2. The hub owes providers on another set of channels.
-
-`authorized_settler` is useful around the edges; the channel graph is the core.
 
 ## Why this is different from a single managed rail
 
@@ -119,7 +108,6 @@ See [vs. Managed rails](/comparisons/managed-rails) for the explicit side-by-sid
 
 ## See also
 
-- [Authorized settler](/core-concepts/authorized-settler)
 - [Trust and collateral](/core-concepts/trust-and-collateral)
 - [vs. Managed rails](/comparisons/managed-rails)
 - [vs. Lightning](/comparisons/lightning)

@@ -5,10 +5,10 @@ description: "The exact signed message formats used by the current Agon protocol
 
 Agon currently uses two signed message types:
 
-1. `agon-cmt-v5` — unilateral cumulative commitment for one payment channel.
-2. `agon-round-v4` — cooperative clearing-round message signed by multiple participants.
+1. `agon-cmt-v5` - unilateral cumulative commitment for one payment channel.
+2. `agon-round` - cooperative clearing-round message body used by BLS-authenticated clearing rounds.
 
-Both are verified on-chain by the Ed25519 native program. The protocol inspects the preceding Ed25519 instruction and cross-checks the signed bytes against the data passed to `settle_individual`, `settle_commitment_bundle`, or `settle_clearing_round`.
+Commitment signatures are verified through Ed25519 pre-instructions. Cooperative rounds are verified through aggregate BLS signatures over one shared round body.
 
 ## Common encoding rules
 
@@ -61,21 +61,13 @@ The unilateral cumulative commitment message. Used by:
 | `payee_id` | compact `u64` | Channel payee participant ID |
 | `token_id` | `u16` (LE) | Allowlisted settlement token |
 | `committed_amount` | compact `u64` | New cumulative target for the channel |
-| `authorized_settler` | `Pubkey` | Optional delegated submitter (present iff flag bit set) |
-
-### Flags
-
-| Bit | Meaning |
-| --- | --- |
-| `0x01` | `authorized_settler` field is present |
 
 ### Semantics
 
 - `committed_amount` is **cumulative**, not incremental. If the channel is already settled to `1_000_000` and the new message says `1_250_000`, the on-chain delta is `250_000`.
-- If the flag bit is set, the appended `authorized_settler` key is the only non-payee address allowed to submit this commitment on-chain.
 - Operator or coordinator compensation is **not** embedded in `agon-cmt-v5`. If a flow needs to pay an operator, that payment is expressed as its own ordinary channel commitment.
 
-## `agon-round-v4`
+## `agon-round`
 
 The cooperative clearing-round message. Used by `settle_clearing_round`.
 
@@ -84,7 +76,7 @@ The cooperative clearing-round message. Used by `settle_clearing_round`.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `kind` | `u8` = `0x02` | Clearing-round message |
-| `version` | `u8` = `0x04` | V4 round wire format |
+| `version` | `u8` = `0x05` | Current clearing-round wire format |
 | `message_domain` | `[u8; 16]` | Deployment-scoped replay boundary |
 | `token_id` | `u16` (LE) | Token shared by the entire round |
 | `participant_count` | `u8` | Number of signed participants in the roster |
@@ -104,16 +96,16 @@ The round is organized by payer block. Each block says:
 3. For each target, which signed participant in the roster is the payee.
 4. What the new cumulative amount for that channel should be.
 
-Reusing the roster through `payee_ref` keeps the signed body compact — payee IDs are referenced, not repeated.
+Reusing the roster through `payee_ref` keeps the signed body compact, payee IDs are referenced, not repeated.
 
-Every participant listed in the roster must provide a valid Ed25519 signature over the same body. The program verifies every signature, then applies only the **net residual balance changes** after the implied payments have cancelled each other out.
+Participants register BLS keys and co-sign the same logical round body off-chain. Settlement submits one aggregate BLS signature and the program advances every included channel target in one transaction.
 
 See [Clearing rounds](/settlement-modes/clearing-rounds) for a worked example and the settlement semantics.
 
 ## Which message to use
 
 - Use `agon-cmt-v5` when one payer is updating one channel. This includes bundled settlement, which batches many `agon-cmt-v5` messages for one payee into one transaction.
-- Use `agon-round-v4` when several participants are willing to sign one shared message so that many channels can be advanced in one on-chain transaction.
+- Use `agon-round` when several participants are willing to sign one shared message so many channels can be advanced in one on-chain transaction.
 
 ## See also
 

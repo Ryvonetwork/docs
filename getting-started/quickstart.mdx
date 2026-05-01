@@ -3,7 +3,7 @@ title: "Quickstart"
 description: "See Agon run end-to-end against the live devnet deployment in a few minutes."
 ---
 
-This page is the fastest way to see the Agon protocol execute real settlements. It runs the committed devnet demo, which exercises every settlement path against the live V4 deployment and produces the benchmark artifacts used throughout these docs.
+This page is the fastest way to see the Agon protocol execute real settlements. It runs the committed devnet demo, which exercises every settlement path against the live deployment and produces the benchmark artifacts used throughout these docs.
 
 If you want the integration-level walkthrough instead, go to [Your first payment](/getting-started/first-payment).
 
@@ -71,13 +71,13 @@ node ./node_modules/typescript/bin/tsc --noEmit
 powershell -ExecutionPolicy Bypass -File scripts/test-local.ps1
 ```
 
-The PowerShell script spins up a local validator, deploys the program, and runs the full Anchor test suite — useful on Windows + WSL developer machines.
+The PowerShell script spins up a local validator, deploys the program, and runs the full Anchor test suite, useful on Windows + WSL developer machines.
 
 ## Where to go next
 
 <CardGroup cols={2}>
   <Card title="Protocol overview" icon="diagram-project" href="/getting-started/protocol-overview">
-    The on-chain objects, signed messages, and settlement paths in V4.
+    The on-chain objects, signed messages, and settlement paths.
   </Card>
   <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
     Build the smallest useful Agon integration end-to-end.

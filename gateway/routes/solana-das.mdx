@@ -1,6 +1,6 @@
 ---
 title: "Solana DAS Routes"
-description: "Every paid Solana DAS route — method, path, price, params, and example."
+description: "Every paid Solana DAS route - method, path, price, params, and example."
 ---
 
 DAS routes proxy the standard Solana Digital Asset Standard endpoints to Alchemy or Helius and are gated with x402 `exact` payment on Solana mainnet.
@@ -15,7 +15,7 @@ All Solana DAS routes share the same shape:
 - **Access mode:** `exact` (paid per call)
 - **Alternate methods accepted on the path:** `GET`, `HEAD`
 - **Content-Type:** `application/json`
-- **Request body:** `{ "params": { ... } }` — named DAS params forwarded directly to the upstream provider
+- **Request body:** `{ "params": { ... } }` - named DAS params forwarded directly to the upstream provider
 - **Success body:** `{ ok: true, provider, cluster, surface: "das", method, priceUsd, result }`
 - **Payment network:** `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` (mainnet)
 - **Payment asset:** USDC mainnet mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` (6 decimals)
@@ -27,8 +27,8 @@ Alchemy does not expose DAS on devnet. DAS routes on Alchemy are available on **
 
 Prices come from the upstream PAYG schedules:
 
-- **Alchemy** — `$0.45 / 1 000 000 CU`
-- **Helius** — `$5 / 1 000 000 credits`
+- **Alchemy** - `$0.45 / 1 000 000 CU`
+- **Helius** - `$5 / 1 000 000 credits`
 
 Both are rounded up to the nearest micro-USDC. Authoritative values are always reported by `GET /v1/catalog` and by the `402` challenge envelope.
 
@@ -123,9 +123,9 @@ curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/das/sear
 
 | Method | `mainnet / alchemy` | `mainnet / helius` | `devnet / alchemy` | `devnet / helius` |
 | --- | --- | --- | --- | --- |
-| `getAsset` | Yes | Yes | — | Yes |
-| `getAssetsByOwner` | Yes | Yes | — | Yes |
-| `searchAssets` | Yes | Yes | — | Yes |
+| `getAsset` | Yes | Yes | - | Yes |
+| `getAssetsByOwner` | Yes | Yes | - | Yes |
+| `searchAssets` | Yes | Yes | - | Yes |
 
 ## See also
 

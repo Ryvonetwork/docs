@@ -3,15 +3,15 @@ title: "Direct Settlement"
 description: "Settle one channel with one signed `agon-cmt-v5` message."
 ---
 
-Direct settlement is the simplest path in Agon V4.
+Direct settlement is the simplest settlement path.
 
-One payer signs one `agon-cmt-v5` message for one channel. The payee, or a delegated `authorized_settler` named in the message, submits it with `settle_individual`.
+One payer signs one `agon-cmt-v5` message for one channel. The payee submits it with `settle_individual`.
 
 ## What the message represents
 
 The signed message does not say *"charge 25 more."* It says: *"this channel is now authorized up to cumulative amount `X`."*
 
-The program compares that new cumulative amount to the channel's current `settled_cumulative` and settles only the difference. That is why the payee only needs to hold the **newest valid message** — everything older is superseded.
+The program compares that new cumulative amount to the channel's current `settled_cumulative` and settles only the difference. That is why the payee only needs to hold the **newest valid message**, everything older is superseded.
 
 See [Commitments](/core-concepts/commitments) for the cumulative model in depth.
 
@@ -23,7 +23,7 @@ When `settle_individual` runs, the program checks:
 2. The signer matches the channel's current `authorized_signer`.
 3. The signed `message_domain` matches the deployment.
 4. The message's payer, payee, and token match the passed participant accounts and channel.
-5. The submitter is either the payee owner or the optional `authorized_settler`.
+5. The submitter is the payee owner.
 6. The new cumulative amount is strictly greater than the existing `settled_cumulative`.
 7. The payer has enough total balance, counting channel-specific locked balance first and shared participant balance second.
 
@@ -79,12 +79,11 @@ Choose direct settlement when:
 - You do not yet need bundle or cooperative compression.
 - You want an always-available fallback regardless of cooperation state.
 
-Direct settlement is the baseline for every V4 integration. Denser paths build on top of it.
+Direct settlement is the baseline for every integration. Denser paths build on top of it.
 
 ## See also
 
 - [Commitments](/core-concepts/commitments)
 - [Bundle settlement](/settlement-modes/bundle-settlement)
 - [Clearing rounds](/settlement-modes/clearing-rounds)
-- [Authorized settler](/core-concepts/authorized-settler)
 - [Message formats](/reference/messages#agon-cmt-v5)

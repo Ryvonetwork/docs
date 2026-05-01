@@ -1,6 +1,6 @@
 ---
 title: "Balances and Withdrawals"
-description: "How participant balances, pending withdrawals, and channel locks work in Agon V4."
+description: "How participant balances, pending withdrawals, and channel locks work in Agon."
 ---
 
 Agon keeps user funds in two places:
@@ -10,8 +10,8 @@ Agon keeps user funds in two places:
 
 Balance accounting sits at two layers:
 
-- **Participant balance** — stored in `ParticipantAccount`
-- **Channel lock** — stored in `ChannelState.locked_balance`
+- **Participant balance** - stored in participant buckets
+- **Channel lock** - stored in channel-bucket lane state
 
 ## Participant balance states
 
@@ -57,11 +57,11 @@ await program.methods
 
 Withdrawals are intentionally two-step. This protects the payee from a payer draining shared balance immediately after signing a commitment.
 
-### Step 1 — request
+### Step 1 - request
 
 `request_withdrawal` moves funds from `available_balance` to `withdrawing_balance`, records the destination token account, and starts the timelock.
 
-### Step 2 — execute
+### Step 2 - execute
 
 Once the timelock has expired, `execute_withdrawal_timelocked` transfers the net amount to the destination token account and the withdrawal fee to the protocol fee recipient.
 
@@ -74,7 +74,7 @@ On mainnet the timelock is seven days. On devnet, testnet, and localnet the time
 
 ## Pending withdrawal is not final
 
-One V4 behavior surprises people at first:
+One behavior surprises people at first:
 
 <Warning>
   A pending withdrawal can still be consumed by later settlement before it is executed.
@@ -109,11 +109,11 @@ If you are building a provider, client, or gateway, these are the balance rules 
 1. Deposits increase `available_balance`.
 2. Channel locks reduce shared flexibility but strengthen one specific relationship.
 3. Pending withdrawals are not final until executed.
-4. Settlement can consume both shared balance and channel-specific locks — locked balance first.
+4. Settlement can consume both shared balance and channel-specific locks, locked balance first.
 5. Unlock requests and signer rotations are also timelocked.
 
 <Tip>
-  If you are considering a yield-bearing settlement asset, prefer a fixed-balance share token over a rebasing one. Agon's internal accounting is aligned with tokens whose balances stay constant while redemption value rises over time — see [Yield-bearing assets](/core-concepts/yield-bearing-assets).
+  If you are considering a yield-bearing settlement asset, prefer a fixed-balance share token over a rebasing one. Agon's internal accounting is aligned with tokens whose balances stay constant while redemption value rises over time. See [Yield-bearing assets](/core-concepts/yield-bearing-assets).
 </Tip>
 
 ## See also
