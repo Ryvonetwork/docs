@@ -24,6 +24,15 @@ Agon decouples payment **execution** from payment **settlement**:
 - Execution happens off-chain through signed cumulative commitments.
 - Settlement happens later on-chain, against the newest valid state.
 
+```mermaid
+flowchart LR
+  Agent -->|"signed commitment"| Channel
+  Channel -->|"cooperative round"| Settlement
+  Float["Idle balances"] -->|"yield-bearing asset"| Yield["Yield accrual"]
+  Channel -.float.-> Float
+  Settlement -.float.-> Float
+```
+
 That separation unlocks three compounding compression paths, each built on the one before it:
 
 1. **Latest-commitment settlement.** Many off-chain updates between one payer and one payee compress into a single settled cumulative amount.

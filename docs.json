@@ -93,12 +93,6 @@
             ]
           },
           {
-            "group": "Agentic",
-            "pages": [
-              "reference/agentic-tools"
-            ]
-          },
-          {
             "group": "Reference",
             "pages": [
               "reference/deployment",
@@ -146,6 +140,12 @@
             "pages": [
               "gateway/integration-guide",
               "gateway/facilitator"
+            ]
+          },
+          {
+            "group": "Agentic",
+            "pages": [
+              "reference/agentic-tools"
             ]
           },
           {
