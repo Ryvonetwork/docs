@@ -1,9 +1,9 @@
 ---
 title: "Balances and Withdrawals"
-description: "How participant balances, pending withdrawals, and channel locks work in Agon."
+description: "How participant balances, pending withdrawals, and channel locks work in ryvo."
 ---
 
-Agon keeps user funds in two places:
+ryvo keeps user funds in two places:
 
 1. **The protocol vault**, which holds real SPL tokens.
 2. **Protocol state**, which tracks who is entitled to what inside that vault.
@@ -113,7 +113,7 @@ If you are building a provider, client, or gateway, these are the balance rules 
 5. Unlock requests and signer rotations are also timelocked.
 
 <Tip>
-  If you are considering a yield-bearing settlement asset, prefer a fixed-balance share token over a rebasing one. Agon's internal accounting is aligned with tokens whose balances stay constant while redemption value rises over time. See [Yield-bearing assets](/core-concepts/yield-bearing-assets).
+  If you are considering a yield-bearing settlement asset, prefer a fixed-balance share token over a rebasing one. ryvo's internal accounting is aligned with tokens whose balances stay constant while redemption value rises over time. See [Yield-bearing assets](/core-concepts/yield-bearing-assets).
 </Tip>
 
 ## See also

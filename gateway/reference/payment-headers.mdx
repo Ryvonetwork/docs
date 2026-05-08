@@ -1,6 +1,6 @@
 ---
 title: "Payment Headers"
-description: "The HTTP headers the gateway reads and returns for x402, SIWX, and Agon channel flows."
+description: "The HTTP headers the gateway reads and returns for x402, SIWX, and ryvo channel flows."
 ---
 
 The gateway speaks standard x402 over HTTP. This page lists every header it reads from clients and returns in responses, along with the status codes clients should expect.
@@ -25,19 +25,19 @@ Used by **auth-only routes** (`accessMode: "siwx"`).
 - Must be used within `expirationSeconds` (300s) of being signed.
 - Each signature can only authorize one request. Replays are rejected.
 
-### `X-Agon-Request-Id`
+### `X-Ryvo-Request-Id`
 
-Used by **channel-backed routes** (`accessMode: "agon-channel"`).
+Used by **channel-backed routes** (`accessMode: "ryvo-channel"`).
 
 - Stable idempotency key for one gateway request.
-- Required with `AGON-COMMITMENT`.
+- Required with `RYVO-COMMITMENT`.
 - The gateway atomically reserves the request ID before upstream execution so concurrent calls on one channel cannot overspend.
 
-### `AGON-COMMITMENT`
+### `RYVO-COMMITMENT`
 
-Used by **channel-backed routes** (`accessMode: "agon-channel"`).
+Used by **channel-backed routes** (`accessMode: "ryvo-channel"`).
 
-- Base64 JSON envelope containing the signed Agon cumulative commitment payload.
+- Base64 JSON envelope containing the signed ryvo cumulative commitment payload.
 - Must target the live devnet program, gateway merchant participant, correct cluster, correct message domain, and official devnet USDC token.
 - The new cumulative amount must equal the latest accepted commitment plus the route's `priceTokenAmount`.
 
@@ -70,7 +70,7 @@ Example shape after decoding:
 
 SIWX routes never return this header.
 
-Channel-backed routes do not return `X-PAYMENT-RESPONSE` per request. Accepted commitments are settled later through Agon Protocol bundle settlement.
+Channel-backed routes do not return `X-PAYMENT-RESPONSE` per request. Accepted commitments are settled later through ryvo Protocol bundle settlement.
 
 ### `access-control-*`
 

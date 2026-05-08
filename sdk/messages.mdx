@@ -3,7 +3,7 @@ title: "Messages & signatures"
 description: "Build signed commitment and clearing-round messages and turn them into Ed25519 pre-instructions."
 ---
 
-Agon settlement consumes two signed message types, `agon-cmt-v5` (unilateral commitment) and cooperative round messages, and verifies them on-chain. The SDK gives you:
+ryvo settlement consumes two signed message types, `ryvo-cmt-v5` (unilateral commitment) and cooperative round messages, and verifies them on-chain. The SDK gives you:
 
 - **Builders** that produce the exact byte layout the program expects.
 - **Pre-instruction helpers** that wrap one or more signatures into `Ed25519Program` instructions, ready to be attached to the same transaction as the settlement call.
@@ -25,16 +25,16 @@ Values are coerced through `toBigIntAmount()`; negative numbers throw. For Ancho
 
 ## `createCommitmentMessage(params)`
 
-Builds a raw `agon-cmt-v5` message body. You then feed it to one of the Ed25519 helpers below.
+Builds a raw `ryvo-cmt-v5` message body. You then feed it to one of the Ed25519 helpers below.
 
 ```ts
 import {
   createCommitmentMessage,
   deriveMessageDomain,
-  AGON_CHAIN_IDS,
-} from "@agonx402/sdk";
+  RYVO_CHAIN_IDS,
+} from "@ryvonetwork/sdk";
 
-const messageDomain = deriveMessageDomain(client.programId, AGON_CHAIN_IDS.devnet);
+const messageDomain = deriveMessageDomain(client.programId, RYVO_CHAIN_IDS.devnet);
 
 const message = createCommitmentMessage({
   messageDomain,
@@ -64,7 +64,7 @@ The SDK also exports `nextCommitmentAmount(channelData, delta)` (from [Account h
 Builds a raw cooperative-round message body for clearing rounds.
 
 ```ts
-import { createClearingRoundMessage } from "@agonx402/sdk";
+import { createClearingRoundMessage } from "@ryvonetwork/sdk";
 
 const message = createClearingRoundMessage({
   messageDomain,
@@ -100,11 +100,11 @@ type ClearingRoundBlock = {
 };
 ```
 
-The block layout and `payeeRef` semantics match [Reference -> Messages -> `agon-round`](/reference/messages#agon-round).
+The block layout and `payeeRef` semantics match [Reference -> Messages -> `Ryvo-round`](/reference/messages#Ryvo-round).
 
 ## Ed25519 helpers
 
-Agon's on-chain verification reads the Ed25519 native program's instruction data directly. The SDK ships four builders covering the common shapes.
+ryvo's on-chain verification reads the Ed25519 native program's instruction data directly. The SDK ships four builders covering the common shapes.
 
 All four return a standard `TransactionInstruction` targeting `Ed25519Program.programId`, ready to drop into `.preInstructions([ix])` on any Anchor methods builder.
 
@@ -113,7 +113,7 @@ All four return a standard `TransactionInstruction` targeting `Ed25519Program.pr
 Simple single-signer Ed25519 instruction. Use this for **direct settlement** of a single commitment.
 
 ```ts
-import { createEd25519Instruction } from "@agonx402/sdk";
+import { createEd25519Instruction } from "@ryvonetwork/sdk";
 
 const ed25519Ix = createEd25519Instruction(payerKeypair, message);
 
@@ -136,7 +136,7 @@ Under the hood this uses `Ed25519Program.createInstructionWithPrivateKey`, so it
 One Ed25519 instruction that carries **multiple signatures over the same message**.
 
 ```ts
-import { createMultiSigEd25519Instruction } from "@agonx402/sdk";
+import { createMultiSigEd25519Instruction } from "@ryvonetwork/sdk";
 
 const roundIx = createMultiSigEd25519Instruction(
   [participantA, participantB, participantC],
@@ -157,7 +157,7 @@ The SDK lays out the Ed25519 signature blocks in the order of the `signers` arra
 One Ed25519 instruction that carries **N signatures over N different messages**. Used by **bundle settlement**, where the payee is settling multiple commitments from the same (or different) payer(s) in one transaction.
 
 ```ts
-import { createMultiMessageEd25519Instruction } from "@agonx402/sdk";
+import { createMultiMessageEd25519Instruction } from "@ryvonetwork/sdk";
 
 const bundleIx = createMultiMessageEd25519Instruction([
   { signer: payerA, message: commitmentA },
@@ -187,17 +187,17 @@ Two functions are exported for rare cases where you want to hand-build a message
 ### `encodeCompactU64(value)`
 
 ```ts
-import { encodeCompactU64 } from "@agonx402/sdk";
+import { encodeCompactU64 } from "@ryvonetwork/sdk";
 
 encodeCompactU64(1_000_000); // => [192, 132, 61]
 ```
 
-Seven data bits per byte, continuation bit in the MSB. Matches the encoding used inside `agon-cmt-v5` and clearing-round messages. Returns a `number[]`.
+Seven data bits per byte, continuation bit in the MSB. Matches the encoding used inside `ryvo-cmt-v5` and clearing-round messages. Returns a `number[]`.
 
 ### `sha256Bytes(data)`
 
 ```ts
-import { sha256Bytes } from "@agonx402/sdk";
+import { sha256Bytes } from "@ryvonetwork/sdk";
 
 const digest = sha256Bytes(Buffer.from("hello"));
 ```
@@ -208,15 +208,15 @@ Returns a `number[]` of length 32. Uses Node's built-in `crypto.createHash`, so 
 
 ```ts
 import {
-  AgonClient,
+  RyvoClient,
   createCommitmentMessage,
   createEd25519Instruction,
   deriveMessageDomain,
-  AGON_CHAIN_IDS,
-} from "@agonx402/sdk";
+  RYVO_CHAIN_IDS,
+} from "@ryvonetwork/sdk";
 
-const client = new AgonClient({ provider });
-const messageDomain = deriveMessageDomain(client.programId, AGON_CHAIN_IDS.devnet);
+const client = new RyvoClient({ provider });
+const messageDomain = deriveMessageDomain(client.programId, RYVO_CHAIN_IDS.devnet);
 
 const message = createCommitmentMessage({
   messageDomain,
@@ -240,4 +240,4 @@ await client
   .rpc();
 ```
 
-This is the minimum viable settlement transaction in `@agonx402/sdk`. See [Recipes](/sdk/recipes) for the full lifecycle including participant registration, channel creation, and withdrawals.
+This is the minimum viable settlement transaction in `@ryvonetwork/sdk`. See [Recipes](/sdk/recipes) for the full lifecycle including participant registration, channel creation, and withdrawals.

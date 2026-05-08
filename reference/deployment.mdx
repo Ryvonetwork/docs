@@ -1,9 +1,9 @@
 ---
 title: "Deployment"
-description: "Current live deployment details for the Agon Protocol."
+description: "Current live deployment details for the ryvo Protocol."
 ---
 
-The Agon protocol is currently live on Solana devnet. This page records the canonical identifiers and parameters of that deployment.
+The ryvo protocol is currently live on Solana devnet. This page records the canonical identifiers and parameters of that deployment.
 
 ## Live deployment
 
@@ -15,11 +15,11 @@ The Agon protocol is currently live on Solana devnet. This page records the cano
 | Message domain | `a58a109a38f14cc27ef174135176cab3` |
 | Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` |
 | Framework | Anchor |
-| Source | [github.com/Agonx402/agon-protocol](https://github.com/Agonx402/agon-protocol) |
+| Source | [github.com/Ryvonetwork/ryvo-protocol](https://github.com/Ryvonetwork/ryvo-protocol) |
 
 ## Chain IDs
 
-Agon distinguishes deployments by a protocol-level chain ID stored in `GlobalConfig` and folded into the signed [message domain](/reference/messages#message-domain).
+ryvo distinguishes deployments by a protocol-level chain ID stored in `GlobalConfig` and folded into the signed [message domain](/reference/messages#message-domain).
 
 | Chain ID | Network |
 | --- | --- |
@@ -39,7 +39,7 @@ The current devnet deployment uses the production channel-unlock policy while ke
 | Participant withdrawal | Instant (`0` seconds) |
 | Unilateral channel unlock | `72` hours (`259200` seconds) |
 | Cooperative channel unlock | Immediate with both parties' consent |
-| Gateway-channel collateral token | Official devnet USDC; resolve the `token_id` from `TokenRegistry` or `AGON_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
+| Gateway-channel collateral token | Official devnet USDC; resolve the `token_id` from `TokenRegistry` or `RYVO_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
 
 Gateway-channel v1 uses locked channel collateral only. General participant balances remain withdrawable immediately, while channel collateral becomes spendable again through cooperative unlock or the 72-hour unilateral fallback.
 
@@ -55,7 +55,7 @@ The fee recipient is a wallet configured in `GlobalConfig` and can be updated by
 
 ## Authority model
 
-Agon uses two administrative roles, both of which use a two-step pending/accept handoff:
+ryvo uses two administrative roles, both of which use a two-step pending/accept handoff:
 
 - **Config authority** - can update `fee_recipient`, `fee_bps`, `registration_fee_lamports`, and nominate a successor.
 - **Registry authority** - can register new settlement tokens in `TokenRegistry`.
@@ -75,9 +75,9 @@ Agents can discover the live deployment and prepare protocol actions through the
 
 | Surface | Package or path | Scope |
 | --- | --- | --- |
-| Protocol CLI | `@agonx402/protocol-cli` | Read protocol state and prepare unsigned transactions/messages |
-| Protocol MCP | `@agonx402/protocol-mcp` | Mirrored read/prepare tools plus `agon://protocol/llm.txt` |
-| Skills repo | [github.com/Agonx402/agon-gateway-agentic](https://github.com/Agonx402/agon-gateway-agentic) | Gateway and protocol skills for agent runtimes |
+| Protocol CLI | `@ryvonetwork/protocol-cli` | Read protocol state and prepare unsigned transactions/messages |
+| Protocol MCP | `@ryvonetwork/protocol-mcp` | Mirrored read/prepare tools plus `ryvo://protocol/llm.txt` |
+| Skills repo | [github.com/Ryvonetwork/ryvo-agentic](https://github.com/Ryvonetwork/ryvo-agentic) | Gateway and protocol skills for agent runtimes |
 
 See [Agentic tools](/reference/agentic-tools) for package names, skills, LLM text, and the channel-payment guardrails.
 
@@ -87,13 +87,13 @@ The signing domain for a deployment is derived inside the program as:
 
 ```
 message_domain = SHA256(
-    "agon-message-domain-v1"
+    "ryvo-message-domain-v1"
     || program_id
     || chain_id (little-endian u16)
 )[..16]
 ```
 
-Every signed `agon-cmt-v5` and cooperative-round message carries this 16-byte domain, and the program rejects any message whose domain does not match `GlobalConfig.message_domain` for the executing deployment. See [Message formats](/reference/messages#message-domain).
+Every signed `ryvo-cmt-v5` and cooperative-round message carries this 16-byte domain, and the program rejects any message whose domain does not match `GlobalConfig.message_domain` for the executing deployment. See [Message formats](/reference/messages#message-domain).
 
 ## See also
 

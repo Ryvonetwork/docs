@@ -3,7 +3,7 @@ title: "Security Properties"
 description: "The concrete on-chain checks that make settlement paths safe to integrate."
 ---
 
-Agon enforces strict checks around permanent identities, bucketed channels, and off-chain signed settlement. This page covers the checks builders care about most.
+ryvo enforces strict checks around permanent identities, bucketed channels, and off-chain signed settlement. This page covers the checks builders care about most.
 
 ## Deployment-scoped signing domain
 
@@ -11,7 +11,7 @@ Every signed message includes a 16-byte `message_domain`.
 
 `message_domain` is derived **inside the program** from:
 
-1. a fixed Agon domain tag
+1. a fixed ryvo domain tag
 2. the program ID
 3. the chain ID
 
@@ -60,7 +60,7 @@ If a signed message tries to settle to a cumulative amount that is less than or 
 
 Settlement instructions verify signatures and message structure before state writes:
 
-1. Commitment signatures are validated against the exact `agon-cmt-v5` body.
+1. Commitment signatures are validated against the exact `ryvo-cmt-v5` body.
 2. Clearing-round aggregate signatures are validated against the exact round body.
 3. Each signed message parses as a structurally valid protocol message.
 4. Settlement instructions are not called via CPI (`CpiNotAllowed`).

@@ -1,6 +1,6 @@
 ---
 title: "Protocol Demo"
-description: "The protocol-only Agon devnet demo for the live deployment."
+description: "The protocol-only ryvo devnet demo for the live deployment."
 ---
 
 The protocol demo is the primary end-to-end reference run for the live deployment. It exercises every settlement path against the real devnet program and produces the benchmark artifacts that this documentation site publishes.
@@ -9,7 +9,7 @@ The protocol demo is the primary end-to-end reference run for the live deploymen
 
 The demo executes five scenarios in sequence:
 
-1. **Latest-commitment settlement** - one payer, one payee, one channel, settled with a single `agon-cmt-v5` message.
+1. **Latest-commitment settlement** - one payer, one payee, one channel, settled with a single `ryvo-cmt-v5` message.
 2. **Commitment bundle settlement** - one payee collecting multiple payers in a single transaction.
 3. **Single-payer clearing round** - one payer distributing to multiple payees in one cooperative round.
 4. **Bilateral clearing round** - two participants advancing two channels together.
@@ -20,8 +20,8 @@ Each scenario records participants, channels, underlying payment counts, explore
 ## Run it
 
 ```bash
-cd /home/heis/agon/agon-protocol
-npm run demo:agon-protocol
+cd /home/heis/ryvo/ryvo-protocol
+npm run demo:ryvo-protocol
 npm run benchmarks:generate
 ```
 

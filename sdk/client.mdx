@@ -1,19 +1,19 @@
 ---
-title: "AgonClient"
-description: "Typed wrapper around the Agon Anchor program, one method per instruction."
+title: "RyvoClient"
+description: "Typed wrapper around the ryvo Anchor program, one method per instruction."
 ---
 
-`AgonClient` is the primary entry point in [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk). It wires the generated IDL to an `AnchorProvider` and exposes one typed method for every instruction in the [on-chain program](/reference/instructions). Under the hood, each method returns an Anchor `MethodsBuilder`, so you can extend the call with `.preInstructions()`, `.postInstructions()`, `.signers()`, `.rpc()`, `.transaction()`, or `.instruction()` as needed.
+`RyvoClient` is the primary entry point in [`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk). It wires the generated IDL to an `AnchorProvider` and exposes one typed method for every instruction in the [on-chain program](/reference/instructions). Under the hood, each method returns an Anchor `MethodsBuilder`, so you can extend the call with `.preInstructions()`, `.postInstructions()`, `.signers()`, `.rpc()`, `.transaction()`, or `.instruction()` as needed.
 
 ## Construction
 
 ```ts
 import * as anchor from "@coral-xyz/anchor";
-import { AgonClient } from "@agonx402/sdk";
+import { RyvoClient } from "@ryvonetwork/sdk";
 
-const client = new AgonClient({
+const client = new RyvoClient({
   provider: anchor.AnchorProvider.env(),
-  // optional, defaults to AGON_PROTOCOL_PROGRAM_ID from the IDL
+  // optional, defaults to RYVO_PROTOCOL_PROGRAM_ID from the IDL
   // programId: new PublicKey("<override>"),
 });
 ```
@@ -23,20 +23,20 @@ const client = new AgonClient({
 | Field | Type | Required | Default |
 | --- | --- | --- | --- |
 | `provider` | `anchor.AnchorProvider` | yes | N/A |
-| `programId` | `PublicKey` | no | `AGON_PROTOCOL_PROGRAM_ID` (from the packaged IDL) |
+| `programId` | `PublicKey` | no | `RYVO_PROTOCOL_PROGRAM_ID` (from the packaged IDL) |
 
 The SDK also re-exports two lower-level helpers if you want to bring your own `Program`:
 
 ```ts
-import { createAgonProgram, getAgonIdl } from "@agonx402/sdk";
+import { createRyvoProgram, getRyvoIdl } from "@ryvonetwork/sdk";
 
-const program = createAgonProgram({ provider });
-const idl = getAgonIdl(); // clone of the IDL with its `address` field set to the program ID
+const program = createRyvoProgram({ provider });
+const idl = getRyvoIdl(); // clone of the IDL with its `address` field set to the program ID
 ```
 
 ## Address helpers
 
-`AgonClient` memoises nothing; these are pure deterministic derivations and safe to call as often as you need. See [PDAs & constants](/sdk/pdas) for the underlying formulas.
+`RyvoClient` memoises nothing; these are pure deterministic derivations and safe to call as often as you need. See [PDAs & constants](/sdk/pdas) for the underlying formulas.
 
 | Method | Returns |
 | --- | --- |
@@ -83,7 +83,7 @@ Every `fetch*` call hits the RPC configured on your `AnchorProvider`. For high-f
 
 ## Instruction builders
 
-Each of the methods below returns an Anchor `MethodsBuilder<AgonProtocol, ...>`. You must finish the chain with `.rpc()`, `.transaction()`, or `.instruction()` to actually do anything. All input amounts accept [`Amountish`](/sdk/messages#amountish) (`bigint`, `number`, `string`, or any `{ toString(): string }`).
+Each of the methods below returns an Anchor `MethodsBuilder<RyvoProtocol, ...>`. You must finish the chain with `.rpc()`, `.transaction()`, or `.instruction()` to actually do anything. All input amounts accept [`Amountish`](/sdk/messages#amountish) (`bigint`, `number`, `string`, or any `{ toString(): string }`).
 
 ### `initializeProtocol(params)`
 
@@ -92,7 +92,7 @@ Initialize `GlobalConfig`, only runnable once per deployment by the upgrade auth
 ```ts
 await client
   .initializeProtocol({
-    chainId: AGON_CHAIN_IDS.devnet,
+    chainId: RYVO_CHAIN_IDS.devnet,
     feeBps: 25,
     registrationFeeLamports: 5_000_000n,
     feeRecipient,
@@ -104,7 +104,7 @@ await client
 
 | Param | Type | Notes |
 | --- | --- | --- |
-| `chainId` | `number` | Use `AGON_CHAIN_IDS.*` constants. |
+| `chainId` | `number` | Use `RYVO_CHAIN_IDS.*` constants. |
 | `feeBps` | `number` | Protocol fee in basis points. |
 | `registrationFeeLamports` | `Amountish` | Lamports charged per participant registration. |
 | `feeRecipient` | `PublicKey` | Where protocol fees accrue. |
@@ -236,7 +236,7 @@ await client
 Change how other participants are allowed to open channels **to** this participant.
 
 ```ts
-import { INBOUND_CHANNEL_POLICY } from "@agonx402/sdk";
+import { INBOUND_CHANNEL_POLICY } from "@ryvonetwork/sdk";
 
 await client
   .updateInboundChannelPolicy({
@@ -285,7 +285,7 @@ Two pure helpers complement the readers above.
 Look up a specific token balance entry inside a fetched `ParticipantAccount`, with safe zero defaults when the entry does not exist yet:
 
 ```ts
-import { getTokenBalance } from "@agonx402/sdk";
+import { getTokenBalance } from "@ryvonetwork/sdk";
 
 const participant = await client.fetchParticipant(owner);
 const balance = getTokenBalance(participant, 2);
@@ -300,7 +300,7 @@ console.log(balance.withdrawalUnlockAt.toString());
 Compute the next `committed_amount` for a commitment, given an already-fetched channel state and an incremental delta:
 
 ```ts
-import { nextCommitmentAmount } from "@agonx402/sdk";
+import { nextCommitmentAmount } from "@ryvonetwork/sdk";
 
 const channel = await client.fetchChannel({ channelState });
 const committedAmount = nextCommitmentAmount(channel, 100_000n);
@@ -318,4 +318,4 @@ Returns an Anchor `BN` so it composes with the other builders.
 
 ## Error handling
 
-Anchor raises its own error types for RPC and program errors. `AgonClient` does not wrap them, let them bubble up and inspect `error.error?.errorCode` / `error.logs` as usual. The canonical list of protocol error codes is on [Reference -> Errors](/reference/errors).
+Anchor raises its own error types for RPC and program errors. `RyvoClient` does not wrap them, let them bubble up and inspect `error.error?.errorCode` / `error.logs` as usual. The canonical list of protocol error codes is on [Reference -> Errors](/reference/errors).

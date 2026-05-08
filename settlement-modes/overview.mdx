@@ -1,23 +1,23 @@
 ---
 title: "Settlement Modes Overview"
-description: "The three settlement paths in Agon and when to use each."
+description: "The three settlement paths in ryvo and when to use each."
 ---
 
-Agon exposes three settlement paths, each built on the previous one. All three settle into the same shared vault and the same participant balances. They differ only in how many channels and how many participants are settled together.
+ryvo exposes three settlement paths, each built on the previous one. All three settle into the same shared vault and the same participant balances. They differ only in how many channels and how many participants are settled together.
 
 ## The three modes at a glance
 
 | Mode | Message format | Instruction | Best for |
 | --- | --- | --- | --- |
-| [Direct](/settlement-modes/direct-settlement) | `agon-cmt-v5` | `settle_individual` | One payer, one payee, one channel |
-| [Bundle](/settlement-modes/bundle-settlement) | Many `agon-cmt-v5` | `settle_commitment_bundle` | One payee aggregating many payers |
-| [Cooperative clearing](/settlement-modes/clearing-rounds) | `agon-round` (BLS round body) | `settle_clearing_round` | Several participants advancing many channels together |
+| [Direct](/settlement-modes/direct-settlement) | `ryvo-cmt-v5` | `settle_individual` | One payer, one payee, one channel |
+| [Bundle](/settlement-modes/bundle-settlement) | Many `ryvo-cmt-v5` | `settle_commitment_bundle` | One payee aggregating many payers |
+| [Cooperative clearing](/settlement-modes/clearing-rounds) | `Ryvo-round` (BLS round body) | `settle_clearing_round` | Several participants advancing many channels together |
 
 Direct settlement is always available as a fallback, even when bundle or cooperative paths are used. See [Design principles](/thesis/design-principles#always-available-fallback-path) for why.
 
 ## Direct settlement
 
-One signed `agon-cmt-v5` moves one channel forward. The payee submits it with `settle_individual`.
+One signed `ryvo-cmt-v5` moves one channel forward. The payee submits it with `settle_individual`.
 
 - **Signatures:** 1 (the channel's `authorized_signer`)
 - **On-chain writes:** 1 channel, 2 participants
@@ -26,7 +26,7 @@ One signed `agon-cmt-v5` moves one channel forward. The payee submits it with `s
 
 ## Bundle settlement
 
-The payee collects many `agon-cmt-v5` messages from many payers in the same token and settles them in one transaction with `settle_commitment_bundle`.
+The payee collects many `ryvo-cmt-v5` messages from many payers in the same token and settles them in one transaction with `settle_commitment_bundle`.
 
 - **Signatures:** one per included channel (each payer signs independently)
 - **On-chain writes:** N channels, N+1 participants

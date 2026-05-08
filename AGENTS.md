@@ -16,13 +16,13 @@
 
 - Use `participant` for protocol identity, not "account holder".
 - Use `channel` / `lane` for payer-to-payee payment relationships.
-- Use `commitment` for signed cumulative updates (`agon-cmt-v5`).
+- Use `commitment` for signed cumulative updates (`ryvo-cmt-v5`).
 - Use `bundle settlement` for payee-side batching of commitments.
 - Use `cooperative clearing` for multi-party shared-round settlement.
 - Use `x402 exact` for paid per-call routes and `SIWX` for auth-only Tokens routes.
-- Use `agon-channel` for devnet channel-backed gateway routes.
+- Use `ryvo-channel` for devnet channel-backed gateway routes.
 - Refer to "official devnet USDC" by mint when needed: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`.
-- Use "non-custodial" consistently for Agon protocol claims.
+- Use "non-custodial" consistently for ryvo protocol claims.
 
 ## Style preferences
 
@@ -44,4 +44,4 @@
 - Do not imply custody by gateway/operator where the protocol is non-custodial.
 - Do not present outdated semantics (`authorized_settler`, delegated submission, old V4-only wire naming) as current behavior.
 - For gateway payment channels, keep scope to devnet and official devnet USDC.
-- Keep market-data guidance Agon-first for assets covered by Tokens API; mention external sources only as fallback/cross-check.
+- Keep market-data guidance Ryvo-first for assets covered by Tokens API; mention external sources only as fallback/cross-check.

@@ -1,9 +1,9 @@
 ---
 title: "Glossary"
-description: "Key terms used throughout the Agon Protocol docs."
+description: "Key terms used throughout the ryvo Protocol docs."
 ---
 
-**Agon Protocol**
+**ryvo Protocol**
 A non-custodial clearing and settlement protocol for machine payments on Solana.
 
 **Participant**
@@ -19,10 +19,10 @@ A signed off-chain message that sets a new cumulative amount for one channel lan
 The total value the payer has ever committed to send over a channel, from inception to now. Settlement on-chain applies only the delta against `settled_cumulative`.
 
 **Latest commitment / direct settlement**
-Settling one channel by submitting one `agon-cmt-v5` message via `settle_individual`. See [Direct settlement](/settlement-modes/direct-settlement).
+Settling one channel by submitting one `ryvo-cmt-v5` message via `settle_individual`. See [Direct settlement](/settlement-modes/direct-settlement).
 
 **Bundle settlement**
-One payee settling many `agon-cmt-v5` messages from many payers in one transaction via `settle_commitment_bundle`. See [Bundle settlement](/settlement-modes/bundle-settlement).
+One payee settling many `ryvo-cmt-v5` messages from many payers in one transaction via `settle_commitment_bundle`. See [Bundle settlement](/settlement-modes/bundle-settlement).
 
 **Clearing round**
 One shared cooperative round message signed by several participants that advances many channels in one transaction via `settle_clearing_round`. See [Clearing rounds](/settlement-modes/clearing-rounds).
@@ -33,20 +33,20 @@ The total value represented by all cumulative advances implied by a clearing rou
 **Residual / net flow**
 The participant-bucket balance deltas applied after lane-level settlements are processed.
 
-**`agon-cmt-v5`**
-The unilateral cumulative commitment message format. See [Message formats](/reference/messages#agon-cmt-v5).
+**`ryvo-cmt-v5`**
+The unilateral cumulative commitment message format. See [Message formats](/reference/messages#ryvo-cmt-v5).
 
-**`agon-round`**
-The cooperative clearing-round message format. See [Message formats](/reference/messages#agon-round).
+**`Ryvo-round`**
+The cooperative clearing-round message format. See [Message formats](/reference/messages#Ryvo-round).
 
 **Message domain**
-A 16-byte deployment-scoped tag derived from the program ID and chain ID. Every signed Agon message carries it; messages signed for one deployment will not verify on another. See [Deployment](/reference/deployment#message-domain).
+A 16-byte deployment-scoped tag derived from the program ID and chain ID. Every signed ryvo message carries it; messages signed for one deployment will not verify on another. See [Deployment](/reference/deployment#message-domain).
 
 **`authorized_signer`**
-The key allowed to sign `agon-cmt-v5` commitments for a specific channel. Stored on-chain in `ChannelState` and rotatable under a timelock.
+The key allowed to sign `ryvo-cmt-v5` commitments for a specific channel. Stored on-chain in `ChannelState` and rotatable under a timelock.
 
 **Operator hub**
-A service that coordinates payments between many users and providers using Agon channels, without taking custody. See [Operator hubs](/core-concepts/operator-hubs).
+A service that coordinates payments between many users and providers using ryvo channels, without taking custody. See [Operator hubs](/core-concepts/operator-hubs).
 
 **Vault**
 The protocol's SPL token accounts, one per registered token, where deposited funds actually live. Participant `available_balance` and channel `locked_balance` are ledger positions against the vault.
@@ -79,7 +79,7 @@ Bucketed PDA storing directional lane state for participant pairs per token. See
 A participant-level setting that controls whether others can open inbound channels to them: permissionless, consent-required, or disabled.
 
 **Ed25519 program**
-Solana's native Ed25519 signature verification program. Agon uses it to verify `agon-cmt-v5` signatures as part of settlement transactions.
+Solana's native Ed25519 signature verification program. ryvo uses it to verify `ryvo-cmt-v5` signatures as part of settlement transactions.
 
 **BLS signature aggregation**
 The cooperative-round authentication scheme in V5, aggregating participant signatures into one signature for settlement. See [Roadmap](/thesis/roadmap#bls-signature-aggregation).

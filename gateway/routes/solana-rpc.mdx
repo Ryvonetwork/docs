@@ -53,7 +53,7 @@ Fetch the lamport balance for an account.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getBalance \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/rpc/getBalance \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY"]}'
@@ -82,7 +82,7 @@ Fetch account metadata and raw account data.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getAccountInfo \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/alchemy/rpc/getAccountInfo \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY",{"encoding":"base64"}]}'
@@ -111,7 +111,7 @@ Fetch a confirmed transaction by signature.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getTransaction \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/rpc/getTransaction \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":["<signature>",{"maxSupportedTransactionVersion":0}]}'
@@ -140,7 +140,7 @@ List recent transaction signatures for an address.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getSignaturesForAddress \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/alchemy/rpc/getSignaturesForAddress \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY",{"limit":25}]}'
@@ -170,7 +170,7 @@ List token accounts owned by an address.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getTokenAccountsByOwner \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/rpc/getTokenAccountsByOwner \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":["86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY",{"programId":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"},{"encoding":"jsonParsed"}]}'
@@ -205,7 +205,7 @@ Query accounts owned by a program.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getProgramAccounts \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/rpc/getProgramAccounts \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{
@@ -252,7 +252,7 @@ Helius-only enhanced transaction history with filtering, sorting, and keyset pag
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getTransactionsForAddress \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/rpc/getTransactionsForAddress \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{

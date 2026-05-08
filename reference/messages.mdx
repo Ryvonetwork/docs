@@ -1,12 +1,12 @@
 ---
 title: "Message Formats"
-description: "The exact signed message formats used by the current Agon protocol."
+description: "The exact signed message formats used by the current ryvo protocol."
 ---
 
-Agon currently uses two signed message types:
+ryvo currently uses two signed message types:
 
-1. `agon-cmt-v5` - unilateral cumulative commitment for one payment channel.
-2. `agon-round` - cooperative clearing-round message body used by BLS-authenticated clearing rounds.
+1. `ryvo-cmt-v5` - unilateral cumulative commitment for one payment channel.
+2. `Ryvo-round` - cooperative clearing-round message body used by BLS-authenticated clearing rounds.
 
 Commitment signatures are verified through Ed25519 pre-instructions. Cooperative rounds are verified through aggregate BLS signatures over one shared round body.
 
@@ -24,7 +24,7 @@ Every signed message begins with:
 
 ```
 message_domain = SHA256(
-    "agon-message-domain-v1"
+    "ryvo-message-domain-v1"
     || program_id
     || chain_id (little-endian u16)
 )[..16]
@@ -42,7 +42,7 @@ Participant IDs and cumulative amounts use compact unsigned integer encoding in 
 
 `token_id` is encoded as a little-endian `u16` in both message types.
 
-## `agon-cmt-v5`
+## `ryvo-cmt-v5`
 
 The unilateral cumulative commitment message. Used by:
 
@@ -65,9 +65,9 @@ The unilateral cumulative commitment message. Used by:
 ### Semantics
 
 - `committed_amount` is **cumulative**, not incremental. If the channel is already settled to `1_000_000` and the new message says `1_250_000`, the on-chain delta is `250_000`.
-- Operator or coordinator compensation is **not** embedded in `agon-cmt-v5`. If a flow needs to pay an operator, that payment is expressed as its own ordinary channel commitment.
+- Operator or coordinator compensation is **not** embedded in `ryvo-cmt-v5`. If a flow needs to pay an operator, that payment is expressed as its own ordinary channel commitment.
 
-## `agon-round`
+## `Ryvo-round`
 
 The cooperative clearing-round message. Used by `settle_clearing_round`.
 
@@ -104,8 +104,8 @@ See [Clearing rounds](/settlement-modes/clearing-rounds) for a worked example an
 
 ## Which message to use
 
-- Use `agon-cmt-v5` when one payer is updating one channel. This includes bundled settlement, which batches many `agon-cmt-v5` messages for one payee into one transaction.
-- Use `agon-round` when several participants are willing to sign one shared message so many channels can be advanced in one on-chain transaction.
+- Use `ryvo-cmt-v5` when one payer is updating one channel. This includes bundled settlement, which batches many `ryvo-cmt-v5` messages for one payee into one transaction.
+- Use `Ryvo-round` when several participants are willing to sign one shared message so many channels can be advanced in one on-chain transaction.
 
 ## See also
 

@@ -14,7 +14,7 @@ Clients should use this endpoint instead of hard-coding route lists. Any route t
 ## Fetching the catalog
 
 ```bash
-curl https://gateway.agonx402.com/v1/catalog | jq .
+curl https://gateway.ryvo.network/v1/catalog | jq .
 ```
 
 A response includes the full route list plus provider categories:
@@ -24,7 +24,7 @@ A response includes the full route list plus provider categories:
   "ok": true,
   "version": 1,
   "payment": {
-    "modes": ["exact", "siwx", "agon-channel"],
+    "modes": ["exact", "siwx", "ryvo-channel"],
     "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     "pricingModel": "mixed",
     "asset": {
@@ -40,9 +40,9 @@ A response includes the full route list plus provider categories:
   },
   "categories": {
     "providers": [
-      { "id": "alchemy", "label": "Alchemy", "routeCount": 18, "href": "https://gateway.agonx402.com/v1/catalog?provider=alchemy" },
-      { "id": "helius", "label": "Helius", "routeCount": 18, "href": "https://gateway.agonx402.com/v1/catalog?provider=helius" },
-      { "id": "tokens", "label": "TokensAPI", "routeCount": 19, "href": "https://gateway.agonx402.com/v1/catalog?provider=tokens" }
+      { "id": "alchemy", "label": "Alchemy", "routeCount": 18, "href": "https://gateway.ryvo.network/v1/catalog?provider=alchemy" },
+      { "id": "helius", "label": "Helius", "routeCount": 18, "href": "https://gateway.ryvo.network/v1/catalog?provider=helius" },
+      { "id": "tokens", "label": "TokensAPI", "routeCount": 19, "href": "https://gateway.ryvo.network/v1/catalog?provider=tokens" }
     ]
   },
   "routes": [ /* ... CatalogRouteEntry[] ... */ ]
@@ -54,9 +54,9 @@ A response includes the full route list plus provider categories:
 To fetch only one provider's routes:
 
 ```bash
-curl "https://gateway.agonx402.com/v1/catalog?provider=alchemy"
-curl "https://gateway.agonx402.com/v1/catalog?provider=helius"
-curl "https://gateway.agonx402.com/v1/catalog?provider=tokens"
+curl "https://gateway.ryvo.network/v1/catalog?provider=alchemy"
+curl "https://gateway.ryvo.network/v1/catalog?provider=helius"
+curl "https://gateway.ryvo.network/v1/catalog?provider=tokens"
 ```
 
 Aliases accepted for the Tokens provider: `tokens`, `tokensapi`, `tokens-api`.
@@ -76,12 +76,12 @@ Each item in `routes[]` is a `CatalogRouteEntry`:
 | `surface` | `"rpc" \| "das" \| "wallet" \| "tokens"` | Logical surface. `wallet` is the Helius Wallet API. |
 | `method` | `string` | Canonical method name (`getBalance`, `search`, …). |
 | `description` | `string` | Human-readable route description. |
-| `accessMode` | `"exact" \| "siwx" \| "agon-channel"` | x402 payment, wallet auth, or Agon channel authorization. See [Access modes](/gateway/access-modes). |
+| `accessMode` | `"exact" \| "siwx" \| "ryvo-channel"` | x402 payment, wallet auth, or ryvo channel authorization. See [Access modes](/gateway/access-modes). |
 | `paymentRequired` | `boolean` | `true` for paid routes, `false` for SIWX. |
 | `priceUsd` | `string` (optional) | Decimal USD price, present for x402 `exact` paid routes. |
-| `priceTokenAmount` | `string` (optional) | Six-decimal official devnet USDC amount, present for `agon-channel` routes. |
-| `tokenMint` | `string` (optional) | Official devnet USDC mint for `agon-channel` routes. |
-| `tokenId` | `number` (optional) | Protocol token ID for `agon-channel` routes, resolved from the live registry/config. |
+| `priceTokenAmount` | `string` (optional) | Six-decimal official devnet USDC amount, present for `ryvo-channel` routes. |
+| `tokenMint` | `string` (optional) | Official devnet USDC mint for `ryvo-channel` routes. |
+| `tokenId` | `number` (optional) | Protocol token ID for `ryvo-channel` routes, resolved from the live registry/config. |
 | `authNetworks` | `string[]` (optional) | SIWX networks, present for SIWX routes. |
 | `paymentNetwork` | `string` (optional) | CAIP-2 of the settlement network (paid routes only). |
 | `paymentAsset` | `{ symbol, mint, decimals }` (optional) | Asset descriptor (paid routes only). |
@@ -110,7 +110,7 @@ Typical client flow:
 2. Render routes grouped by `categories.providers`.
 3. For each user action, look up the matching `CatalogRouteEntry`, build the request according to `inputSchema`, and fire it.
 4. If `accessMode: "exact"`, let your x402 client library handle payment using the price from the `402` challenge.
-5. If `accessMode: "agon-channel"`, send `X-Agon-Request-Id` and `AGON-COMMITMENT` with the next cumulative channel amount.
+5. If `accessMode: "ryvo-channel"`, send `X-Ryvo-Request-Id` and `RYVO-COMMITMENT` with the next cumulative channel amount.
 6. If `accessMode: "siwx"`, let your client handle SIWX using the `authNetworks` from the `402` challenge.
 
 See the [Integration guide](/gateway/integration-guide) for a worked TypeScript example.

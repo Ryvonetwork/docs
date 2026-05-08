@@ -3,7 +3,7 @@ title: "Protocol Overview"
 description: "A builder-first tour of protocol accounts, messages, and settlement paths."
 ---
 
-Agon decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
+ryvo decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
 
 Each wallet registers once as a participant and keeps the same `participant_id` for the life of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer may optionally lock funds to that channel if the relationship needs guaranteed payment capacity.
 
@@ -22,10 +22,10 @@ Full field-level layouts are on the [Account layouts](/reference/accounts) refer
 
 ## Signed messages
 
-Agon uses two signed message formats:
+ryvo uses two signed message formats:
 
-- **`agon-cmt-v5`** - the unilateral cumulative commitment for one channel
-- **`agon-round`** - the cooperative clearing-round body for several participants
+- **`ryvo-cmt-v5`** - the unilateral cumulative commitment for one channel
+- **`Ryvo-round`** - the cooperative clearing-round body for several participants
 
 Both messages embed the deployment-scoped `message_domain`, so a signature for one environment does not verify on another. Full byte-level layouts are on the [Message formats](/reference/messages) reference.
 
@@ -56,18 +56,18 @@ In the common case, an integration goes through these steps:
 
 ## What stays off-chain
 
-Agon keeps signed payment updates off-chain until settlement. Most integrations store:
+ryvo keeps signed payment updates off-chain until settlement. Most integrations store:
 
-- the latest signed `agon-cmt-v5` per channel
+- the latest signed `ryvo-cmt-v5` per channel
 - usage or metering state
 - bundle assembly logic
 - cooperative round construction logic
 
 Only the newest valid state needs to reach the chain.
 
-## Why Agon uses permanent identities and persistent lanes
+## Why ryvo uses permanent identities and persistent lanes
 
-Agon intentionally uses stable identities and permanent channels. The tradeoff is more long-lived on-chain state, but the protocol becomes much easier to work with:
+ryvo intentionally uses stable identities and permanent channels. The tradeoff is more long-lived on-chain state, but the protocol becomes much easier to work with:
 
 - `participant_id` values do not recycle.
 - Off-chain services can index users without worrying about identity reuse.
@@ -92,7 +92,7 @@ See [Settlement modes](/settlement-modes/overview) for the tradeoffs side by sid
 | Program ID | `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` |
 | Cluster | `devnet` |
 | Message domain | `a58a109a38f14cc27ef174135176cab3` |
-| Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve `token_id` from `TokenRegistry` or `AGON_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
+| Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve `token_id` from `TokenRegistry` or `RYVO_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
 
 See [Deployment](/reference/deployment) for environment-specific chain IDs and timelocks.
 
@@ -100,7 +100,7 @@ See [Deployment](/reference/deployment) for environment-specific chain IDs and t
 
 <CardGroup cols={2}>
   <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
-    Build the smallest useful Agon integration with real Anchor calls.
+    Build the smallest useful ryvo integration with real Anchor calls.
   </Card>
   <Card title="Payment channels" icon="route" href="/core-concepts/payment-channels">
     How one-way, permanent channels are modeled and maintained.

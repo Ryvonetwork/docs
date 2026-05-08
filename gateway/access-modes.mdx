@@ -1,6 +1,6 @@
 ---
 title: "Access Modes"
-description: "x402 exact, wallet-authenticated SIWX, and Agon channel routes."
+description: "x402 exact, wallet-authenticated SIWX, and ryvo channel routes."
 ---
 
 Every gateway route reports its authorization mode as `accessMode` in the catalog.
@@ -9,9 +9,9 @@ Every gateway route reports its authorization mode as `accessMode` in the catalo
 | --- | --- | --- | --- |
 | `exact` | `PAYMENT-SIGNATURE` (aka `X-PAYMENT`) | Yes - USDC on Solana mainnet | Paid Solana RPC and DAS routes |
 | `siwx` | `SIGN-IN-WITH-X` | No | Tokens API routes |
-| `agon-channel` | `X-Agon-Request-Id` + `AGON-COMMITMENT` | Settled later through Agon Protocol | Channel-backed Solana RPC, DAS, and Helius Wallet routes |
+| `ryvo-channel` | `X-Ryvo-Request-Id` + `RYVO-COMMITMENT` | Settled later through ryvo Protocol | Channel-backed Solana RPC, DAS, and Helius Wallet routes |
 
-The `exact` and `siwx` modes use the x402 request-challenge-retry pattern. The `agon-channel` mode uses an already-open Agon payment channel and a signed cumulative commitment per request.
+The `exact` and `siwx` modes use the x402 request-challenge-retry pattern. The `ryvo-channel` mode uses an already-open ryvo payment channel and a signed cumulative commitment per request.
 
 ## `exact` - pay-per-call with USDC
 
@@ -29,7 +29,7 @@ The first unauthenticated request to a paid route returns `402 Payment Required`
       "scheme": "exact",
       "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
       "maxAmountRequired": "<micro-USDC>",
-      "resource": "https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
+      "resource": "https://gateway.ryvo.network/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
       "description": "Fetch the lamport balance for an account.",
       "mimeType": "application/json",
       "payTo": "<gateway payTo wallet>",
@@ -56,14 +56,14 @@ The client builds an SVM `exact` transfer for `maxAmountRequired` to `payTo` and
 
 If the upstream fails, settlement is skipped. No funds move.
 
-## `agon-channel` - channel-backed gateway calls
+## `ryvo-channel` - channel-backed gateway calls
 
-Used by `/v1/agon-channel/...` routes. The agent opens a channel to the gateway merchant participant, locks official devnet USDC, and sends a signed cumulative commitment with each request.
+Used by `/v1/ryvo-channel/...` routes. The agent opens a channel to the gateway merchant participant, locks official devnet USDC, and sends a signed cumulative commitment with each request.
 
 Required request headers:
 
-- `X-Agon-Request-Id`: stable idempotency key for the request.
-- `AGON-COMMITMENT`: base64 JSON envelope containing the signed `agon-cmt-v5` cumulative commitment payload.
+- `X-Ryvo-Request-Id`: stable idempotency key for the request.
+- `RYVO-COMMITMENT`: base64 JSON envelope containing the signed `ryvo-cmt-v5` cumulative commitment payload.
 
 The gateway verifies that the commitment targets the gateway merchant, live devnet program, correct cluster, correct message domain, and official devnet USDC token. It then checks channel headroom as:
 
@@ -90,9 +90,9 @@ The first unauthenticated request returns `402 Payment Required` with a SIWX ext
     {
       "scheme": "sign-in-with-x",
       "network": ["solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"],
-      "statement": "Sign in with your wallet to access TokensAPI through Agon.",
+      "statement": "Sign in with your wallet to access TokensAPI through ryvo.",
       "expirationSeconds": 300,
-      "resource": "https://gateway.agonx402.com/v1/x402/tokens/health"
+      "resource": "https://gateway.ryvo.network/v1/x402/tokens/health"
     }
   ]
 }
@@ -115,9 +115,9 @@ The modes solve different problems the gateway needs to bridge:
 
 - **Paid Solana RPC/DAS** comes from providers that already have a well-defined PAYG cost per request, and clients want per-call payment without managing a provider-specific API key. `exact` x402 is the natural match.
 - **Tokens API** is priced at the account level, not per request, and needs a trusted origin to hold the shared API key. Asking clients to pay per request would misrepresent the upstream cost. SIWX gives clients wallet-level identity without pretending each call has an independent on-chain price.
-- **Payment-channel gateway calls** are best for agents that repeatedly call RPC, DAS, or wallet routes and want to amortize settlement with Agon Protocol instead of paying an on-chain transfer per request.
+- **Payment-channel gateway calls** are best for agents that repeatedly call RPC, DAS, or wallet routes and want to amortize settlement with ryvo Protocol instead of paying an on-chain transfer per request.
 
-The x402 flows use standard x402 extensions, so any x402-compatible client library (including `@x402/fetch`) supports them out of the box. Channel-backed calls use Agon-specific protocol tooling; see [Agentic tools](/reference/agentic-tools).
+The x402 flows use standard x402 extensions, so any x402-compatible client library (including `@x402/fetch`) supports them out of the box. Channel-backed calls use Ryvo-specific protocol tooling; see [Agentic tools](/reference/agentic-tools).
 
 ## See also
 

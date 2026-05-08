@@ -1,6 +1,6 @@
 ---
 title: "Integration Guide"
-description: "Integrate the Agon Gateway into your own client or service."
+description: "Integrate the ryvo Gateway into your own client or service."
 ---
 
 For x402 routes, the gateway behaves like a standard x402 resource server. Any x402-compatible client library works against those routes. This page shows the most common integration path: TypeScript/Node, using the official `@x402` packages.
@@ -65,7 +65,7 @@ const gatewayFetch = wrapFetchWithPayment(fetch, {
 
 ```ts
 const response = await gatewayFetch(
-  "https://gateway.agonx402.com/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
+  "https://gateway.ryvo.network/v1/x402/solana/mainnet/alchemy/rpc/getBalance",
   {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -97,7 +97,7 @@ You do not need to parse the challenge envelope yourself.
 
 ```ts
 const tokensResponse = await gatewayFetch(
-  "https://gateway.agonx402.com/v1/x402/tokens/assets/search?q=solana&limit=5",
+  "https://gateway.ryvo.network/v1/x402/tokens/assets/search?q=solana&limit=5",
 );
 
 const { result } = await tokensResponse.json();
@@ -111,7 +111,7 @@ No USDC is transferred. Under the hood `gatewayFetch` constructed a SIWX payload
 For agent-style clients that need to enumerate available routes:
 
 ```ts
-const catalog = await fetch("https://gateway.agonx402.com/v1/catalog").then((r) => r.json());
+const catalog = await fetch("https://gateway.ryvo.network/v1/catalog").then((r) => r.json());
 
 for (const route of catalog.routes) {
   console.log(route.httpMethod, route.path, route.accessMode, route.priceUsd ?? route.priceTokenAmount ?? "");
@@ -129,7 +129,7 @@ Best fit: background jobs that need Solana data but are cost-sensitive.
 ```ts
 async function fetchBalance(account: string) {
   const res = await gatewayFetch(
-    "https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/rpc/getBalance",
+    "https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/rpc/getBalance",
     {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -149,7 +149,7 @@ Best fit: dashboards and explorers that want Tokens API data without shipping an
 
 ```ts
 async function searchAsset(q: string) {
-  const url = new URL("https://gateway.agonx402.com/v1/x402/tokens/assets/search");
+  const url = new URL("https://gateway.ryvo.network/v1/x402/tokens/assets/search");
   url.searchParams.set("q", q);
   url.searchParams.set("limit", "5");
   const res = await gatewayFetch(url);
@@ -179,7 +179,7 @@ See [Payment headers reference](/gateway/reference/payment-headers) for the full
 
 ## Base URL
 
-The hosted gateway is at `https://gateway.agonx402.com`.
+The hosted gateway is at `https://gateway.ryvo.network`.
 
 ## See also
 

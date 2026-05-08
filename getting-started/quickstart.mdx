@@ -1,23 +1,23 @@
 ---
 title: "Quickstart"
-description: "See Agon run end-to-end against the live devnet deployment in a few minutes."
+description: "See ryvo run end-to-end against the live devnet deployment in a few minutes."
 ---
 
-This page is the fastest way to see the Agon protocol execute real settlements. It runs the committed devnet demo, which exercises every settlement path against the live deployment and produces the benchmark artifacts used throughout these docs.
+This page is the fastest way to see the ryvo protocol execute real settlements. It runs the committed devnet demo, which exercises every settlement path against the live deployment and produces the benchmark artifacts used throughout these docs.
 
 If you want the integration-level walkthrough instead, go to [Your first payment](/getting-started/first-payment).
 
 <Steps>
   <Step title="Clone the protocol repository">
     ```bash
-    git clone https://github.com/Agonx402/agon-protocol.git
-    cd agon-protocol
+    git clone https://github.com/Ryvonetwork/ryvo-protocol.git
+    cd ryvo-protocol
     npm install
     ```
   </Step>
   <Step title="Run the devnet demo">
     ```bash
-    npm run demo:agon-protocol
+    npm run demo:ryvo-protocol
     ```
 
     This executes the committed end-to-end flow against the live devnet program:
@@ -28,7 +28,7 @@ If you want the integration-level walkthrough instead, go to [Your first payment
     4. bilateral cooperative clearing
     5. the largest executable multilateral clearing round on devnet
 
-    The run writes a machine-readable manifest to `config/agon-protocol-demo-last-run.json`.
+    The run writes a machine-readable manifest to `config/ryvo-protocol-demo-last-run.json`.
   </Step>
   <Step title="Generate benchmark artifacts (optional)">
     ```bash
@@ -46,7 +46,7 @@ If you want the integration-level walkthrough instead, go to [Your first payment
 | Program ID | `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` |
 | Cluster | `devnet` |
 | Message domain | `a58a109a38f14cc27ef174135176cab3` |
-| Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve `token_id` from `TokenRegistry` or `AGON_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
+| Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve `token_id` from `TokenRegistry` or `RYVO_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
 
 The full reference is on the [Deployment](/reference/deployment) page.
 
@@ -80,7 +80,7 @@ The PowerShell script spins up a local validator, deploys the program, and runs 
     The on-chain objects, signed messages, and settlement paths.
   </Card>
   <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
-    Build the smallest useful Agon integration end-to-end.
+    Build the smallest useful ryvo integration end-to-end.
   </Card>
   <Card title="Run the devnet demo" icon="terminal" href="/getting-started/devnet-demo">
     More detail on the demo script and what it produces.

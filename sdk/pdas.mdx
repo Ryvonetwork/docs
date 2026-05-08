@@ -3,14 +3,14 @@ title: "PDAs & constants"
 description: "Deterministic address derivations and the constants that feed them."
 ---
 
-Every account the Agon Protocol uses is a program-derived address (PDA). The SDK exports pure helpers for each of them, plus the seeds and program-wide constants they depend on. Nothing here hits an RPC; everything is local, deterministic, and cheap to call.
+Every account the ryvo Protocol uses is a program-derived address (PDA). The SDK exports pure helpers for each of them, plus the seeds and program-wide constants they depend on. Nothing here hits an RPC; everything is local, deterministic, and cheap to call.
 
 ## Constants
 
 ```ts
 import {
-  AGON_PROTOCOL_PROGRAM_ID,
-  AGON_CHAIN_IDS,
+  RYVO_PROTOCOL_PROGRAM_ID,
+  RYVO_CHAIN_IDS,
   MESSAGE_DOMAIN_TAG,
   GLOBAL_CONFIG_SEED,
   TOKEN_REGISTRY_SEED,
@@ -20,20 +20,20 @@ import {
   BPF_LOADER_UPGRADEABLE_PROGRAM_ID,
   SPL_TOKEN_PROGRAM_ID,
   INBOUND_CHANNEL_POLICY,
-  AGON_PROTOCOL_IDL,
-} from "@agonx402/sdk";
+  ryvo_protocol_IDL,
+} from "@ryvonetwork/sdk";
 ```
 
 ### Program ID
 
 | Constant | Value | Notes |
 | --- | --- | --- |
-| `AGON_PROTOCOL_PROGRAM_ID` | `PublicKey` from the packaged IDL | Matches the [live devnet deployment](/reference/deployment) by default. |
-| `AGON_PROTOCOL_IDL` | The generated Anchor IDL JSON | Useful if you want to build your own `Program` from scratch. |
+| `RYVO_PROTOCOL_PROGRAM_ID` | `PublicKey` from the packaged IDL | Matches the [live devnet deployment](/reference/deployment) by default. |
+| `ryvo_protocol_IDL` | The generated Anchor IDL JSON | Useful if you want to build your own `Program` from scratch. |
 
 ### Chain IDs
 
-`AGON_CHAIN_IDS` is a `const` map used everywhere a `chainId` is required, including [`deriveMessageDomain`](#derivemessagedomain).
+`RYVO_CHAIN_IDS` is a `const` map used everywhere a `chainId` is required, including [`deriveMessageDomain`](#derivemessagedomain).
 
 | Key | Value | Network |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ All PDA helpers use these seeds internally. They are exported for advanced calle
 | `PARTICIPANT_SEED` | `"participant"` |
 | `VAULT_TOKEN_ACCOUNT_SEED` | `"vault-token-account"` |
 | `CHANNEL_V2_SEED` | `"channel-v2"` |
-| `MESSAGE_DOMAIN_TAG` | `Buffer.from("agon-message-domain-v1", "utf8")` |
+| `MESSAGE_DOMAIN_TAG` | `Buffer.from("ryvo-message-domain-v1", "utf8")` |
 
 ### System program IDs
 
@@ -74,7 +74,7 @@ Numeric enum mirroring the on-chain variant used by `updateInboundChannelPolicy`
 
 ## PDA helpers
 
-All PDA helpers return a `PublicKey` and are available both as free functions and as methods on [`AgonClient`](/sdk/client#address-helpers) (which simply curries the `programId`).
+All PDA helpers return a `PublicKey` and are available both as free functions and as methods on [`RyvoClient`](/sdk/client#address-helpers) (which simply curries the `programId`).
 
 ```ts
 import {
@@ -84,7 +84,7 @@ import {
   findVaultTokenAccountPda,
   findChannelPda,
   findProgramDataPda,
-} from "@agonx402/sdk";
+} from "@ryvonetwork/sdk";
 ```
 
 ### `findGlobalConfigPda(programId)`
@@ -130,7 +130,7 @@ One SPL token account PDA per registered `tokenId`. All deposits and withdrawals
 | `payeeId` | 4 bytes, little-endian |
 | `tokenId` | 2 bytes, little-endian |
 
-Channel IDs are derived from **participant IDs**, not wallet keys. Fetch a participant via [`AgonClient.fetchParticipant`](/sdk/client#account-readers) or `participantId()` to obtain one.
+Channel IDs are derived from **participant IDs**, not wallet keys. Fetch a participant via [`RyvoClient.fetchParticipant`](/sdk/client#account-readers) or `participantId()` to obtain one.
 
 <Note>
 Channels are directional. `(payerId=1, payeeId=2)` is **not** the same PDA as `(payerId=2, payeeId=1)`. To support bidirectional traffic, open two channels.
@@ -149,11 +149,11 @@ PDA on `BPFLoaderUpgradeable` that stores the program's data account. Used by `i
 The message domain is a 16-byte tag folded into every signed protocol message. It binds signatures to a specific `(programId, chainId)` pair, making cross-chain or cross-deployment replay impossible.
 
 ```ts
-import { deriveMessageDomain, AGON_CHAIN_IDS } from "@agonx402/sdk";
+import { deriveMessageDomain, RYVO_CHAIN_IDS } from "@ryvonetwork/sdk";
 
 const messageDomain = deriveMessageDomain(
   client.programId,
-  AGON_CHAIN_IDS.devnet,
+  RYVO_CHAIN_IDS.devnet,
 );
 ```
 
@@ -161,7 +161,7 @@ The derivation is:
 
 ```
 messageDomain = SHA256(
-  "agon-message-domain-v1" ||
+  "ryvo-message-domain-v1" ||
   programId (32 bytes) ||
   chainId (u16, little-endian)
 ).slice(0, 16)

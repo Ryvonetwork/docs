@@ -3,7 +3,7 @@ title: "Motivation"
 description: "Why machine payments benefit from a clearing layer instead of one on-chain transfer per interaction."
 ---
 
-Agon is built on a simple premise: **repeated machine payments should not be modeled as a stream of independent on-chain transfers.** Once the same parties interact thousands or millions of times, settlement becomes a systems problem, not a checkout problem.
+ryvo is built on a simple premise: **repeated machine payments should not be modeled as a stream of independent on-chain transfers.** Once the same parties interact thousands or millions of times, settlement becomes a systems problem, not a checkout problem.
 
 ## The settlement cost floor
 
@@ -19,7 +19,7 @@ Per-payment settlement creates a cost floor that is independent of the underlyin
 
 ## What "cooperative scaling" means
 
-Agon decouples payment **execution** from payment **settlement**:
+ryvo decouples payment **execution** from payment **settlement**:
 
 - Execution happens off-chain through signed cumulative commitments.
 - Settlement happens later on-chain, against the newest valid state.
@@ -43,7 +43,7 @@ Direct settlement is always available as a fallback. Cooperation is optional, wh
 
 ## Cooperation is a choice, not a requirement
 
-Not every Agon payment is cooperative.
+Not every ryvo payment is cooperative.
 
 A single payer can open a one-way payment channel, sign cumulative commitments, and let the payee settle later without asking anyone to co-sign each update. That path alone already removes the per-interaction transaction cost for the most common case.
 
@@ -51,9 +51,9 @@ Cooperation starts when two or more participants agree on a shared state update.
 
 ## Why this matters
 
-Machine-to-machine commerce creates dense, repeated payment graphs. Agon treats this as a compression problem: keep micropayments off-chain as cumulative channel updates, then settle many channels together when participants cooperate.
+Machine-to-machine commerce creates dense, repeated payment graphs. ryvo treats this as a compression problem: keep micropayments off-chain as cumulative channel updates, then settle many channels together when participants cooperate.
 
-Agon's contribution is simple:
+ryvo's contribution is simple:
 
 - Repeated payment relationships are modeled as long-lived channels with explicit balances and explicit signed state.
 - Payment execution is fast and off-chain.
@@ -64,6 +64,6 @@ This is the model that makes small, frequent, machine-initiated payments economi
 
 ## Where to read next
 
-- [Design principles](/thesis/design-principles) - the non-negotiable properties Agon preserves
+- [Design principles](/thesis/design-principles) - the non-negotiable properties ryvo preserves
 - [Roadmap](/thesis/roadmap) - how the protocol evolves without changing the model
 - [Protocol overview](/getting-started/protocol-overview) - the on-chain objects and flows

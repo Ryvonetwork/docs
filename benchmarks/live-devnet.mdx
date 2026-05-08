@@ -1,6 +1,6 @@
 ---
 title: "Live Devnet Benchmarks"
-description: "Generated from the latest protocol-only Agon devnet demo run."
+description: "Generated from the latest protocol-only ryvo devnet demo run."
 ---
 
 The table below is generated from the latest committed live demo snapshot on `devnet`. See [Deployment](/reference/deployment) for the current live program ID.
@@ -26,11 +26,11 @@ The table below is generated from the latest committed live demo snapshot on `de
 ## How to read this
 
 - **Underlying Payments** is the number of individual payments the scenario represents if every payment were settled on-chain independently.
-- **Settlement Txs** is the number of actual on-chain transactions Agon used to settle all of them.
+- **Settlement Txs** is the number of actual on-chain transactions ryvo used to settle all of them.
 - **Compression** is the ratio of the two, and the second number is total transactions saved.
 - **Signed Message Bytes** is the Ed25519-signed body size, not the full transaction.
 
-The clearing-round scenarios (3, 4, 5) intentionally set the cumulative targets to large values to illustrate that Agon's compression does not care about the size of the underlying obligations. The settlement cost is a function of the signed round, not of the payments it represents.
+The clearing-round scenarios (3, 4, 5) intentionally set the cumulative targets to large values to illustrate that ryvo's compression does not care about the size of the underlying obligations. The settlement cost is a function of the signed round, not of the payments it represents.
 
 ## See also
 

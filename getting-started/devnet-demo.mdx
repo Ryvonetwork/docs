@@ -12,13 +12,13 @@ The protocol demo is devnet-native and self-contained. It exercises every settle
 | Program ID | `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` |
 | Cluster | `devnet` |
 | Message domain | `a58a109a38f14cc27ef174135176cab3` |
-| Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve `token_id` from `TokenRegistry` or `AGON_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
+| Gateway-channel settlement token | Official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve `token_id` from `TokenRegistry` or `RYVO_PROTOCOL_DEVNET_USDC_TOKEN_ID` |
 
 ## Run
 
 ```bash
-cd /home/heis/agon/agon-protocol
-npm run demo:agon-protocol
+cd /home/heis/ryvo/ryvo-protocol
+npm run demo:ryvo-protocol
 npm run benchmarks:generate
 ```
 
@@ -38,7 +38,7 @@ The demo walks through every settlement path:
 
 ## Output
 
-The run writes a machine-readable manifest to `config/agon-protocol-demo-last-run.json`. That manifest is the source of truth for the [Live devnet benchmarks](/benchmarks/live-devnet) page and for the explorer links it surfaces.
+The run writes a machine-readable manifest to `config/ryvo-protocol-demo-last-run.json`. That manifest is the source of truth for the [Live devnet benchmarks](/benchmarks/live-devnet) page and for the explorer links it surfaces.
 
 ## When to use this
 

@@ -1,11 +1,11 @@
 ---
 title: "Operator Hubs"
-description: "How hub-style payment operators can be built on top of Agon without turning the base protocol into a managed rail."
+description: "How hub-style payment operators can be built on top of ryvo without turning the base protocol into a managed rail."
 ---
 
-Agon supports an operator hub model on top of the base protocol.
+ryvo supports an operator hub model on top of the base protocol.
 
-In this model, users open payment channels to a hub, providers open payment channels with that same hub, and the hub handles payment flow between both sides. The hub can enforce its own pricing, compliance, and routing logic, while settlement still happens through Agon's protocol state.
+In this model, users open payment channels to a hub, providers open payment channels with that same hub, and the hub handles payment flow between both sides. The hub can enforce its own pricing, compliance, and routing logic, while settlement still happens through ryvo's protocol state.
 
 ## The shape
 
@@ -26,13 +26,13 @@ The hub becomes the party that:
 2. decides whether to honor or reject a request
 3. serves the request directly or forwards it to a provider
 4. signs outbound payment updates to providers
-5. settles both sides later through normal Agon settlement
+5. settles both sides later through normal ryvo settlement
 
 The hub is doing payment **coordination**. Balances still live in protocol state.
 
-## Why it fits Agon
+## Why it fits ryvo
 
-Agon does not do Lightning-style multi-hop routing. It does have the primitives that a hub needs:
+ryvo does not do Lightning-style multi-hop routing. It does have the primitives that a hub needs:
 
 1. permanent participant identities
 2. permanent one-way payment channels
@@ -52,7 +52,7 @@ Alice wants to pay an RPC provider through a hub.
 4. The hub checks Alice's balance, channel lock, policy rules, and rate limits.
 5. The hub serves the RPC call (or forwards it to the provider).
 6. The hub signs a cumulative commitment increasing what it owes the provider.
-7. Later, the hub settles inbound and outbound channels through normal Agon settlement.
+7. Later, the hub settles inbound and outbound channels through normal ryvo settlement.
 
 ## Operating models
 
@@ -98,7 +98,7 @@ At the product layer, a hub can look similar to a centralized micropayment rail:
 2. one operator can gate access or apply policy
 3. users and providers do not need a full mesh of direct channels
 
-The difference is that Agon does not require one global operator.
+The difference is that ryvo does not require one global operator.
 
 - Any team can build a hub on top of the protocol.
 - Users and providers are not bound to one payment company just to access the settlement rail.

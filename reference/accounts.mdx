@@ -1,9 +1,9 @@
 ---
 title: "Accounts"
-description: "The on-chain account layouts used by the Agon protocol."
+description: "The on-chain account layouts used by the ryvo protocol."
 ---
 
-Agon stores protocol state in global singletons plus bucketed state accounts. This page describes the live bucket architecture and canonical PDA seeds.
+ryvo stores protocol state in global singletons plus bucketed state accounts. This page describes the live bucket architecture and canonical PDA seeds.
 
 ## GlobalConfig
 
@@ -118,7 +118,7 @@ Canonical lane selection is derived from `(payer_id, payee_id)` ordering, so set
 
 ## Protocol vault
 
-Tokens deposited into Agon live in per-token vault token accounts derived from the program. They are SPL Token accounts owned by the program, not participant balances. Participant `available_balance` and channel `locked_balance` are ledger positions against this vault, the vault is the single source of truth for tokens actually held by the program.
+Tokens deposited into ryvo live in per-token vault token accounts derived from the program. They are SPL Token accounts owned by the program, not participant balances. Participant `available_balance` and channel `locked_balance` are ledger positions against this vault, the vault is the single source of truth for tokens actually held by the program.
 
 See [Balances and withdrawals](/core-concepts/balances-and-withdrawals) for how the vault relates to participant state.
 

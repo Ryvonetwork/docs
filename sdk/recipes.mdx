@@ -1,26 +1,26 @@
 ---
 title: "Recipes"
-description: "End-to-end flows with @agonx402/sdk, register, fund, sign, settle, withdraw."
+description: "End-to-end flows with @ryvonetwork/sdk, register, fund, sign, settle, withdraw."
 ---
 
-This page is the SDK-native version of [Your First Payment](/getting-started/first-payment). Everything is expressed in terms of [`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk) helpers. If you want the low-level protocol walkthrough, start there.
+This page is the SDK-native version of [Your First Payment](/getting-started/first-payment). Everything is expressed in terms of [`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk) helpers. If you want the low-level protocol walkthrough, start there.
 
 <Info>
-All examples target the live devnet deployment (program `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD`, chain ID `1`). Replace the `programId` and `AGON_CHAIN_IDS.*` value for other environments.
+All examples target the live devnet deployment (program `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD`, chain ID `1`). Replace the `programId` and `RYVO_CHAIN_IDS.*` value for other environments.
 </Info>
 
 ## Prerequisites
 
 ```bash
-npm install @agonx402/sdk @coral-xyz/anchor @solana/web3.js
+npm install @ryvonetwork/sdk @coral-xyz/anchor @solana/web3.js
 ```
 
 ```ts
 import * as anchor from "@coral-xyz/anchor";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import {
-  AgonClient,
-  AGON_CHAIN_IDS,
+  RyvoClient,
+  RYVO_CHAIN_IDS,
   createCommitmentMessage,
   createEd25519Instruction,
   createMultiMessageEd25519Instruction,
@@ -29,15 +29,15 @@ import {
   deriveMessageDomain,
   getTokenBalance,
   nextCommitmentAmount,
-} from "@agonx402/sdk";
+} from "@ryvonetwork/sdk";
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
 
-const client = new AgonClient({ provider });
+const client = new RyvoClient({ provider });
 const messageDomain = deriveMessageDomain(
   client.programId,
-  AGON_CHAIN_IDS.devnet,
+  RYVO_CHAIN_IDS.devnet,
 );
 ```
 
@@ -75,7 +75,7 @@ console.log({
 The payer moves tokens from their own SPL account into the protocol vault.
 
 ```ts
-// Resolve this from TokenRegistry or AGON_PROTOCOL_DEVNET_USDC_TOKEN_ID.
+// Resolve this from TokenRegistry or RYVO_PROTOCOL_DEVNET_USDC_TOKEN_ID.
 const tokenId = usdcTokenId; // resolved from TokenRegistry for official devnet USDC
 
 await client
@@ -283,7 +283,7 @@ This delegation changes who signs commitments. It does not change custody or set
 Payees can gate who is allowed to open channels to them:
 
 ```ts
-import { INBOUND_CHANNEL_POLICY } from "@agonx402/sdk";
+import { INBOUND_CHANNEL_POLICY } from "@ryvonetwork/sdk";
 
 await client
   .updateInboundChannelPolicy({

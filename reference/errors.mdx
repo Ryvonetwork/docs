@@ -1,9 +1,9 @@
 ---
 title: "Errors"
-description: "Custom program errors returned by the Agon protocol."
+description: "Custom program errors returned by the ryvo protocol."
 ---
 
-The Agon program returns typed errors from the `VaultError` enum. Each error falls into one of three client-handling categories:
+The ryvo program returns typed errors from the `VaultError` enum. Each error falls into one of three client-handling categories:
 
 - **User action** - the caller must do something (deposit more, wait, cancel) before retrying.
 - **Retriable** - transient or timing-dependent; retrying later may succeed.
@@ -40,7 +40,7 @@ The Agon program returns typed errors from the `VaultError` enum. Each error fal
 | Error | Category | Meaning |
 | --- | --- | --- |
 | `CommitmentAmountMustIncrease` | Permanent | New `committed_amount` is not strictly greater than `settled_cumulative`. Stale replay. |
-| `InvalidCommitmentMessage` | Permanent | `agon-cmt-v5` message failed structural validation. |
+| `InvalidCommitmentMessage` | Permanent | `ryvo-cmt-v5` message failed structural validation. |
 | `InvalidClearingRoundMessage` | Permanent | Clearing-round message failed structural validation. |
 | `InvalidMessageDomain` | Permanent | Signed domain does not match this deployment. |
 | `InvalidSignature` | Permanent | Ed25519 verification failed. |

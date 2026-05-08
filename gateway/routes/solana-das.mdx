@@ -53,7 +53,7 @@ Fetch a single asset by id.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/das/getAsset \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/das/getAsset \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":{"id":"<asset-id>"}}'
@@ -82,7 +82,7 @@ Fetch digital assets owned by a wallet.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/das/getAssetsByOwner \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/das/getAssetsByOwner \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":{"ownerAddress":"86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY","limit":20}}'
@@ -111,7 +111,7 @@ Search digital assets with DAS filters.
 **Example**
 
 ```bash
-curl -X POST https://gateway.agonx402.com/v1/x402/solana/mainnet/helius/das/searchAssets \
+curl -X POST https://gateway.ryvo.network/v1/x402/solana/mainnet/helius/das/searchAssets \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"params":{"ownerAddress":"86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY","limit":25,"page":1}}'

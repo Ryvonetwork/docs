@@ -1,11 +1,11 @@
 ---
 title: "TypeScript SDK"
-description: "@agonx402/sdk - install, quick start, and what is inside."
+description: "@ryvonetwork/sdk - install, quick start, and what is inside."
 ---
 
-[`@agonx402/sdk`](https://www.npmjs.com/package/@agonx402/sdk) is the official TypeScript SDK for the Agon Protocol. It wraps the live Anchor program into a small set of typed helpers so you can integrate the protocol without hand-rolling IDLs, PDAs, or message encoders.
+[`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk) is the official TypeScript SDK for the ryvo Protocol. It wraps the live Anchor program into a small set of typed helpers so you can integrate the protocol without hand-rolling IDLs, PDAs, or message encoders.
 
-The SDK is developed in the open at [Agonx402/agon-protocol-sdk](https://github.com/Agonx402/agon-protocol-sdk).
+The SDK is developed in the open at [Ryvonetwork/ryvo-protocol-sdk](https://github.com/Ryvonetwork/ryvo-protocol-sdk).
 
 ## What is inside
 
@@ -13,18 +13,18 @@ The package exposes five composable layers:
 
 | Layer | What it gives you |
 | --- | --- |
-| [`AgonClient`](/sdk/client) | A thin, typed wrapper around the Anchor program with one method per instruction. |
+| [`RyvoClient`](/sdk/client) | A thin, typed wrapper around the Anchor program with one method per instruction. |
 | [PDA helpers](/sdk/pdas) | Deterministic derivations for every account the program uses (`global-config`, `token-registry`, `participant`, `vault-token-account`, `channel-v2`). |
-| [Message builders](/sdk/messages) | `agon-cmt-v5` commitment and clearing-round message encoders, plus signing helpers. |
+| [Message builders](/sdk/messages) | `ryvo-cmt-v5` commitment and clearing-round message encoders, plus signing helpers. |
 | [Account helpers](/sdk/client#account-helpers) | Convenience readers for participant token balances and for computing the next commitment amount from a channel. |
-| Constants & IDL | `AGON_PROTOCOL_PROGRAM_ID`, `AGON_CHAIN_IDS`, seed strings, and the generated Anchor IDL. |
+| Constants & IDL | `RYVO_PROTOCOL_PROGRAM_ID`, `RYVO_CHAIN_IDS`, seed strings, and the generated Anchor IDL. |
 
 The SDK depends on `@coral-xyz/anchor`, `@solana/web3.js`, and `@noble/curves`, all standard in the Solana TypeScript ecosystem. It has no hidden RPC behavior: every call you make goes through the `AnchorProvider` you construct it with.
 
 ## Install
 
 ```bash
-npm install @agonx402/sdk @coral-xyz/anchor @solana/web3.js
+npm install @ryvonetwork/sdk @coral-xyz/anchor @solana/web3.js
 ```
 
 Requirements:
@@ -38,12 +38,12 @@ The package is ESM-only (`"type": "module"`). In CommonJS codebases, use a dynam
 
 ```ts
 import * as anchor from "@coral-xyz/anchor";
-import { AgonClient } from "@agonx402/sdk";
+import { RyvoClient } from "@ryvonetwork/sdk";
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
 
-const client = new AgonClient({ provider });
+const client = new RyvoClient({ provider });
 
 const owner = provider.wallet.publicKey;
 const participantPda = client.participantAddress(owner);
@@ -52,12 +52,12 @@ const participant = await client.fetchParticipant(owner);
 console.log("Participant ID:", participant.participantId);
 ```
 
-By default, `AgonClient` uses the live program ID baked into the IDL (`3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` on devnet). To target a different deployment, pass a `programId` override:
+By default, `RyvoClient` uses the live program ID baked into the IDL (`3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` on devnet). To target a different deployment, pass a `programId` override:
 
 ```ts
 import { PublicKey } from "@solana/web3.js";
 
-const client = new AgonClient({
+const client = new RyvoClient({
   provider,
   programId: new PublicKey("<your program id>"),
 });
@@ -69,15 +69,15 @@ The following snippet is the full direct-settlement flow, compressed. See [Recip
 
 ```ts
 import {
-  AgonClient,
+  RyvoClient,
   createCommitmentMessage,
   createEd25519Instruction,
   deriveMessageDomain,
-  AGON_CHAIN_IDS,
-} from "@agonx402/sdk";
+  RYVO_CHAIN_IDS,
+} from "@ryvonetwork/sdk";
 
-const client = new AgonClient({ provider });
-const messageDomain = deriveMessageDomain(client.programId, AGON_CHAIN_IDS.devnet);
+const client = new RyvoClient({ provider });
+const messageDomain = deriveMessageDomain(client.programId, RYVO_CHAIN_IDS.devnet);
 
 const message = createCommitmentMessage({
   messageDomain,
@@ -108,11 +108,11 @@ await client
 Two things are worth noting:
 
 1. The commitment is signed off-chain by the payer. The payee is the one who submits it on-chain.
-2. `createEd25519Instruction` **must** be added to the same transaction as `settleIndividual`; Agon verifies it through the `instructions` sysvar.
+2. `createEd25519Instruction` **must** be added to the same transaction as `settleIndividual`; ryvo verifies it through the `instructions` sysvar.
 
 ## Versioning
 
-The SDK is on the `0.2.x` line while the protocol surface stabilises. Breaking changes are signalled in the npm [changelog](https://github.com/Agonx402/agon-protocol-sdk/releases) and tracked against the program's IDL. The package ships the generated IDL and TypeScript program type, so upgrading the SDK is always aligned with a protocol upgrade.
+The SDK is on the `0.2.x` line while the protocol surface stabilises. Breaking changes are signalled in the npm [changelog](https://github.com/Ryvonetwork/ryvo-protocol-sdk/releases) and tracked against the program's IDL. The package ships the generated IDL and TypeScript program type, so upgrading the SDK is always aligned with a protocol upgrade.
 
 ## Agentic tooling
 
@@ -128,14 +128,14 @@ See [Agentic tools](/reference/agentic-tools) for package names, defaults, and w
 ## Where to go next
 
 <CardGroup cols={2}>
-  <Card title="AgonClient" icon="code" href="/sdk/client">
+  <Card title="RyvoClient" icon="code" href="/sdk/client">
     Every instruction the SDK can build, initialize, deposit, lock, settle, withdraw.
   </Card>
   <Card title="PDAs & constants" icon="key" href="/sdk/pdas">
     Derive every account the program uses, deterministically and off-chain.
   </Card>
   <Card title="Messages" icon="signature" href="/sdk/messages">
-    Build `agon-cmt-v5` and cooperative-round messages.
+    Build `ryvo-cmt-v5` and cooperative-round messages.
   </Card>
   <Card title="Recipes" icon="book-open" href="/sdk/recipes">
     End-to-end flows: register, fund, sign, settle, withdraw.

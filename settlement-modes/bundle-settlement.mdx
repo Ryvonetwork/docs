@@ -1,11 +1,11 @@
 ---
 title: "Bundle Settlement"
-description: "One payee settles many `agon-cmt-v5` messages in one transaction."
+description: "One payee settles many `ryvo-cmt-v5` messages in one transaction."
 ---
 
 Bundle settlement is the payee-side compression path.
 
-Each payer still signs its own `agon-cmt-v5` message for its own channel. The payee settles several of those messages together with `settle_commitment_bundle`.
+Each payer still signs its own `ryvo-cmt-v5` message for its own channel. The payee settles several of those messages together with `settle_commitment_bundle`.
 
 ## Why it exists
 
@@ -46,7 +46,7 @@ Layout in `remaining_accounts`:
 For each entry, the program checks:
 
 1. The Ed25519 signature is present and valid.
-2. The signed message parses as `agon-cmt-v5`.
+2. The signed message parses as `ryvo-cmt-v5`.
 3. The token is allowlisted and matches the rest of the bundle.
 4. The passed channel is the canonical `channel-v2` PDA for that payer, payee, and token.
 5. The signer matches the channel's `authorized_signer`.
@@ -79,7 +79,7 @@ The single Ed25519 pre-instruction contains all the payer signatures at once. So
 
 ## Operator payment inside a bundle
 
-If an operator also needs to be paid, model that payment as its own channel and settle it separately, or include it in a cooperative clearing round. Do **not** try to embed operator fees inside a bundle entry, `agon-cmt-v5` does not carry that field for good reasons. See [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
+If an operator also needs to be paid, model that payment as its own channel and settle it separately, or include it in a cooperative clearing round. Do **not** try to embed operator fees inside a bundle entry, `ryvo-cmt-v5` does not carry that field for good reasons. See [Operator payment is separate](/core-concepts/operator-hubs#operator-payment-is-separate).
 
 ## When to use this path
 
@@ -97,4 +97,4 @@ Bundle settlement is the natural next step after direct settlement for any provi
 - [Clearing rounds](/settlement-modes/clearing-rounds)
 - [Commitments](/core-concepts/commitments)
 - [Benchmarks](/benchmarks/live-devnet)
-- [Message formats](/reference/messages#agon-cmt-v5)
+- [Message formats](/reference/messages#ryvo-cmt-v5)

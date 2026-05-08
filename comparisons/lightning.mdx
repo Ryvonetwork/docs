@@ -1,9 +1,9 @@
 ---
 title: "Lightning"
-description: "How Agon's deferred-settlement model differs from Lightning's routing and liquidity model."
+description: "How ryvo's deferred-settlement model differs from Lightning's routing and liquidity model."
 ---
 
-Lightning and Agon both move payment authorization off-chain, but they scale in fundamentally different ways.
+Lightning and ryvo both move payment authorization off-chain, but they scale in fundamentally different ways.
 
 ## What Lightning optimizes for
 
@@ -16,11 +16,11 @@ Lightning is designed to move value across an arbitrary network of participants 
 
 This is the right design when the goal is open, trust-minimized internet money across a graph of peers who may never transact with each other again.
 
-## What Agon optimizes for
+## What ryvo optimizes for
 
-Agon assumes the opposite shape: the same payer and payee interact constantly, and the system should compress their on-chain settlement as that volume grows.
+ryvo assumes the opposite shape: the same payer and payee interact constantly, and the system should compress their on-chain settlement as that volume grows.
 
-Agon does not route. Every channel is **one-way** and **direct** between a named payer and a named payee. There is no multi-hop path, no forwarding fee market, and no liquidity rebalancing.
+ryvo does not route. Every channel is **one-way** and **direct** between a named payer and a named payee. There is no multi-hop path, no forwarding fee market, and no liquidity rebalancing.
 
 Density comes from a different place:
 
@@ -30,7 +30,7 @@ Density comes from a different place:
 
 ## When each model fits best
 
-| | Lightning | Agon |
+| | Lightning | ryvo |
 | --- | --- | --- |
 | Shape of relationships | Sparse, often one-shot, across an arbitrary graph | Dense, repeated, between known pairs |
 | Scaling primitive | Routing + channel liquidity | Cumulative commitments + cooperative clearing |
@@ -41,7 +41,7 @@ Density comes from a different place:
 
 Lightning is a strong fit when the goal is permissionless, privacy-preserving, network-wide payments where any pair of nodes might transact once.
 
-Agon is a stronger fit when the goal is **repeated machine-payment relationships**, agents paying APIs, services paying services, operators routing value between the two, that want settlement density to scale with the relationship, not with the number of participants in the network.
+ryvo is a stronger fit when the goal is **repeated machine-payment relationships**, agents paying APIs, services paying services, operators routing value between the two, that want settlement density to scale with the relationship, not with the number of participants in the network.
 
 ## See also
 

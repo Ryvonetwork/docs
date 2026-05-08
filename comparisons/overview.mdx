@@ -1,21 +1,21 @@
 ---
 title: "Overview"
-description: "How Agon positions itself relative to adjacent payment systems."
+description: "How ryvo positions itself relative to adjacent payment systems."
 ---
 
-Agon is not a replacement for every payment rail it resembles. It overlaps with x402, the Lightning Network, and managed micropayment rails in some places and diverges in others. The pages in this section make each comparison explicit.
+ryvo is not a replacement for every payment rail it resembles. It overlaps with x402, the Lightning Network, and managed micropayment rails in some places and diverges in others. The pages in this section make each comparison explicit.
 
-## What Agon is competing with
+## What ryvo is competing with
 
-Agon's design is aimed at a specific shape of payment: repeated, high-frequency, machine-to-machine commerce where settling every interaction as its own on-chain transfer is too expensive. Several systems target pieces of that problem:
+ryvo's design is aimed at a specific shape of payment: repeated, high-frequency, machine-to-machine commerce where settling every interaction as its own on-chain transfer is too expensive. Several systems target pieces of that problem:
 
 - **Exact per-payment settlement (x402)** - moves authorization to HTTP but still settles each payment on-chain. Works well for occasional, high-value payments. Breaks on high-frequency machine commerce.
 - **Lightning** - moves authorization off-chain using bilateral payment channels and routes value across a network. Strong fit for trust-minimized internet money; different shape than "this payer and this payee transact constantly."
 - **Managed micropayment rails** - offer cheap per-call settlement by concentrating custody and coordination with a single operator.
 
-## Where Agon fits
+## Where ryvo fits
 
-Agon assumes:
+ryvo assumes:
 
 - The same parties will pay each other many times.
 - Every interaction is a direct relationship between a known payer and a known payee (not a multi-hop route).

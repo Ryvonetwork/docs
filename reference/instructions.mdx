@@ -1,9 +1,9 @@
 ---
 title: "Instructions"
-description: "The full on-chain instruction surface of the current Agon protocol."
+description: "The full on-chain instruction surface of the current ryvo protocol."
 ---
 
-This page lists every instruction the deployed Agon program exposes. Most integrations only need a small subset, see [Minimum useful subset](#minimum-useful-subset) at the bottom.
+This page lists every instruction the deployed ryvo program exposes. Most integrations only need a small subset, see [Minimum useful subset](#minimum-useful-subset) at the bottom.
 
 ## Bootstrap and admin
 
@@ -86,7 +86,7 @@ This page lists every instruction the deployed Agon program exposes. Most integr
 </ResponseField>
 
 <ResponseField name="request_update_channel_authorized_signer" type="instruction">
-  Starts a timelocked rotation of the channel's `authorized_signer` (the key that signs `agon-cmt-v5` commitments).
+  Starts a timelocked rotation of the channel's `authorized_signer` (the key that signs `ryvo-cmt-v5` commitments).
 </ResponseField>
 
 <ResponseField name="execute_update_channel_authorized_signer" type="instruction">
@@ -96,11 +96,11 @@ This page lists every instruction the deployed Agon program exposes. Most integr
 ## Settlement
 
 <ResponseField name="settle_individual" type="instruction">
-  Settles one `agon-cmt-v5` message against one channel. See [Direct settlement](/settlement-modes/direct-settlement).
+  Settles one `ryvo-cmt-v5` message against one channel. See [Direct settlement](/settlement-modes/direct-settlement).
 </ResponseField>
 
 <ResponseField name="settle_commitment_bundle" type="instruction">
-  Settles many `agon-cmt-v5` messages in one transaction for one payee. Each commitment must be for the same token and payee. See [Bundle settlement](/settlement-modes/bundle-settlement).
+  Settles many `ryvo-cmt-v5` messages in one transaction for one payee. Each commitment must be for the same token and payee. See [Bundle settlement](/settlement-modes/bundle-settlement).
 </ResponseField>
 
 <ResponseField name="settle_clearing_round" type="instruction">

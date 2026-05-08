@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Agon Protocol",
+  "name": "Ryvo Protocol",
   "colors": {
     "primary": "#0056FF",
     "light": "#3378FF",
@@ -107,7 +107,7 @@
         ]
       },
       {
-        "tab": "Agon Gateway",
+        "tab": "Ryvo Gateway",
         "groups": [
           {
             "group": "Introduction",
@@ -162,12 +162,12 @@
       "anchors": [
         {
           "anchor": "GitHub",
-          "href": "https://github.com/Agonx402/agon-protocol",
+          "href": "https://github.com/Ryvonetwork/ryvo-protocol",
           "icon": "github"
         },
         {
           "anchor": "X",
-          "href": "https://x.com/agonx402",
+          "href": "https://x.com/ryvonetwork",
           "icon": "x-twitter"
         }
       ]
@@ -181,7 +181,7 @@
     "links": [
       {
         "label": "Protocol Repo",
-        "href": "https://github.com/Agonx402/agon-protocol"
+        "href": "https://github.com/Ryvonetwork/ryvo-protocol"
       }
     ],
     "primary": {
@@ -200,8 +200,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/agonx402",
-      "github": "https://github.com/Agonx402"
+      "x": "https://x.com/ryvonetwork",
+      "github": "https://github.com/Ryvonetwork"
     }
   }
 }

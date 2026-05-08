@@ -3,12 +3,12 @@ title: "Your First Payment"
 description: "An end-to-end walkthrough: register, fund, open a channel, sign a commitment, and settle."
 ---
 
-This guide shows the smallest useful Agon integration: one payer, one payee, one token, one payment channel, and one settled `agon-cmt-v5` message.
+This guide shows the smallest useful ryvo integration: one payer, one payee, one token, one payment channel, and one settled `ryvo-cmt-v5` message.
 
 The examples below mirror the current protocol tests. They use raw Anchor calls so you can see the exact accounts and signatures involved.
 
 <Tip>
-If you don't need that level of control, the official [`@agonx402/sdk`](/sdk) wraps every step on this page into one or two method calls. See the SDK [Recipes](/sdk/recipes) for the same flow in a dozen lines.
+If you don't need that level of control, the official [`@ryvonetwork/sdk`](/sdk) wraps every step on this page into one or two method calls. See the SDK [Recipes](/sdk/recipes) for the same flow in a dozen lines.
 </Tip>
 
 ## What you will build
@@ -23,9 +23,9 @@ By the end of this guide, you will have:
 
 ## Prerequisites
 
-- Anchor workspace wired to the Agon program at `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` on `devnet`
+- Anchor workspace wired to the ryvo program at `3UyUFeNsUYPpM6hMRf7H8wg3MKEXQ82rqnsXhZrUwgSD` on `devnet`
 - Two keypairs with a small amount of SOL on devnet
-- One allowlisted settlement token. Gateway-channel v1 uses official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve its `token_id` from `TokenRegistry` or `AGON_PROTOCOL_DEVNET_USDC_TOKEN_ID`.
+- One allowlisted settlement token. Gateway-channel v1 uses official devnet USDC, mint `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`; resolve its `token_id` from `TokenRegistry` or `RYVO_PROTOCOL_DEVNET_USDC_TOKEN_ID`.
 
 ## 1. Create the program client
 
@@ -33,12 +33,12 @@ By the end of this guide, you will have:
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Ed25519Program, PublicKey, SystemProgram } from "@solana/web3.js";
-import { AgonProtocol } from "../target/types/agon_protocol";
+import { RyvoProtocol } from "../target/types/ryvo_protocol";
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
 
-const program = anchor.workspace.agonProtocol as Program<AgonProtocol>;
+const program = anchor.workspace.RyvoProtocol as Program<RyvoProtocol>;
 ```
 
 ## 2. Derive the PDAs
@@ -126,7 +126,7 @@ console.log(bobParticipant.participantId);
 
 ## 4. Deposit the settlement token
 
-Agon only settles allowlisted tokens. Once the payer has a normal SPL token account, deposit from that account into the protocol vault:
+ryvo only settles allowlisted tokens. Once the payer has a normal SPL token account, deposit from that account into the protocol vault:
 
 ```ts
 await program.methods
@@ -190,9 +190,9 @@ await program.methods
 
 Settlement spends locked balance first, then shared participant balance.
 
-## 7. Build the `agon-cmt-v5` message
+## 7. Build the `ryvo-cmt-v5` message
 
-`agon-cmt-v5` is cumulative. It does not say *"pay 25 again."* It says *"this channel is now authorized up to cumulative amount X."*
+`ryvo-cmt-v5` is cumulative. It does not say *"pay 25 again."* It says *"this channel is now authorized up to cumulative amount X."*
 
 The helper below matches the real test suite:
 
@@ -254,7 +254,7 @@ const message = createCommitmentMessage({
 
 ## 8. Add the Ed25519 verification instruction
 
-Agon expects the signed message to be verified by Solana's Ed25519 program inside the same transaction:
+ryvo expects the signed message to be verified by Solana's Ed25519 program inside the same transaction:
 
 ```ts
 const ed25519Ix = Ed25519Program.createInstructionWithPrivateKey({
@@ -312,6 +312,6 @@ That is the full direct settlement flow.
     Compress many payments across many participants into one round.
   </Card>
   <Card title="Message formats" icon="code" href="/reference/messages">
-    The exact byte layout of `agon-cmt-v5` and cooperative round messages.
+    The exact byte layout of `ryvo-cmt-v5` and cooperative round messages.
   </Card>
 </CardGroup>
