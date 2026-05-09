@@ -1,9 +1,9 @@
 ---
 title: "Trust and Collateral"
-description: "How ryvo lets different payment relationships pick different safety and efficiency tradeoffs."
+description: "How Ryvo lets different payment relationships pick different safety and efficiency tradeoffs."
 ---
 
-ryvo does not force every payment relationship into the same shape.
+Ryvo does not force every payment relationship into the same shape.
 
 Some integrations want fully-collateralized channels with locked funds. Others are comfortable with partial lockup or periodic settlement, which makes the relationship trust-minimized rather than trustless. Many real deployments sit somewhere in the middle.
 
@@ -25,7 +25,7 @@ You can settle directly, or you can layer an operator for batching, compliance, 
 
 ## What "trust" means here
 
-In ryvo, trust does **not** mean an operator holds balances in a private database. Balances always live in protocol state.
+In Ryvo, trust does **not** mean an operator holds balances in a private database. Balances always live in protocol state.
 
 In practice, trust usually means one or more of:
 
@@ -75,7 +75,7 @@ The relationships above all run on the same protocol surface. They differ only i
 - how often they settle
 - what operator tooling sits above the protocol
 
-That is the property that lets ryvo serve the full spectrum without forking the base layer.
+That is the property that lets Ryvo serve the full spectrum without forking the base layer.
 
 ## See also
 

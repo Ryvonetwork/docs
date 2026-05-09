@@ -1,9 +1,9 @@
 ---
 title: "x402"
-description: "How ryvo's deferred-settlement model differs from exact per-payment x402 settlement."
+description: "How Ryvo's deferred-settlement model differs from exact per-payment x402 settlement."
 ---
 
-ryvo does not reject x402. It questions exact settlement on every interaction as the default model for high-frequency machine commerce.
+Ryvo does not reject x402. It questions exact settlement on every interaction as the default model for high-frequency machine commerce.
 
 ## What x402 does well
 
@@ -17,26 +17,26 @@ When the same payer and payee interact many times, exact per-payment settlement 
 
 That cost is amortized trivially at low volume and becomes the bottleneck at high volume. It also compresses the minimum economic price of an API call to at least its share of on-chain settlement, even when the underlying service is nearly free.
 
-## ryvo's take
+## Ryvo's take
 
-ryvo treats exact per-payment x402 as a **baseline to measure against**, not as an adversary.
+Ryvo treats exact per-payment x402 as a **baseline to measure against**, not as an adversary.
 
 Concretely:
 
-- ryvo's benchmarks count how many exact-payment transactions a scenario would have required.
-- They compare that count to the number of ryvo settlement transactions actually submitted on-chain.
+- Ryvo's benchmarks count how many exact-payment transactions a scenario would have required.
+- They compare that count to the number of Ryvo settlement transactions actually submitted on-chain.
 - The ratio is published as settlement compression.
 
 That baseline is reported directly in [Live devnet benchmarks](/benchmarks/live-devnet).
 
-## Where x402 and ryvo compose
+## Where x402 and Ryvo compose
 
-x402 and ryvo can coexist at the API surface:
+x402 and Ryvo can coexist at the API surface:
 
-- A server can accept exact x402 payments for one-shot clients and ryvo commitments for recurring clients.
+- A server can accept exact x402 payments for one-shot clients and Ryvo commitments for recurring clients.
 - An operator can offer both a pay-per-call x402 endpoint and an Ryvo-backed account for heavier integrations.
 
-The two are not mutually exclusive. ryvo narrows the model to the repeated-relationship case and makes settlement cost independent of request volume inside that case.
+The two are not mutually exclusive. Ryvo narrows the model to the repeated-relationship case and makes settlement cost independent of request volume inside that case.
 
 ## See also
 

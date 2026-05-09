@@ -66,7 +66,7 @@ Proxy the Tokens API v1 health check. Takes no parameters.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/health" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/health" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -87,7 +87,7 @@ Search canonical assets.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/search?q=solana&limit=5" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/search?q=solana&limit=5" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -107,7 +107,7 @@ Resolve an alias or Solana mint to a canonical Tokens asset id. Provide **exactl
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/resolve?mint=So11111111111111111111111111111111111111112" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/resolve?mint=So11111111111111111111111111111111111111112" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -127,7 +127,7 @@ Return a curated asset list.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/curated?list=majors&groupBy=asset" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/curated?list=majors&groupBy=asset" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -158,7 +158,7 @@ At least one of `mints` or `addresses` must be provided. Combined size is capped
 **Example**
 
 ```bash
-curl -X POST "https://gateway.ryvo.network/v1/x402/tokens/assets/market-snapshots" \
+curl -X POST "https://gateway.Ryvo.network/v1/x402/tokens/assets/market-snapshots" \
   -H "Content-Type: application/json" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>" \
   -d '{"mints":["So11111111111111111111111111111111111111112","EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"]}'
@@ -180,7 +180,7 @@ Batch lookup cached per-mint variant market snapshots. Combined cap of **50** id
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/variant-markets?mints=So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/variant-markets?mints=So11111111111111111111111111111111111111112,EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -199,7 +199,7 @@ Quick market-based risk summary for a Solana mint.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/risk-summary?mint=So11111111111111111111111111111111111111112" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/risk-summary?mint=So11111111111111111111111111111111111111112" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -233,7 +233,7 @@ Fetch a canonical Tokens asset and optional include blocks.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana?include=profile,risk&marketsLimit=5" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana?include=profile,risk&marketsLimit=5" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -264,7 +264,7 @@ List canonical asset variants, optionally filtered.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/ethereum/variants?liquidityTier=tier1" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/ethereum/variants?liquidityTier=tier1" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -293,7 +293,7 @@ Top DEX market for each asset variant.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/variant-top-markets?limit=10" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/variant-top-markets?limit=10" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -320,7 +320,7 @@ Cached variant-market snapshot for a single mint of the asset.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/variant-market?mint=So11111111111111111111111111111111111111112" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/variant-market?mint=So11111111111111111111111111111111111111112" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -349,7 +349,7 @@ List cached DEX markets for one mint of the asset.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/markets?limit=10" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/markets?limit=10" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -379,7 +379,7 @@ OHLCV candles for a specific mint variant.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/ohlcv?interval=1D" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/ohlcv?interval=1D" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -409,7 +409,7 @@ Canonical price candles, with mint fallback when needed.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/price-chart?interval=1D" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/price-chart?interval=1D" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -432,7 +432,7 @@ No query parameters.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/profile" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/profile" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -461,7 +461,7 @@ Cached exchange tickers for the canonical asset.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/tickers?limit=10" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/tickers?limit=10" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -488,7 +488,7 @@ Simple risk summary for a mint of the asset.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/risk-summary?mint=So11111111111111111111111111111111111111112" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/risk-summary?mint=So11111111111111111111111111111111111111112" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -515,7 +515,7 @@ Detailed risk summary for a mint of the asset.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/risk-details?mint=So11111111111111111111111111111111111111112" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/risk-details?mint=So11111111111111111111111111111111111111112" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 
@@ -542,7 +542,7 @@ Cached per-mint description summary.
 **Example**
 
 ```bash
-curl "https://gateway.ryvo.network/v1/x402/tokens/assets/solana/description?mint=So11111111111111111111111111111111111111112" \
+curl "https://gateway.Ryvo.network/v1/x402/tokens/assets/solana/description?mint=So11111111111111111111111111111111111111112" \
   -H "SIGN-IN-WITH-X: <base64 SIWX payload>"
 ```
 

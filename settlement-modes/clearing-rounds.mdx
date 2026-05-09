@@ -3,7 +3,7 @@ title: "Cooperative Clearing Rounds"
 description: "One shared BLS-signed round advances many channels in one transaction."
 ---
 
-Cooperative clearing rounds are the densest settlement path in ryvo.
+Cooperative clearing rounds are the densest settlement path in Ryvo.
 
 Instead of each channel settling independently, a group of participants signs one shared round message. That round advances many channel targets at once and settles all included lanes in one transaction.
 
@@ -17,7 +17,7 @@ If every channel settles independently, each lane needs its own settlement trans
 2. Consume lane-specific locked balances first.
 3. Apply participant-bucket balance deltas after all lane updates are known.
 
-With concrete numbers, `A -> B = 50`, `B -> C = 10`, `C -> A = 10`, ryvo advances every included channel to its new cumulative target in one transaction.
+With concrete numbers, `A -> B = 50`, `B -> C = 10`, `C -> A = 10`, Ryvo advances every included channel to its new cumulative target in one transaction.
 
 The key invariant is not "skip channel advancement through netting." The key invariant is "every included cumulative channel target moves forward exactly as signed."
 

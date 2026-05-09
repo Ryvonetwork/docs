@@ -3,7 +3,7 @@ title: "Protocol Overview"
 description: "A builder-first tour of protocol accounts, messages, and settlement paths."
 ---
 
-ryvo decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
+Ryvo decouples payment execution from settlement. Participants make many payments first through signed cumulative commitments, and settle them later on-chain.
 
 Each wallet registers once as a participant and keeps the same `participant_id` for the life of the deployment. Participants deposit allowlisted tokens into protocol balances. When one participant pays another, they create one permanent one-way payment channel for that token. The payer may optionally lock funds to that channel if the relationship needs guaranteed payment capacity.
 
@@ -22,7 +22,7 @@ Full field-level layouts are on the [Account layouts](/reference/accounts) refer
 
 ## Signed messages
 
-ryvo uses two signed message formats:
+Ryvo uses two signed message formats:
 
 - **`ryvo-cmt-v5`** - the unilateral cumulative commitment for one channel
 - **`Ryvo-round`** - the cooperative clearing-round body for several participants
@@ -56,7 +56,7 @@ In the common case, an integration goes through these steps:
 
 ## What stays off-chain
 
-ryvo keeps signed payment updates off-chain until settlement. Most integrations store:
+Ryvo keeps signed payment updates off-chain until settlement. Most integrations store:
 
 - the latest signed `ryvo-cmt-v5` per channel
 - usage or metering state
@@ -65,9 +65,9 @@ ryvo keeps signed payment updates off-chain until settlement. Most integrations 
 
 Only the newest valid state needs to reach the chain.
 
-## Why ryvo uses permanent identities and persistent lanes
+## Why Ryvo uses permanent identities and persistent lanes
 
-ryvo intentionally uses stable identities and permanent channels. The tradeoff is more long-lived on-chain state, but the protocol becomes much easier to work with:
+Ryvo intentionally uses stable identities and permanent channels. The tradeoff is more long-lived on-chain state, but the protocol becomes much easier to work with:
 
 - `participant_id` values do not recycle.
 - Off-chain services can index users without worrying about identity reuse.
@@ -100,7 +100,7 @@ See [Deployment](/reference/deployment) for environment-specific chain IDs and t
 
 <CardGroup cols={2}>
   <Card title="Your first payment" icon="play" href="/getting-started/first-payment">
-    Build the smallest useful ryvo integration with real Anchor calls.
+    Build the smallest useful Ryvo integration with real Anchor calls.
   </Card>
   <Card title="Payment channels" icon="route" href="/core-concepts/payment-channels">
     How one-way, permanent channels are modeled and maintained.

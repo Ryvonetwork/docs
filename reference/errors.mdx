@@ -1,9 +1,9 @@
 ---
 title: "Errors"
-description: "Custom program errors returned by the ryvo protocol."
+description: "Custom program errors returned by the Ryvo protocol."
 ---
 
-The ryvo program returns typed errors from the `VaultError` enum. Each error falls into one of three client-handling categories:
+The Ryvo program returns typed errors from the `VaultError` enum. Each error falls into one of three client-handling categories:
 
 - **User action** - the caller must do something (deposit more, wait, cancel) before retrying.
 - **Retriable** - transient or timing-dependent; retrying later may succeed.

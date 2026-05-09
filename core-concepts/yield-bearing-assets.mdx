@@ -1,11 +1,11 @@
 ---
 title: "Yield-Bearing Assets"
-description: "How yield-accruing dollar assets fit into ryvo, and which token designs work best."
+description: "How yield-accruing dollar assets fit into Ryvo, and which token designs work best."
 ---
 
-ryvo can settle in a plain stablecoin like USDC, but it can also settle in a yield-accruing dollar asset.
+Ryvo can settle in a plain stablecoin like USDC, but it can also settle in a yield-accruing dollar asset.
 
-This matters because ryvo uses deferred settlement. Balances sit inside the protocol between deposits, channel locks, and settlement. If the settlement asset keeps earning while it sits there, users and providers do not need to move funds in and out of a separate savings product to keep idle working capital productive.
+This matters because Ryvo uses deferred settlement. Balances sit inside the protocol between deposits, channel locks, and settlement. If the settlement asset keeps earning while it sits there, users and providers do not need to move funds in and out of a separate savings product to keep idle working capital productive.
 
 ## The preferred token shape
 
@@ -15,21 +15,21 @@ The best fit for the current protocol is a token whose balance stays fixed while
 - Each token is worth more of the underlying asset later.
 - The redemption rate moves; the balance does not.
 
-Assets like Maple's `syrupUSDC` point in that direction. This fits ryvo's accounting model because the protocol already tracks balances in fixed token units.
+Assets like Maple's `syrupUSDC` point in that direction. This fits Ryvo's accounting model because the protocol already tracks balances in fixed token units.
 
 ## Token design constraints
 
 The protocol keeps participant balances and channel locks in fixed token amounts inside protocol state.
 
-If the token itself rebases and changes balances underneath the protocol, the vault's token balance can drift away from the protocol's internal ledger unless the program adds explicit support for that behavior. That is why the right target for ryvo is **not** *"any yield stablecoin"* but **fixed-balance yield assets**.
+If the token itself rebases and changes balances underneath the protocol, the vault's token balance can drift away from the protocol's internal ledger unless the program adds explicit support for that behavior. That is why the right target for Ryvo is **not** *"any yield stablecoin"* but **fixed-balance yield assets**.
 
 <Note>
   Token-2022 interest-bearing mints are conceptually close to this fixed-balance model because the stored balance stays unchanged and accrued value is calculated separately. The current deployment uses the original SPL Token program, so Token-2022 support remains a roadmap item. See [Roadmap](/thesis/roadmap#token-2022-and-fixed-balance-yield-assets).
 </Note>
 
-## Why it matters for ryvo
+## Why it matters for Ryvo
 
-Yield-bearing stablecoins are useful in many settings, but they are particularly well-matched to ryvo for three reasons:
+Yield-bearing stablecoins are useful in many settings, but they are particularly well-matched to Ryvo for three reasons:
 
 1. **Idle balances stay productive.** A user or operator keeps working capital inside the protocol instead of routing it through a separate savings product.
 2. **Deferred settlement leaves room for yield to matter.** The system does not pay full on-chain settlement cost on every tiny interaction, so yield has more surface area to compound.
@@ -39,7 +39,7 @@ Yield-bearing stablecoins are useful in many settings, but they are particularly
 
 This depends on the trust model.
 
-ryvo commitments are denominated in the **token itself**, not in the underlying base asset. If Alice signs a commitment for `0.01 yUSDG`, she is promising `0.01` shares, not a fixed amount of USDG.
+Ryvo commitments are denominated in the **token itself**, not in the underlying base asset. If Alice signs a commitment for `0.01 yUSDG`, she is promising `0.01` shares, not a fixed amount of USDG.
 
 - **In a fully collateralized channel**, the payee has an enforceable claim to those shares as soon as it receives a valid commitment (assuming it settles before the payer can release locked funds). It is fair to treat the future yield on those shares as the payee's from that point.
 - **In a trust-minimized relationship**, the payee still has a signed claim, but not the same enforceable position. If settlement happens later, the payee still receives the same number of shares, which still carry whatever value they have at that time. The difference is that the payee took timing and counterparty risk between signature and settlement.
@@ -71,11 +71,11 @@ But if a merchant earns `$1 million` gradually over the course of a month and wi
 
 The idea is still useful. It just means the right metric is the average balance kept inside the system, not top-line revenue alone.
 
-## What ryvo actually adds
+## What Ryvo actually adds
 
 Solana already has fixed-balance yield assets such as Maple's `syrupUSDC`, and more products in that direction will likely appear as stablecoin issuers compete on payments, savings, and treasury use cases.
 
-What ryvo adds is not the yield-bearing asset itself. The interesting part is combining that asset with:
+What Ryvo adds is not the yield-bearing asset itself. The interesting part is combining that asset with:
 
 - long-lived payment channels
 - signed cumulative commitments
@@ -91,13 +91,13 @@ That turns yield-bearing balances into part of the payment rail itself, rather t
 | --- | --- |
 | Pricing | If your product is priced in dollars, you need a share-to-dollar conversion at quote time |
 | Issuer rules | Some products carry KYC, geographic limits, cooldowns, or redemption fees |
-| Token design | Rebasing assets are a poor fit for ryvo's current accounting; fixed-balance assets fit better |
+| Token design | Rebasing assets are a poor fit for Ryvo's current accounting; fixed-balance assets fit better |
 | Token program support | Current deployment uses the original SPL Token program, not Token-2022 |
 | Trust model | Yield does not remove counterparty risk; it makes deferred settlement more useful when the relationship already works |
 
 ## Summary
 
-Think of a yield-bearing settlement asset as a way to make payment float productive. ryvo does not create the yield, the token design does. ryvo makes it practical to keep that asset inside a machine-payment system without forcing every interaction to settle immediately.
+Think of a yield-bearing settlement asset as a way to make payment float productive. Ryvo does not create the yield, the token design does. Ryvo makes it practical to keep that asset inside a machine-payment system without forcing every interaction to settle immediately.
 
 ## See also
 

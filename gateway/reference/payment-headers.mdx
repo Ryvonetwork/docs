@@ -1,6 +1,6 @@
 ---
 title: "Payment Headers"
-description: "The HTTP headers the gateway reads and returns for x402, SIWX, and ryvo channel flows."
+description: "The HTTP headers the gateway reads and returns for x402, SIWX, and Ryvo channel flows."
 ---
 
 The gateway speaks standard x402 over HTTP. This page lists every header it reads from clients and returns in responses, along with the status codes clients should expect.
@@ -37,7 +37,7 @@ Used by **channel-backed routes** (`accessMode: "ryvo-channel"`).
 
 Used by **channel-backed routes** (`accessMode: "ryvo-channel"`).
 
-- Base64 JSON envelope containing the signed ryvo cumulative commitment payload.
+- Base64 JSON envelope containing the signed Ryvo cumulative commitment payload.
 - Must target the live devnet program, gateway merchant participant, correct cluster, correct message domain, and official devnet USDC token.
 - The new cumulative amount must equal the latest accepted commitment plus the route's `priceTokenAmount`.
 
@@ -70,7 +70,7 @@ Example shape after decoding:
 
 SIWX routes never return this header.
 
-Channel-backed routes do not return `X-PAYMENT-RESPONSE` per request. Accepted commitments are settled later through ryvo Protocol bundle settlement.
+Channel-backed routes do not return `X-PAYMENT-RESPONSE` per request. Accepted commitments are settled later through Ryvo Protocol bundle settlement.
 
 ### `access-control-*`
 

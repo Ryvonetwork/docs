@@ -3,7 +3,7 @@ title: "Security Properties"
 description: "The concrete on-chain checks that make settlement paths safe to integrate."
 ---
 
-ryvo enforces strict checks around permanent identities, bucketed channels, and off-chain signed settlement. This page covers the checks builders care about most.
+Ryvo enforces strict checks around permanent identities, bucketed channels, and off-chain signed settlement. This page covers the checks builders care about most.
 
 ## Deployment-scoped signing domain
 
@@ -11,7 +11,7 @@ Every signed message includes a 16-byte `message_domain`.
 
 `message_domain` is derived **inside the program** from:
 
-1. a fixed ryvo domain tag
+1. a fixed Ryvo domain tag
 2. the program ID
 3. the chain ID
 

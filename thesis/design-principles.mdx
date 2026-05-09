@@ -1,9 +1,9 @@
 ---
 title: "Design Principles"
-description: "The non-negotiable properties ryvo preserves across every settlement path."
+description: "The non-negotiable properties Ryvo preserves across every settlement path."
 ---
 
-ryvo is designed around a small set of properties that hold across direct, bundled, and cooperative settlement. Everything else is a policy choice layered on top.
+Ryvo is designed around a small set of properties that hold across direct, bundled, and cooperative settlement. Everything else is a policy choice layered on top.
 
 ## Non-custodial by construction
 
@@ -13,7 +13,7 @@ Funds live inside program-owned accounts. Operators, facilitators, and submitter
 - Settlement can only move balances according to verified signed messages.
 - No operator, authority, or upgrade path can drain user balances outside these rules.
 
-This is the property that separates ryvo from managed payment rails. The convenience features layered above it, operator hubs and compliance tooling, never require surrendering custody to use the settlement layer.
+This is the property that separates Ryvo from managed payment rails. The convenience features layered above it, operator hubs and compliance tooling, never require surrendering custody to use the settlement layer.
 
 ## Execution off-chain, settlement on-chain
 
@@ -42,7 +42,7 @@ The tradeoff is more long-lived on-chain state. The benefit is structural simpli
 
 Every signed message is bound to a specific deployment:
 
-- A 16-byte `message_domain` is derived in-program from a fixed ryvo tag, the program ID, and the chain ID.
+- A 16-byte `message_domain` is derived in-program from a fixed Ryvo tag, the program ID, and the chain ID.
 - Mainnet, devnet, testnet, and localnet each have distinct chain IDs and therefore distinct domains.
 - A message signed for one environment will not verify on another.
 
@@ -64,7 +64,7 @@ The same protocol must support relationships with very different risk postures:
 - **Trust-minimized** flows with partial lockup or frequent settlement.
 - **Credit-based** flows where an operator extends balance between settlements.
 
-ryvo treats these as policy choices on top of a common settlement base rather than as mutually exclusive architectures. Two integrations that pick opposite points on this spectrum still use the same primitives.
+Ryvo treats these as policy choices on top of a common settlement base rather than as mutually exclusive architectures. Two integrations that pick opposite points on this spectrum still use the same primitives.
 
 ## Operators are useful but not controlling
 

@@ -57,7 +57,7 @@ None.
 **Example**
 
 ```bash
-curl -G "https://gateway.ryvo.network/v1/x402/helius/wallet/identity/toly.sol" \
+curl -G "https://gateway.Ryvo.network/v1/x402/helius/wallet/identity/toly.sol" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
 ```
 
@@ -80,7 +80,7 @@ Batch lookup of identity information for up to 100 Solana addresses and/or domai
 **Example**
 
 ```bash
-curl -X POST https://gateway.ryvo.network/v1/x402/helius/wallet/batch-identity \
+curl -X POST https://gateway.Ryvo.network/v1/x402/helius/wallet/batch-identity \
   -H "Content-Type: application/json" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>" \
   -d '{"wallets":["GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz","toly.sol"]}'
@@ -109,7 +109,7 @@ Retrieve SPL token and NFT balances for a Solana wallet, sorted by USD value.
 **Example**
 
 ```bash
-curl -G "https://gateway.ryvo.network/v1/x402/helius/wallet/balances/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+curl -G "https://gateway.Ryvo.network/v1/x402/helius/wallet/balances/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
   --data-urlencode "limit=25" \
   --data-urlencode "showNative=true" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
@@ -138,7 +138,7 @@ Retrieve parsed transaction history with balance changes for a Solana wallet, ne
 **Example**
 
 ```bash
-curl -G "https://gateway.ryvo.network/v1/x402/helius/wallet/history/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+curl -G "https://gateway.Ryvo.network/v1/x402/helius/wallet/history/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
   --data-urlencode "limit=25" \
   --data-urlencode "tokenAccounts=balanceChanged" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
@@ -164,7 +164,7 @@ Retrieve all token and SOL transfer activity for a Solana wallet with cursor pag
 **Example**
 
 ```bash
-curl -G "https://gateway.ryvo.network/v1/x402/helius/wallet/transfers/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+curl -G "https://gateway.Ryvo.network/v1/x402/helius/wallet/transfers/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
   --data-urlencode "limit=25" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
 ```
@@ -186,7 +186,7 @@ None.
 **Example**
 
 ```bash
-curl -G "https://gateway.ryvo.network/v1/x402/helius/wallet/funded-by/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
+curl -G "https://gateway.Ryvo.network/v1/x402/helius/wallet/funded-by/GQUtvPx89ZNCwmvQqFmH59bJcU8fW8siETpaxod7Aydz" \
   -H "PAYMENT-SIGNATURE: <base64 x402 exact payment>"
 ```
 

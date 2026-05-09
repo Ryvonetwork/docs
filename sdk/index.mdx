@@ -3,7 +3,7 @@ title: "TypeScript SDK"
 description: "@ryvonetwork/sdk - install, quick start, and what is inside."
 ---
 
-[`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk) is the official TypeScript SDK for the ryvo Protocol. It wraps the live Anchor program into a small set of typed helpers so you can integrate the protocol without hand-rolling IDLs, PDAs, or message encoders.
+[`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk) is the official TypeScript SDK for the Ryvo Protocol. It wraps the live Anchor program into a small set of typed helpers so you can integrate the protocol without hand-rolling IDLs, PDAs, or message encoders.
 
 The SDK is developed in the open at [Ryvonetwork/ryvo-protocol-sdk](https://github.com/Ryvonetwork/ryvo-protocol-sdk).
 
@@ -108,7 +108,7 @@ await client
 Two things are worth noting:
 
 1. The commitment is signed off-chain by the payer. The payee is the one who submits it on-chain.
-2. `createEd25519Instruction` **must** be added to the same transaction as `settleIndividual`; ryvo verifies it through the `instructions` sysvar.
+2. `createEd25519Instruction` **must** be added to the same transaction as `settleIndividual`; Ryvo verifies it through the `instructions` sysvar.
 
 ## Versioning
 

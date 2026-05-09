@@ -174,8 +174,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.png",
-    "dark": "/logo/dark.png"
+    "light": "/images/watermark-blue-bg-italic.webp",
+    "dark": "/images/watermark-blue-bg-italic.webp"
   },
   "navbar": {
     "links": [

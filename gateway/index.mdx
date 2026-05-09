@@ -1,9 +1,9 @@
 ---
-title: "ryvo Gateway"
-description: "A hosted gateway for x402, SIWX, and ryvo channel-backed Solana infrastructure routes."
+title: "Ryvo Gateway"
+description: "A hosted gateway for x402, SIWX, and Ryvo channel-backed Solana infrastructure routes."
 ---
 
-ryvo Gateway is a hosted gateway that turns major Solana infrastructure providers and the Tokens API into permissionless HTTP endpoints. Clients do not need upstream API keys; they authenticate and pay through x402, SIWX, or ryvo Protocol payment channels.
+Ryvo Gateway is a hosted gateway that turns major Solana infrastructure providers and the Tokens API into permissionless HTTP endpoints. Clients do not need upstream API keys; they authenticate and pay through x402, SIWX, or Ryvo Protocol payment channels.
 
 What you get:
 
@@ -13,7 +13,7 @@ What you get:
 - **Transparent pricing.** x402 paid routes advertise `priceUsd`; channel routes advertise `priceTokenAmount` in official devnet USDC.
 - **Pay only on success.** If the upstream provider fails, the gateway does not settle the payment. You are never charged for an upstream error.
 - **Two providers, one surface.** Alchemy and Helius sit behind a common route shape, so you can switch providers or compare latency without changing client code.
-- **Non-custodial.** The gateway never holds your funds. x402 payments settle directly on Solana; channel collateral stays inside ryvo Protocol.
+- **Non-custodial.** The gateway never holds your funds. x402 payments settle directly on Solana; channel collateral stays inside Ryvo Protocol.
 - **Standard x402 where appropriate.** Anything that speaks x402 works against the x402 routes. Channel routes use Ryvo-specific tooling.
 
 <CardGroup cols={2}>
@@ -40,23 +40,23 @@ The gateway is a good fit when any of the following are true:
 - You are building an agent or automated client and want to pay per request from a Solana wallet.
 - You want to prototype an x402 integration against real infrastructure before running your own resource server.
 
-If you want to understand the underlying settlement protocol, **ryvo Protocol**, see the [Protocol Docs](/index). The gateway is one application-layer example of where Ryvo-style machine payments are useful; the protocol itself is a separate product.
+If you want to understand the underlying settlement protocol, **Ryvo Protocol**, see the [Protocol Docs](/index). The gateway is one application-layer example of where Ryvo-style machine payments are useful; the protocol itself is a separate product.
 
 ## Live deployment
 
 | Field | Value |
 | --- | --- |
-| Base URL | `https://gateway.ryvo.network` |
+| Base URL | `https://gateway.Ryvo.network` |
 | x402 payment network | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` (Solana mainnet) |
 | x402 payment asset | `USDC` (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`) |
-| ryvo channel token | Official devnet USDC (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`) |
+| Ryvo channel token | Official devnet USDC (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`) |
 | Catalog | `GET /v1/catalog` |
 | Health | `GET /healthz` |
 
 ## What it is not
 
-- **Not a custodian.** The gateway never holds client funds. x402 payments settle directly on Solana; channel collateral remains in ryvo Protocol accounts.
-- **Not the protocol itself.** The gateway is an application-layer resource server that can use x402 or ryvo Protocol channels.
+- **Not a custodian.** The gateway never holds client funds. x402 payments settle directly on Solana; channel collateral remains in Ryvo Protocol accounts.
+- **Not the protocol itself.** The gateway is an application-layer resource server that can use x402 or Ryvo Protocol channels.
 - **Not a token.** There is no gateway token. Payments use USDC, either on Solana mainnet for x402 or official devnet USDC for channel testing.
 
 ## See also

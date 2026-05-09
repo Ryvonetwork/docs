@@ -1,11 +1,11 @@
 ---
-title: "ryvo Protocol"
+title: "Ryvo Protocol"
 description: "A non-custodial clearing and settlement protocol for machine payments on Solana."
 ---
 
-ryvo is a non-custodial clearing and settlement protocol for machine payments on Solana. It is designed for repeated, high-frequency relationships, agents paying APIs, services paying services, and operators routing payments between both, where settling every interaction as its own on-chain transfer is too expensive.
+Ryvo is a non-custodial clearing and settlement protocol for machine payments on Solana. It is designed for repeated, high-frequency relationships, agents paying APIs, services paying services, and operators routing payments between both, where settling every interaction as its own on-chain transfer is too expensive.
 
-ryvo decouples **payment execution** from **settlement**. Participants exchange signed cumulative commitments off-chain, then settle only the latest valid state on-chain. The same protocol supports direct settlement for one channel, bundled settlement for one payee, and cooperative clearing rounds across many participants and channels.
+Ryvo decouples **payment execution** from **settlement**. Participants exchange signed cumulative commitments off-chain, then settle only the latest valid state on-chain. The same protocol supports direct settlement for one channel, bundled settlement for one payee, and cooperative clearing rounds across many participants and channels.
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
@@ -15,7 +15,7 @@ ryvo decouples **payment execution** from **settlement**. Participants exchange 
     Understand the on-chain objects, signed messages, and settlement paths.
   </Card>
   <Card title="TypeScript SDK" icon="code" href="/sdk">
-    Integrate ryvo with [`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk), typed client, PDA helpers, and message builders.
+    Integrate Ryvo with [`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk), typed client, PDA helpers, and message builders.
   </Card>
   <Card title="Live benchmarks" icon="chart-line" href="/benchmarks/live-devnet">
     See compression ratios, transaction sizes, and explorer links from devnet runs.
@@ -24,11 +24,11 @@ ryvo decouples **payment execution** from **settlement**. Participants exchange 
     Deployment info, instructions, message formats, account layouts, events, and errors.
   </Card>
   <Card title="Agentic tools" icon="robot" href="/reference/agentic-tools">
-    Skills, CLI, MCP, and LLM text for agents integrating ryvo.
+    Skills, CLI, MCP, and LLM text for agents integrating Ryvo.
   </Card>
 </CardGroup>
 
-## What ryvo provides
+## What Ryvo provides
 
 - **Permanent participant identities.** Every wallet registers once and keeps a stable `participant_id` for the life of the deployment.
 - **Persistent payment lanes.** Each participant pair and token maps into a deterministic lane in channel buckets.
@@ -36,14 +36,14 @@ ryvo decouples **payment execution** from **settlement**. Participants exchange 
 - **Three settlement modes.** Direct settlement, bundle settlement, and cooperative clearing rounds, all settling into the same shared vault.
 - **Non-custodial by construction.** Balances live in program-owned accounts. Operators and facilitators can help submit settlements without holding funds.
 
-ryvo compression works in two layers:
+Ryvo compression works in two layers:
 
 - **Micropayments are compressed by payment channels.**
 - **Settlement is compressed by cooperative clearing rounds.**
 
-## Who ryvo is for
+## Who Ryvo is for
 
-ryvo is a good fit when the same parties interact repeatedly and per-payment settlement cost matters:
+Ryvo is a good fit when the same parties interact repeatedly and per-payment settlement cost matters:
 
 - agent-driven API and tool consumption
 - metered service relationships (inference, RPC, data feeds, compute)
@@ -65,6 +65,6 @@ It is not intended to replace Solana's native transfer for one-off, high-value p
     Choose between direct, bundle, and cooperative clearing paths.
   </Card>
   <Card title="Security model" icon="shield-halved" href="/security/trust-model">
-    What ryvo guarantees on-chain, and what stays a relationship-level choice.
+    What Ryvo guarantees on-chain, and what stays a relationship-level choice.
   </Card>
 </CardGroup>

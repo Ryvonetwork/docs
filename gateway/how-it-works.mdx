@@ -1,6 +1,6 @@
 ---
 title: "How it works"
-description: "What happens when you call the ryvo Gateway from the client's point of view."
+description: "What happens when you call the Ryvo Gateway from the client's point of view."
 ---
 
 The gateway sits between your client and two kinds of upstreams:
@@ -14,7 +14,7 @@ Everything speaks standard [x402](https://x402.org) over plain HTTP. If your cli
 
 ```
 ┌────────┐   x402 request    ┌────────────────┐   upstream call   ┌────────────┐
-│ Client │ ────────────────▶ │  ryvo Gateway  │ ────────────────▶ │  Provider  │
+│ Client │ ────────────────▶ │  Ryvo Gateway  │ ────────────────▶ │  Provider  │
 └────────┘ ◀──────────────── │                │ ◀──────────────── └────────────┘
       ▲      JSON response   │                │   JSON response
       │                      └────────┬───────┘

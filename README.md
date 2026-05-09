@@ -1,6 +1,6 @@
-# ryvo Protocol Docs
+# Ryvo Protocol Docs
 
-Mintlify documentation for ryvo Protocol and ryvo Gateway.
+Mintlify documentation for Ryvo Protocol and Ryvo Gateway.
 
 ## Agentic surfaces
 

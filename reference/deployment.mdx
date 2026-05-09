@@ -1,9 +1,9 @@
 ---
 title: "Deployment"
-description: "Current live deployment details for the ryvo Protocol."
+description: "Current live deployment details for the Ryvo Protocol."
 ---
 
-The ryvo protocol is currently live on Solana devnet. This page records the canonical identifiers and parameters of that deployment.
+The Ryvo protocol is currently live on Solana devnet. This page records the canonical identifiers and parameters of that deployment.
 
 ## Live deployment
 
@@ -19,7 +19,7 @@ The ryvo protocol is currently live on Solana devnet. This page records the cano
 
 ## Chain IDs
 
-ryvo distinguishes deployments by a protocol-level chain ID stored in `GlobalConfig` and folded into the signed [message domain](/reference/messages#message-domain).
+Ryvo distinguishes deployments by a protocol-level chain ID stored in `GlobalConfig` and folded into the signed [message domain](/reference/messages#message-domain).
 
 | Chain ID | Network |
 | --- | --- |
@@ -55,7 +55,7 @@ The fee recipient is a wallet configured in `GlobalConfig` and can be updated by
 
 ## Authority model
 
-ryvo uses two administrative roles, both of which use a two-step pending/accept handoff:
+Ryvo uses two administrative roles, both of which use a two-step pending/accept handoff:
 
 - **Config authority** - can update `fee_recipient`, `fee_bps`, `registration_fee_lamports`, and nominate a successor.
 - **Registry authority** - can register new settlement tokens in `TokenRegistry`.

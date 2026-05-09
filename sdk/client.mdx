@@ -1,6 +1,6 @@
 ---
 title: "RyvoClient"
-description: "Typed wrapper around the ryvo Anchor program, one method per instruction."
+description: "Typed wrapper around the Ryvo Anchor program, one method per instruction."
 ---
 
 `RyvoClient` is the primary entry point in [`@ryvonetwork/sdk`](https://www.npmjs.com/package/@ryvonetwork/sdk). It wires the generated IDL to an `AnchorProvider` and exposes one typed method for every instruction in the [on-chain program](/reference/instructions). Under the hood, each method returns an Anchor `MethodsBuilder`, so you can extend the call with `.preInstructions()`, `.postInstructions()`, `.signers()`, `.rpc()`, `.transaction()`, or `.instruction()` as needed.

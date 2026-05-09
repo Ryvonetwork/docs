@@ -5,7 +5,7 @@ description: "How paid routes are priced and how Tokens API auth-only routes fit
 
 Paid x402 routes are priced from each upstream provider's public PAYG schedule **plus a flat gateway settlement surcharge of `$0.0006` per paid call**. This surcharge covers the Solana transaction cost required to settle each exact-payment request.
 
-x402 paid routes settle in **USDC on Solana mainnet**. ryvo channel routes are denominated in official **devnet USDC token amounts** and settle later through ryvo Protocol bundle settlement.
+x402 paid routes settle in **USDC on Solana mainnet**. Ryvo channel routes are denominated in official **devnet USDC token amounts** and settle later through Ryvo Protocol bundle settlement.
 
 ## Alchemy - Compute Unit pricing
 
@@ -101,7 +101,7 @@ Tokens API routes still sit behind the x402 challenge/response flow, the client 
 
 See [Access modes](/gateway/access-modes) for the mechanics.
 
-## ryvo channel pricing
+## Ryvo channel pricing
 
 For `/v1/ryvo-channel/...` routes, the catalog publishes token-denominated pricing:
 

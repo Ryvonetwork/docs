@@ -22,7 +22,7 @@
 - Use `x402 exact` for paid per-call routes and `SIWX` for auth-only Tokens routes.
 - Use `ryvo-channel` for devnet channel-backed gateway routes.
 - Refer to "official devnet USDC" by mint when needed: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`.
-- Use "non-custodial" consistently for ryvo protocol claims.
+- Use "non-custodial" consistently for Ryvo protocol claims.
 
 ## Style preferences
 

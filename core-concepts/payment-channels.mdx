@@ -1,15 +1,15 @@
 ---
 title: "Payment Channels"
-description: "How ryvo models long-lived, directional payment lanes."
+description: "How Ryvo models long-lived, directional payment lanes."
 ---
 
-In ryvo, a payment channel is one directional payment relationship from a payer to a payee for a specific token.
+In Ryvo, a payment channel is one directional payment relationship from a payer to a payee for a specific token.
 
 In V5, channel state is stored in channel buckets. Each participant pair and token maps to a canonical lane inside a deterministic bucket.
 
 ## Why one-way
 
-ryvo channels are intentionally unidirectional because the common case is unidirectional:
+Ryvo channels are intentionally unidirectional because the common case is unidirectional:
 
 - one buyer paying one API
 - one agent paying one tool
