@@ -54,6 +54,19 @@ Alice wants to pay an RPC provider through a hub.
 6. The hub signs a cumulative commitment increasing what it owes the provider.
 7. Later, the hub settles inbound and outbound channels through normal Ryvo settlement.
 
+## Providers must trust hub balance accounting
+
+The protocol enforces locked balance when a channel settles on-chain. Between settlements, the hub decides whether to honor each inbound commitment.
+
+That means providers must trust the hub to track **remaining capacity** correctly on every inbound channel. If a participant locked **$10** to the hub lane and has already consumed **$5**, the hub must treat only **$5** as still available. If the hub's ledger is wrong, it can accept new commitments that exceed what the participant actually has locked. The participant overspends relative to that channel, and the provider may see outbound commitments from the hub that cannot be fully backed when inbound channels settle.
+
+This is not a protocol failure. It is the trust surface of routing through a coordinator. Providers can mitigate it by:
+
+1. requiring frequent inbound settlement from the hub
+2. capping exposure per hub relationship
+3. monitoring inbound `settled_cumulative` against on-chain `locked_balance` themselves
+4. opening direct channels to participants they care about most
+
 ## Operating models
 
 ### Guaranteed-capacity
@@ -73,13 +86,27 @@ If the hub extends credit in either direction, the trust surface grows. Balances
 A hub can still control **service access**. It can:
 
 1. deny service
-2. delay forwarding
+2. delay or withhold forwarding
 3. require additional lockup
 4. choose which providers it will work with
 
+In practice, a hub can **censor payments** at the service layer by refusing or stalling requests even when the participant has locked liquidity and a valid commitment.
+
 That is not a protocol bug, it is the service-layer business model of the hub.
 
-The important distinction is that service control and settlement control are no longer the same thing. A hub can be picky about who it serves without becoming the only path to settle. Users and providers can choose different hubs, use direct channels, or mix both.
+The important distinction is that service control and settlement control are no longer the same thing. A hub can be picky about who it serves without becoming the only path to settle.
+
+### Exit paths for participants
+
+Participants are not trapped in a censored hub relationship. A buyer or agent can:
+
+1. request a **channel unlock** to release locked liquidity from that hub lane (subject to the configured timelock)
+2. open a **direct channel** to the provider and pay without the hub
+3. **lock to a different hub** and route through a competing operator
+
+Funds stay in protocol state throughout. The hub can block its own service, but it cannot prevent the participant from withdrawing shared balance or unlocking channel funds through normal protocol instructions once timelocks expire.
+
+Users and providers can also choose different hubs, use direct channels, or mix both from the start.
 
 ## Operator payment is separate
 
